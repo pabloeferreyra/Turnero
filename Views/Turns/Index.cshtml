@@ -1,0 +1,130 @@
+﻿@model IEnumerable<Turnero.Models.Turn>
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+@{
+    ViewData["Title"] = "Turnos Inicio";
+    if (ViewBag.Date == null)
+        ViewBag.Date = String.Format("{0:yyyy-MM-dd}", DateTime.Now);
+    else
+        String.Format("{0:yyyy-MM-dd}", DateTime.Now);
+}
+
+<h1>Inicio Turnos</h1>
+
+<p>
+    @{
+        if (SignInManager.IsSignedIn(User) && (User.IsInRole("Ingreso")))
+        {
+            <a asp-action="Create">Nuevo Turno</a>
+        }
+    }
+</p>
+<form asp-action="Index" method="get">
+    <div class="form-group row">
+        <label class="control-label"></label>
+        <input name="dateTurn" type="date" class="form-control col-2" value="@ViewBag.Date" data-date-format="dd/MM/yyyy" />
+        <button type="submit" class="btn btn-primary col-1 offset-1">Buscar</button>
+    </div>
+</form>
+<table class="table table-responsive-md">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Dni)
+            </th>
+            @{
+                if (SignInManager.IsSignedIn(User) && (User.IsInRole("Ingreso")))
+                {
+                    <th>
+                        @Html.DisplayNameFor(model => model.Medic)
+                    </th>
+                }
+            }
+            <th>
+                @Html.DisplayNameFor(model => model.DateTurn)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            if (item.Accessed)
+            {
+        <tr style="background-color:red; color: white">
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Dni)
+            </td>
+            @{
+                if (SignInManager.IsSignedIn(User) && (User.IsInRole("Ingreso")))
+                {
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Medic.Name)
+                    </td>
+                }
+            }
+            <td>
+                @Html.DisplayFor(modelItem => item.DateTurn)
+            </td>
+
+            </tr>
+                }
+                else
+                {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.Name)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Dni)
+        </td>
+        @{
+            if (SignInManager.IsSignedIn(User) && (User.IsInRole("Ingreso")))
+            {
+                <td>
+                    @Html.DisplayFor(modelItem => item.Medic.Name)
+                </td>
+            }
+            }
+                <td>
+                    @Html.DisplayFor(modelItem => item.DateTurn)
+                </td>
+                <td>
+                    @if (ViewBag.IsMedic)
+                    {
+                        <form asp-action="Accessed" asp-route-id="@item.Id" method="post">
+                            <span id="confirmaccessedSpan_@item.Id" style="display:none">
+                                <span>Esta seguro que ingreso el paciente?</span>
+                                <button type="submit" class="btn btn-danger">Si</button>
+                                <a href="#" class="btn btn-primary"
+                                   onclick="ConfirmAccess('@item.Id', false)">No</a>
+                            </span>
+                            <span id="accessedSpan_@item.Id">
+                                <a href="#" class="btn btn-primary"
+                                   onclick="ConfirmAccess('@item.Id', true)">Ingreso</a>
+                            </span>
+                        </form>
+                    }
+                    @{ 
+                        if (SignInManager.IsSignedIn(User) && (User.IsInRole("Ingreso")))
+                        {
+                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-secondary">Editar</a>
+                        }
+                    }
+                </td>
+            </tr>
+            }
+        }
+    </tbody>
+</table>
+
+@section scripts{
+    <script src="~/js/turn.js"></script>
+}

@@ -1,0 +1,27 @@
+﻿@model Turnero.Models.Medic
+
+@{
+    ViewData["Title"] = "Eliminar Medico";
+}
+
+<h1>Eliminar</h1>
+
+<h3>Esta seguro que desea eliminarlo?</h3>
+<div>
+    <h4>Medico @Html.DisplayFor(model => model.Name)</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+    </dl>
+    
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="Id" />
+        <input type="submit" value="Delete" class="btn btn-danger" /> |
+        <a asp-action="Index">Back to List</a>
+    </form>
+</div>

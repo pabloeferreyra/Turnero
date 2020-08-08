@@ -1,0 +1,56 @@
+﻿@model Turnero.Models.Turn
+@using System;
+@using System.Globalization;
+@{
+    ViewData["Title"] = "Crear Turno";
+    string date = String.Format("{0:yyyy-MM-dd}", DateTime.Now);
+}
+<hr />
+<div class="card">
+    <div class="card-header">
+        <h1>Crear</h1>
+    </div>
+    <form method="post">
+        <div class="card-body">
+
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" id="clientName" class="form-control" />
+                <span asp-validation-for="Name" id="clientValidation" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Dni" class="control-label"></label>
+                <input asp-for="Dni" id="dniCliente" class="form-control" />
+                <span asp-validation-for="Dni" id="dniValidation" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Medic" class="control-label"></label>
+                <select asp-for="MedicId"
+                        class="form-control"
+                        asp-items="@(new SelectList(ViewBag.Medics, "Id", "Name"))"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="DateTurn" class="control-label"></label>
+                <input asp-for="DateTurn" type="date" id="dateTurn" class="form-control" value="@date" data-date-format="dd/MM/yyyy" />
+                <span asp-validation-for="DateTurn" id="dateValidation" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Time" class="control-label"></label>
+                <select asp-for="TimeId"
+                        class="form-control"
+                        asp-items="@(new SelectList(ViewBag.Time, "Id", "Time"))"></select>
+            </div>
+
+        </div>
+            <div class="card-footer">
+                <button type="submit" id="btnCrearTurno" class="btn btn-primary" >Crear</button>
+                <a asp-action="Index" cclass="btn btn-outline-warning">Cancelar</a>
+            </div>
+    </form>
+
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
