@@ -33,6 +33,12 @@ namespace Turnero.Controllers
         [Authorize(Roles = "Ingreso, Medico")]
         public async Task<IActionResult> Index(DateTime? dateTurn)
         {
+            List<Turn> turns = await TurnListAsync(dateTurn);
+            return View(turns);
+        }
+
+        public async Task<List<Turn>> TurnListAsync(DateTime? dateTurn)
+        {
             ClaimsPrincipal currentUser = this.User;
             var user = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
             var medic = await _context.Medics.Where(m => m.UserGuid == user).FirstOrDefaultAsync();
@@ -40,26 +46,27 @@ namespace Turnero.Controllers
             if (medic != null)
             {
                 if (dateTurn.HasValue)
-                    turns = await _context.Turns.Where(m => m.MedicId == medic.Id && m.DateTurn == dateTurn).ToListAsync();
+                    turns = await _context.Turns.Where(m => m.MedicId == medic.Id && m.DateTurn == dateTurn).OrderBy(t => t.Time.Time).ToListAsync();
                 else
-                    turns = await _context.Turns.Where(m => m.MedicId == medic.Id && m.DateTurn == DateTime.Today).ToListAsync();
+                    turns = await _context.Turns.Where(m => m.MedicId == medic.Id && m.DateTurn == DateTime.Today).OrderBy(t => t.Time.Time).ToListAsync();
             }
             else
             {
                 if (dateTurn.HasValue)
-                    turns = await _context.Turns.Where(m => m.DateTurn == dateTurn).ToListAsync();
+                    turns = await _context.Turns.Where(m => m.DateTurn == dateTurn).OrderBy(t => t.Time.Time).ToListAsync();
                 else
-                    turns = await _context.Turns.ToListAsync();
+                    turns = await _context.Turns.OrderBy(t => t.Time.Time).ToListAsync();
             }
             List<Turn> turns1 = new List<Turn>();
             foreach (var t in turns)
             {
+                t.Time = await _context.TimeTurns.FirstOrDefaultAsync(ti => ti.Id == t.TimeId);
                 t.Medic = await _context.Medics.FirstOrDefaultAsync(m => m.Id == t.MedicId);
                 turns1.Add(t);
             }
             ViewBag.Date = dateTurn.HasValue ? String.Format("{0:yyyy-MM-dd}", dateTurn) : String.Format("{0:yyyy-MM-dd}", DateTime.Now);
             ViewBag.IsMedic = medic != null ? true : false;
-            return View(turns1);
+            return turns1;
         }
 
         // GET: Turns/Details/5
@@ -156,9 +163,9 @@ namespace Turnero.Controllers
                     Logger.LogError($"Error editing Turn {ex}");
                     return View("Error");
                 }
-                return RedirectToAction(nameof(Index));
             }
-            return View(turn);
+            List<Turn> turns = await this.TurnListAsync(null);
+            return PartialView("_TurnsPartial", turns);
         }
 
         // GET: Turns/Edit/5
@@ -185,9 +192,6 @@ namespace Turnero.Controllers
             return View(turn);
         }
 
-        // POST: Turns/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [Authorize(Roles = "Ingreso")]
         [HttpPost]
         [ValidateAntiForgeryToken]

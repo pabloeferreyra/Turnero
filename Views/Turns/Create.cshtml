@@ -37,9 +37,10 @@
             </div>
             <div class="form-group">
                 <label asp-for="Time" class="control-label"></label>
-                <select asp-for="TimeId"
+                <select asp-for="TimeId" id="timeTurn"
                         class="form-control"
                         asp-items="@(new SelectList(ViewBag.Time, "Id", "Time"))"></select>
+                <span asp-validation-for="Time" id="timeValidation" class="text-danger"></span>
             </div>
 
         </div>

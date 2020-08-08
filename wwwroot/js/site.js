@@ -3,11 +3,12 @@
     var dd = tdate.getDate(); //yields day
     var MM = tdate.getMonth(); //yields month
     var yyyy = tdate.getFullYear(); //yields year
+    var time = tdate.toLocaleTimeString();
     if (dd < 10) {
         dd = '0' + dd;
     }
     if (MM < 9) {
-        MM = '0' + (MM + 1);
+        MM = '0' + MM;
     }
     var currentDate = yyyy + "-" + MM + "-" + dd;
 
@@ -44,6 +45,16 @@
             $("#btnCrearTurno").prop('disabled', true);
         }
         else {
+            $("#btnCrearTurno").prop('disabled', false);
+        }
+    });
+    $("#timeTurn").blur(function () {
+        if ($("#timeTurn :selected").text() < time) {
+            $("#timeValidation").text('la hora no puede ser anterior a la actual.');
+            $("#btnCrearTurno").prop('disabled', true);
+        }
+        else {
+            $("#timeValidation").text('');
             $("#btnCrearTurno").prop('disabled', false);
         }
     });

@@ -1,5 +1,10 @@
-﻿@model IEnumerable<Turnero.Models.Turn>
+﻿@*@page*@
+@model IEnumerable<Turnero.Models.Turn>
 @using Microsoft.AspNetCore.Identity
+@using (Html.BeginForm(null, null, FormMethod.Post, new { id = "__AjaxAntiForgeryForm" }))
+{
+    @Html.AntiForgeryToken()
+}
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
 @{
@@ -47,84 +52,17 @@
             <th>
                 @Html.DisplayNameFor(model => model.DateTurn)
             </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Time)
+            </th>
             <th></th>
         </tr>
     </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            if (item.Accessed)
-            {
-        <tr style="background-color:red; color: white">
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Dni)
-            </td>
-            @{
-                if (SignInManager.IsSignedIn(User) && (User.IsInRole("Ingreso")))
-                {
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Medic.Name)
-                    </td>
-                }
-            }
-            <td>
-                @Html.DisplayFor(modelItem => item.DateTurn)
-            </td>
-
-            </tr>
-                }
-                else
-                {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Name)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Dni)
-        </td>
-        @{
-            if (SignInManager.IsSignedIn(User) && (User.IsInRole("Ingreso")))
-            {
-                <td>
-                    @Html.DisplayFor(modelItem => item.Medic.Name)
-                </td>
-            }
-            }
-                <td>
-                    @Html.DisplayFor(modelItem => item.DateTurn)
-                </td>
-                <td>
-                    @if (ViewBag.IsMedic)
-                    {
-                        <form asp-action="Accessed" asp-route-id="@item.Id" method="post">
-                            <span id="confirmaccessedSpan_@item.Id" style="display:none">
-                                <span>Esta seguro que ingreso el paciente?</span>
-                                <button type="submit" class="btn btn-danger">Si</button>
-                                <a href="#" class="btn btn-primary"
-                                   onclick="ConfirmAccess('@item.Id', false)">No</a>
-                            </span>
-                            <span id="accessedSpan_@item.Id">
-                                <a href="#" class="btn btn-primary"
-                                   onclick="ConfirmAccess('@item.Id', true)">Ingreso</a>
-                            </span>
-                        </form>
-                    }
-                    @{ 
-                        if (SignInManager.IsSignedIn(User) && (User.IsInRole("Ingreso")))
-                        {
-                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-secondary">Editar</a>
-                        }
-                    }
-                </td>
-            </tr>
-            }
-        }
+    <tbody id="TurnsPartial">
+            <partial name="_TurnsPartial" model="@Model.ToList()" />
     </tbody>
 </table>
 
-@section scripts{
-    <script src="~/js/turn.js"></script>
-}
+    @section scripts{
+        <script src="~/js/turn.js"></script>
+    }
