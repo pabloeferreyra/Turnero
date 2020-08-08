@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.HttpOverrides;
 using System.IO;
+using Microsoft.CodeAnalysis.Options;
 
 namespace Turnero
 {
@@ -45,11 +46,18 @@ namespace Turnero
             {
                 // Cookie settings
                 options.Cookie.HttpOnly = true;
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+                options.ExpireTimeSpan = TimeSpan.FromHours(24);
 
                 options.LoginPath = "/Identity/Account/Login";
+                options.LogoutPath = "/Identity/Account/Login";
                 options.AccessDeniedPath = "/Identity/Account/AccessDenied";
                 options.SlidingExpiration = true;
+            });
+            services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromHours(24);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
             });
             services.AddControllersWithViews();
             services.AddMvc(options =>
@@ -92,6 +100,7 @@ namespace Turnero
 
             app.UseAuthentication();
             app.UseAuthorization();
+            app.UseSession();
 
             app.UseEndpoints(endpoints =>
             {
