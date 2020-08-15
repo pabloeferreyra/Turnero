@@ -68,16 +68,16 @@ namespace Turnero.Controllers
             if (medicId != null)
             {
                 if (dateTurn.HasValue)
-                    turns = await _context.Turns.Where(m => m.MedicId == medicId && m.DateTurn == dateTurn).OrderBy(t => t.Time.Time).OrderByDescending(t => t.DateTurn).ToListAsync();
+                    turns = await _context.Turns.Where(m => m.MedicId == medicId && m.DateTurn == dateTurn).OrderBy(t => t.Time.Time).ToListAsync();
                 else
-                    turns = await _context.Turns.Where(m => m.MedicId == medicId && m.DateTurn == DateTime.Today).OrderBy(t => t.Time.Time).OrderByDescending(t => t.DateTurn).ToListAsync();
+                    turns = await _context.Turns.Where(m => m.MedicId == medicId && m.DateTurn == DateTime.Today).OrderBy(t => t.Time.Time).ToListAsync();
             }
             else
             {
                 if (dateTurn.HasValue)
-                    turns = await _context.Turns.Where(m => m.DateTurn == dateTurn).OrderBy(t => t.Time.Time).OrderByDescending(t => t.DateTurn).ToListAsync();
+                    turns = await _context.Turns.Where(m => m.DateTurn == dateTurn).OrderBy(t => t.Time.Time).ToListAsync();
                 else
-                    turns = await _context.Turns.OrderBy(t => t.Time.Time).OrderByDescending(t => t.DateTurn).ToListAsync();
+                    turns = await _context.Turns.OrderBy(t => t.Time.Time).ToListAsync();
             }
             List<Turn> turns1 = new List<Turn>();
             foreach (var t in turns)
