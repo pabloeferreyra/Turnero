@@ -24,25 +24,7 @@ namespace Turnero.Controllers
         // GET: TimeTurn
         public async Task<IActionResult> Index()
         {
-            return View(await _context.TimeTurns.ToListAsync());
-        }
-
-        // GET: TimeTurn/Details/5
-        public async Task<IActionResult> Details(Guid? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var timeTurnViewModel = await _context.TimeTurns
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (timeTurnViewModel == null)
-            {
-                return NotFound();
-            }
-
-            return View(timeTurnViewModel);
+            return View(await _context.TimeTurns.OrderBy(t => t.Time).ToListAsync());
         }
 
         // GET: TimeTurn/Create
@@ -63,57 +45,6 @@ namespace Turnero.Controllers
                 timeTurnViewModel.Id = Guid.NewGuid();
                 _context.Add(timeTurnViewModel);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(timeTurnViewModel);
-        }
-
-        // GET: TimeTurn/Edit/5
-        public async Task<IActionResult> Edit(Guid? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var timeTurnViewModel = await _context.TimeTurns.FindAsync(id);
-            if (timeTurnViewModel == null)
-            {
-                return NotFound();
-            }
-            return View(timeTurnViewModel);
-        }
-
-        // POST: TimeTurn/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("Id,Time")] TimeTurnViewModel timeTurnViewModel)
-        {
-            if (id != timeTurnViewModel.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(timeTurnViewModel);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!TimeTurnViewModelExists(timeTurnViewModel.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
                 return RedirectToAction(nameof(Index));
             }
             return View(timeTurnViewModel);
