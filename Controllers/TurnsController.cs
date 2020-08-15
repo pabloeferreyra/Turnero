@@ -40,7 +40,8 @@ namespace Turnero.Controllers
             return View(turns);
         }
 
-        [Authorize(Roles = "Ingreso, Medico")]
+        [AllowAnonymous]
+        //[Authorize(Roles = "Ingreso, Medico")]
         [HttpPost]
         public async Task<IActionResult> GetTurns(DateTime? dateTurn, Guid? medicId)
         {
@@ -55,7 +56,7 @@ namespace Turnero.Controllers
                 turns = await TurnListAsync(dateTurn);
             }
             ViewBag.Medics = medics;
-            return PartialView("_TurnsPartial", turns.OrderBy(t => t.DateTurn));
+            return PartialView("_TurnsPartial", turns);
         }
 
         public async Task<List<Turn>> TurnListAsync(DateTime? dateTurn, Guid? medicId)
@@ -67,16 +68,16 @@ namespace Turnero.Controllers
             if (medicId != null)
             {
                 if (dateTurn.HasValue)
-                    turns = await _context.Turns.Where(m => m.MedicId == medicId && m.DateTurn == dateTurn).OrderBy(t => t.Time.Time).ToListAsync();
+                    turns = await _context.Turns.Where(m => m.MedicId == medicId && m.DateTurn == dateTurn).OrderBy(t => t.Time.Time).OrderByDescending(t => t.DateTurn).ToListAsync();
                 else
-                    turns = await _context.Turns.Where(m => m.MedicId == medicId && m.DateTurn == DateTime.Today).OrderBy(t => t.Time.Time).ToListAsync();
+                    turns = await _context.Turns.Where(m => m.MedicId == medicId && m.DateTurn == DateTime.Today).OrderBy(t => t.Time.Time).OrderByDescending(t => t.DateTurn).ToListAsync();
             }
             else
             {
                 if (dateTurn.HasValue)
-                    turns = await _context.Turns.Where(m => m.DateTurn == dateTurn).OrderBy(t => t.Time.Time).ToListAsync();
+                    turns = await _context.Turns.Where(m => m.DateTurn == dateTurn).OrderBy(t => t.Time.Time).OrderByDescending(t => t.DateTurn).ToListAsync();
                 else
-                    turns = await _context.Turns.OrderBy(t => t.Time.Time).ToListAsync();
+                    turns = await _context.Turns.OrderBy(t => t.Time.Time).OrderByDescending(t => t.DateTurn).ToListAsync();
             }
             List<Turn> turns1 = new List<Turn>();
             foreach (var t in turns)
