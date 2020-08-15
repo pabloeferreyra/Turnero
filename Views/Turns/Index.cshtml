@@ -1,5 +1,4 @@
-﻿@*@page*@
-@model IEnumerable<Turnero.Models.Turn>
+﻿@model IEnumerable<Turnero.Models.Turn>
 @using Microsoft.AspNetCore.Identity
 @using (Html.BeginForm(null, null, FormMethod.Post, new { id = "__AjaxAntiForgeryForm" }))
 {
@@ -25,13 +24,13 @@
         }
     }
 </p>
-<form asp-action="Index" method="get">
-    <div class="form-group row">
-        <label class="control-label"></label>
-        <input name="dateTurn" type="date" class="form-control col-2" value="@ViewBag.Date" data-date-format="dd/MM/yyyy" />
-        <button type="submit" class="btn btn-primary col-1 offset-1">Buscar</button>
-    </div>
-</form>
+<div class="form-group row">
+    <label class="control-label"></label>
+    <input id="DateTurn" name="dateTurn" type="date" class="form-control col-2" value="@ViewBag.Date" data-date-format="dd/MM/yyyy" />
+    <select id="Medics" class="form-control col-2" asp-items="@(new SelectList(ViewBag.Medics, "Id", "Name"))"></select>
+    <button class="btn btn-primary col-1 offset-1" onclick="SearchTurns('@Url.Action("GetTurns","Turns")')">Buscar</button>
+    <button class="btn btn-secondary col-1 offset-1" onclick="SearchAllTurns('@Url.Action("GetTurns","Turns")')">Limpiar</button>
+</div>
 <table class="table table-responsive-md">
     <thead>
         <tr>

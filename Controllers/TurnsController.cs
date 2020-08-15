@@ -31,10 +31,63 @@ namespace Turnero.Controllers
 
         // GET: Turns
         [Authorize(Roles = "Ingreso, Medico")]
-        public async Task<IActionResult> Index(DateTime? dateTurn)
+        public async Task<IActionResult> Index()
         {
-            List<Turn> turns = await TurnListAsync(dateTurn);
+            List<Medic> medics = await _context.Medics.ToListAsync();
+            List<Turn> turns;
+            turns = await TurnListAsync(null);
+            ViewBag.Medics = medics;
             return View(turns);
+        }
+
+        [Authorize(Roles = "Ingreso, Medico")]
+        [HttpPost]
+        public async Task<IActionResult> GetTurns(DateTime? dateTurn, Guid? medicId)
+        {
+            List<Medic> medics = await _context.Medics.ToListAsync();
+            List<Turn> turns;
+            if (medicId != null)
+            {
+                turns = await TurnListAsync(dateTurn, medicId);
+            }
+            else
+            {
+                turns = await TurnListAsync(dateTurn);
+            }
+            ViewBag.Medics = medics;
+            return PartialView("_TurnsPartial", turns.OrderBy(t => t.DateTurn));
+        }
+
+        public async Task<List<Turn>> TurnListAsync(DateTime? dateTurn, Guid? medicId)
+        {
+            ClaimsPrincipal currentUser = this.User;
+            var user = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var medic = await _context.Medics.Where(m => m.UserGuid == user).FirstOrDefaultAsync();
+            List<Turn> turns = new List<Turn>();
+            if (medicId != null)
+            {
+                if (dateTurn.HasValue)
+                    turns = await _context.Turns.Where(m => m.MedicId == medicId && m.DateTurn == dateTurn).OrderBy(t => t.Time.Time).ToListAsync();
+                else
+                    turns = await _context.Turns.Where(m => m.MedicId == medicId && m.DateTurn == DateTime.Today).OrderBy(t => t.Time.Time).ToListAsync();
+            }
+            else
+            {
+                if (dateTurn.HasValue)
+                    turns = await _context.Turns.Where(m => m.DateTurn == dateTurn).OrderBy(t => t.Time.Time).ToListAsync();
+                else
+                    turns = await _context.Turns.OrderBy(t => t.Time.Time).ToListAsync();
+            }
+            List<Turn> turns1 = new List<Turn>();
+            foreach (var t in turns)
+            {
+                t.Time = await _context.TimeTurns.FirstOrDefaultAsync(ti => ti.Id == t.TimeId);
+                t.Medic = await _context.Medics.FirstOrDefaultAsync(m => m.Id == t.MedicId);
+                turns1.Add(t);
+            }
+            ViewBag.Date = dateTurn.HasValue ? String.Format("{0:yyyy-MM-dd}", dateTurn) : String.Format("{0:yyyy-MM-dd}", DateTime.Now);
+            ViewBag.IsMedic = medic != null ? true : false;
+            return turns1;
         }
 
         public async Task<List<Turn>> TurnListAsync(DateTime? dateTurn)

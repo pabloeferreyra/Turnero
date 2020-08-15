@@ -28,3 +28,36 @@ function accessed(urlAction, id) {
         }
     });
 }
+
+function SearchTurns(urlAction) {
+    var date = $("#DateTurn").val();
+    var medic = $("#Medics :selected").val();
+    $.ajax({
+        type: "POST",
+        url: urlAction,
+        data: {
+            dateTurn: date,
+            medicId: medic
+        },
+        success: function (result) {
+            $("#TurnsPartial").html(result);
+        },
+        error: function (req, status, error) {
+        }
+    });
+}
+function SearchAllTurns(urlAction) {
+    $.ajax({
+        type: "POST",
+        url: urlAction,
+        data: {
+            dateTurn: null,
+            medicId: null
+        },
+        success: function (result) {
+            $("#TurnsPartial").html(result);
+        },
+        error: function (req, status, error) {
+        }
+    });
+}
