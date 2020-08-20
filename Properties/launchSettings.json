@@ -7,7 +7,7 @@
       "sslPort": 0
     },
     "iisExpress": {
-      "applicationUrl": "http://localhost:51531",
+      "applicationUrl": "http://localhost:5001",
       "sslPort": 44334
     }
   },
@@ -21,8 +21,7 @@
       },
       "sqlDebugging": false,
       "ancmHostingModel": "OutOfProcess",
-      "nativeDebugging": true,
-      "use64Bit": true
+      "nativeDebugging": true
     }
   }
 }

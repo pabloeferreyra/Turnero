@@ -29,6 +29,12 @@ namespace Turnero.Models
 
         [Display(Name = "Hora")]
         public TimeTurnViewModel Time { get; set; }
+        
+        [Display(Name = "Obra Social")]
+        public string SocialWork { get; set; }
+        
+        [Display(Name ="Motivo Consulta")]
+        public string Reason { get; set; }
 
         [Display(Name = "Ingresado")]
         public bool Accessed { get; set; }

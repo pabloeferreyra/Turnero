@@ -40,6 +40,12 @@
             <th>
                 @Html.DisplayNameFor(model => model.Dni)
             </th>
+            <th>
+                @Html.DisplayNameFor(model => model.SocialWork)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Reason)
+            </th>
             @{
                 if (SignInManager.IsSignedIn(User) && (User.IsInRole("Ingreso")))
                 {

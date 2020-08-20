@@ -7,73 +7,84 @@
 {
     if (item.Accessed)
     {
-        <tr style="background-color:red; color: white">
+<tr style="background-color:red; color: white">
+    <td>
+        @Html.DisplayFor(modelItem => item.Name)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.Dni)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.SocialWork)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.Reason)
+    </td>
+    @{
+        if (SignInManager.IsSignedIn(User) && (User.IsInRole("Ingreso")))
+        {
             <td>
-                @Html.DisplayFor(modelItem => item.Name)
+                @Html.DisplayFor(modelItem => item.Medic.Name)
             </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Dni)
-            </td>
-            @{
-                if (SignInManager.IsSignedIn(User) && (User.IsInRole("Ingreso")))
-                {
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Medic.Name)
-                    </td>
-                }
-            }
-            <td>
-                @Html.DisplayFor(modelItem => item.DateTurn)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Time.Time)
-            </td>
-
-        </tr>
+        }
+    }
+    <td>
+        @Html.DisplayFor(modelItem => item.DateTurn)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.Time.Time)
+    </td>
+</tr>
     }
     else
     {
-        <tr>
+<tr>
+    <td>
+        @Html.DisplayFor(modelItem => item.Name)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.Dni)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.SocialWork)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.Reason)
+    </td>
+    @{
+        if (SignInManager.IsSignedIn(User) && (User.IsInRole("Ingreso")))
+        {
             <td>
-                @Html.DisplayFor(modelItem => item.Name)
+                @Html.DisplayFor(modelItem => item.Medic.Name)
             </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Dni)
-            </td>
-            @{
-                if (SignInManager.IsSignedIn(User) && (User.IsInRole("Ingreso")))
-                {
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Medic.Name)
-                    </td>
-                }
+        }
+    }
+    <td>
+        @Html.DisplayFor(modelItem => item.DateTurn)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.Time.Time)
+    </td>
+    <td>
+        @if (ViewBag.IsMedic)
+        {
+            <span id="confirmaccessedSpan_@item.Id" style="display:none">
+                <button onclick="accessed('@Url.Action("Accessed","Turns")','@item.Id');" class="btn btn-danger">Si</button>
+                <a href="#" class="btn btn-primary"
+                   onclick="ConfirmAccess('@item.Id', false)">No</a>
+            </span>
+            <span id="accessedSpan_@item.Id">
+                <a href="#" class="btn btn-primary"
+                   onclick="ConfirmAccess('@item.Id', true)">Ingreso</a>
+            </span>
+        }
+        @{
+            if (SignInManager.IsSignedIn(User) && (User.IsInRole("Ingreso")))
+            {
+                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-secondary">Editar</a>
             }
-            <td>
-                @Html.DisplayFor(modelItem => item.DateTurn)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Time.Time)
-            </td>
-            <td>
-                @if (ViewBag.IsMedic)
-                {
-                    <span id="confirmaccessedSpan_@item.Id" style="display:none">
-                        <button onclick="accessed('@Url.Action("Accessed","Turns")','@item.Id');" class="btn btn-danger">Si</button>
-                        <a href="#" class="btn btn-primary"
-                           onclick="ConfirmAccess('@item.Id', false)">No</a>
-                    </span>
-                    <span id="accessedSpan_@item.Id">
-                        <a href="#" class="btn btn-primary"
-                           onclick="ConfirmAccess('@item.Id', true)">Ingreso</a>
-                    </span>
-                }
-                @{
-                    if (SignInManager.IsSignedIn(User) && (User.IsInRole("Ingreso")))
-                    {
-                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-secondary">Editar</a>
-                    }
-                }
-            </td>
-        </tr>
+        }
+    </td>
+</tr>
     }
 }
