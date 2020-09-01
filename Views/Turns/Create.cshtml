@@ -51,14 +51,28 @@
                 <input asp-for="Reason" id="reason" class="form-control" />
             </div>
         </div>
-            <div class="card-footer">
-                <button type="submit" id="btnCrearTurno" class="btn btn-primary" >Crear</button>
-                <a asp-action="Index" cclass="btn btn-outline-warning">Cancelar</a>
-            </div>
+        <div class="card-footer">
+            <button type="submit" id="btnCrearTurno" class="btn btn-primary">Crear</button>
+            <a asp-action="Index" cclass="btn btn-outline-warning">Cancelar</a>
+        </div>
     </form>
 
 </div>
 
 @section Scripts {
+    <script type="text/javascript">
+        $(document).on('submit', 'form', function () {
+            var buttons = $(this).find('[type="submit"]');
+            if ($(this).valid()) {
+                buttons.each(function (btn) {
+                    $(buttons[btn]).prop('disabled', true);
+                });
+            } else {
+                buttons.each(function (btn) {
+                    $(buttons[btn]).prop('disabled', false);
+                });
+            }
+        });
+    </script>
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }
