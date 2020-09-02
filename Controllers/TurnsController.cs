@@ -273,36 +273,22 @@ namespace Turnero.Controllers
             return View(turn);
         }
 
-        // GET: Turns/Delete/5
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Delete(Guid? id)
+        // POST: Turns/Delete/5
+        [Authorize(Roles = "Admin, Ingreso")]
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
             if (id == null)
             {
                 return View("NotFound");
             }
 
-            var turn = await _context.Turns
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (turn == null)
-            {
-                ViewBag.ErrorMessage = $"Turn with Id = {id} cannot be found";
-                return View("NotFound");
-            }
-
-            return View(turn);
-        }
-
-        // POST: Turns/Delete/5
-        [Authorize(Roles = "Admin")]
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(Guid id)
-        {
             var turn = await _context.Turns.FindAsync(id);
             _context.Turns.Remove(turn);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            List<Turn> turns = await this.TurnListAsync(null);
+            return PartialView("_TurnsPartial", turns);
         }
 
         private bool TurnExists(Guid id)
