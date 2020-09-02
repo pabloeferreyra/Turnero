@@ -49,7 +49,7 @@
         }
     });
     $("#timeTurn").blur(function () {
-        if ($("#timeTurn :selected").text() < time && ($("#dateTurn").val() <= currentDate)){
+        if ($("#timeTurn :selected").text() >= time && ($("#dateTurn").val() <= currentDate)){
             $("#timeValidation").text('la hora no puede ser anterior a la actual.');
             $("#btnCrearTurno").prop('disabled', true);
         }
