@@ -26,8 +26,8 @@
             </div>
             <div class="form-group">
                 <label asp-for="Medic" class="control-label"></label>
-                <select asp-for="MedicId"
-                        class="form-control"
+                <select asp-for="MedicId" id="medicId"
+                        class="form-control medicId"
                         asp-items="@(new SelectList(ViewBag.Medics, "Id", "Name"))"></select>
             </div>
             <div class="form-group">
@@ -52,7 +52,7 @@
             </div>
         </div>
         <div class="card-footer">
-            <button type="submit" id="btnCrearTurno" class="btn btn-primary">Crear</button>
+            <button id="btnCrearTurno" class="btn btn-primary" onclick="Create('@Url.Action("Create", "Turns")')">Crear</button>
             <a asp-action="Index" cclass="btn btn-outline-warning">Cancelar</a>
         </div>
     </form>
@@ -60,19 +60,6 @@
 </div>
 
 @section Scripts {
-    <script type="text/javascript">
-        $(document).on('submit', 'form', function () {
-            var buttons = $(this).find('[type="submit"]');
-            if ($(this).valid()) {
-                buttons.each(function (btn) {
-                    $(buttons[btn]).prop('disabled', true);
-                });
-            } else {
-                buttons.each(function (btn) {
-                    $(buttons[btn]).prop('disabled', false);
-                });
-            }
-        });
-    </script>
+    <script src="~/js/turn.js"></script>
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }

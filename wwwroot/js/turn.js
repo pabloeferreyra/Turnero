@@ -29,6 +29,27 @@ function accessed(urlAction, id) {
     });
 }
 
+function Create(urlAction) {
+    var form = $('#__AjaxAntiForgeryForm');
+    var token = $('input[name="__RequestVerificationToken"]', form).val();
+    $.ajax({
+        type: "POST",
+        url: urlAction,
+        data: {
+            __RequestVerificationToken: token,
+            Name: $("#clientName").val(),
+            Dni: $("#dniCliente").val(),
+            MedicId: $("#medicId :selected").val(),
+            TimeId: $("#timeTurn :selected").val(),
+            DateTurn: $("#dateTurn").val(),
+            SocialWork: $("#socialWork").val(),
+            Reason: $("#reason").val()
+        },
+        dataType: "json",
+        contentType: "application/json"
+    });
+}
+
 function SearchTurns(urlAction) {
     var date = $("#DateTurn").val();
     var medic = $("#Medics :selected").val();
