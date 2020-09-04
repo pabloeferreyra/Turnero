@@ -1,14 +1,14 @@
 {
   "iisSettings": {
-    "windowsAuthentication": true,
+    "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iis": {
       "applicationUrl": "http://localhost/Turnero",
       "sslPort": 0
     },
     "iisExpress": {
-      "applicationUrl": "http://localhost:5001",
-      "sslPort": 44334
+      "applicationUrl": "http://localhost:5000",
+      "sslPort": 44379
     }
   },
   "profiles": {
@@ -20,8 +20,8 @@
         "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation"
       },
       "sqlDebugging": false,
-      "ancmHostingModel": "OutOfProcess",
-      "nativeDebugging": true
+      "nativeDebugging": true,
+      "applicationUrl": "http://localhost:5000"
     }
   }
 }

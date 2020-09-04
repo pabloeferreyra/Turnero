@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.HttpOverrides;
 using System.IO;
 using Microsoft.CodeAnalysis.Options;
+using Turnero.Helpers;
+using Turnero.Services;
 
 namespace Turnero
 {
@@ -33,7 +35,6 @@ namespace Turnero
             services.AddDefaultIdentity<IdentityUser>(options =>
             {
                 options.SignIn.RequireConfirmedAccount = false;
-                 // Password settings.
                 options.Password.RequireDigit = true;
                 options.Password.RequireLowercase = true;
                 options.Password.RequireNonAlphanumeric = false;
@@ -60,13 +61,7 @@ namespace Turnero
                 options.Cookie.IsEssential = true;
             });
             services.AddControllersWithViews();
-            services.AddMvc(options =>
-            {
-                var policy = new AuthorizationPolicyBuilder()
-                                 .RequireAuthenticatedUser()
-                                 .Build();
-                options.Filters.Add(new AuthorizeFilter(policy));
-            }).AddXmlSerializerFormatters();
+            services.AddMvc();
             services.AddRazorPages();
 
             services.AddAuthorization(options =>
@@ -74,6 +69,8 @@ namespace Turnero
                 options.AddPolicy("DeleteRolePolicy",
                     policy => policy.RequireClaim("Delete Role"));
             });
+            
+            services.AddScoped<IUserService, UserService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -109,6 +106,11 @@ namespace Turnero
                     pattern: "{controller=Home}/{action=Index}/{id?}");
                 endpoints.MapRazorPages();
             });
+            app.UseCors(x => x
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader());
+            app.UseMiddleware<JwtMiddleware>();
         }
 
     }
