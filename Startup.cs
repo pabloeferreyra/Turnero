@@ -61,7 +61,10 @@ namespace Turnero
                 options.Cookie.IsEssential = true;
             });
             services.AddControllersWithViews();
-            services.AddMvc();
+            services.AddMvc(options =>
+            {
+                options.InputFormatters.Add(new TextPlainInputFormatter());
+            });
             services.AddRazorPages();
 
             services.AddAuthorization(options =>
@@ -71,6 +74,8 @@ namespace Turnero
             });
             
             services.AddScoped<IUserService, UserService>();
+
+            services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

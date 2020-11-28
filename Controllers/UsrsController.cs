@@ -20,7 +20,7 @@ namespace Turnero.Controllers
         }
 
         [HttpPost("authenticate")]
-        public async Task<IActionResult> Authenticate([FromForm] AuthenticateRequest model)
+        public async Task<IActionResult> Authenticate([FromBody] AuthenticateRequest model)
         {
             var response = await _userService.Authenticate(model);
 
