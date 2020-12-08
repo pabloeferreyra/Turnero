@@ -111,11 +111,7 @@ namespace Turnero.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Medic medic)
         {
-            if (medic.Id == null)
-            {
-                ViewBag.ErrorMessage = $"Medic with Id = {medic.Id} cannot be found";
-                return View("NotFound");
-            }
+           
             if (!MedicExists(medic.Id))
             {
                 ViewBag.ErrorMessage = $"Medic with Id = {medic.Id} cannot be found";

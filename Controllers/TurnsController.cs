@@ -194,7 +194,7 @@ namespace Turnero.Controllers
             turn.Medic = medic;
             turn.MedicId = medic.Id;
 
-            if (turn.Id == null || !TurnExists(turn.Id))
+            if (!TurnExists(turn.Id))
             {
                 ViewBag.ErrorMessage = $"Turn with Id = {id} cannot be found";
                 return View("NotFound");
@@ -251,7 +251,7 @@ namespace Turnero.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Turn turn)
         {
-            if (turn.Id == null || !TurnExists(turn.Id))
+            if (!TurnExists(turn.Id))
             {
                 ViewBag.ErrorMessage = $"Turn with Id = {turn.Id} cannot be found";
                 return View("NotFound");
@@ -279,11 +279,6 @@ namespace Turnero.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
-            if (id == null)
-            {
-                return View("NotFound");
-            }
-
             var turn = await _context.Turns.FindAsync(id);
             _context.Turns.Remove(turn);
             await _context.SaveChangesAsync();
