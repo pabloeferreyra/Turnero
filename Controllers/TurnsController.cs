@@ -109,7 +109,7 @@ namespace Turnero.Controllers
                 if (dateTurn.HasValue)
                     turns = await _context.Turns.Where(m => m.DateTurn == dateTurn).OrderBy(t => t.Time.Time).ToListAsync();
                 else
-                    turns = await _context.Turns.OrderBy(t => t.Time.Time).ToListAsync();
+                    turns = await _context.Turns.Where(m => m.DateTurn == DateTime.Today).OrderBy(t => t.Time.Time).ToListAsync();
             }
             List<Turn> turns1 = new List<Turn>();
             foreach (var t in turns)
