@@ -27,6 +27,7 @@
     $("#clientName").blur(function () {
         if ($("#clientName").val() == '') {
             $("#clientValidation").text('Por favor ingrese nombre de cliente.');
+            toastr.error('Por favor ingrese nombre de cliente.', 'Error');
             $("#btnCrearTurno").prop('disabled', true);
         }
         else {
@@ -37,11 +38,13 @@
     $("#dniCliente").blur(function () {
         if ($("#dniCliente").val() == '') {
             $("#dniValidation").text('Por favor ingrese DNI de cliente.');
+            toastr.error('Por favor ingrese DNI de cliente.', 'Error');
             $("#btnCrearTurno").prop('disabled', true);
         }
         else {
             if ($("#dniCliente").val().length < 6) {
                 $("#dniValidation").text('El DNI debe tener por lo menos 6 (seis) caracteres.');
+                toastr.error('El DNI debe tener por lo menos 6 (seis) caracteres.', 'Error');
                 $("#btnCrearTurno").prop('disabled', true);
             }
             else {
@@ -53,6 +56,7 @@
     $("#dateTurn").blur(function () {
         if ($("#dateTurn").val() < currentDate) {
             $("#dateValidation").text('la fecha no puede ser anterior a la actual.');
+            toastr.error('la fecha no puede ser anterior a la actual.', 'Error');
             $("#btnCrearTurno").prop('disabled', true);
         }
         else {
@@ -65,8 +69,28 @@
             $("#btnCrearTurno").prop('disabled', true);
         }
         else {
-            $("#timeValidation").text('');
-            $("#btnCrearTurno").prop('disabled', false);
+            $.ajax({
+                type: "POST",
+                url: "Turns/CheckTurn",
+                data: {
+                    medicId: $("#medicId :selected").val(),
+                    date: $("#dateTurn").val(),
+                    timeTurn: $("#timeTurn :selected").val()
+                },
+                complete: function (msj) {
+                    value = msj.responseText;
+                    if (value == 'false') {
+                        $("#timeValidation").text('');
+                        $("#btnCrearTurno").prop('disabled', false);
+                    }
+                    else {
+                        $("#timeValidation").text('el turno ya existe, seleccione otro.');
+                        toastr.error('el turno ya existe, seleccione otro.', 'Error');
+                        $("#btnCrearTurno").prop('disabled', true);
+                    }
+                }
+            });
+            
         }
     });
 //-----------------------------------------------------  turnos  -----------------------------------------------------//

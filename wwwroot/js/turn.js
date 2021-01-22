@@ -41,6 +41,7 @@ function Delete(urlAction, id) {
         },
         success: function (result) {
             $("#TurnsPartial").html(result);
+            toastr.success('Turno eliminado Correctamente.', 'Correcto!');
         },
         error: function (req, status, error) {
         }
@@ -66,6 +67,8 @@ function Create(urlAction) {
     $.ajax({
         type: "POST",
         url: urlAction,
+        dataType: "json",
+        contentType: "application/json",
         data: {
             __RequestVerificationToken: token,
             Name: $("#clientName").val(),
@@ -76,8 +79,9 @@ function Create(urlAction) {
             SocialWork: $("#socialWork").val(),
             Reason: $("#reason").val()
         },
-        dataType: "json",
-        contentType: "application/json"
+        complete: function () {
+            toastr.success('Turno creado correctamente.', 'Correcto!');
+        },
     });
 }
 
