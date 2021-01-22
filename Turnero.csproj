@@ -7,7 +7,7 @@
     <CopyRefAssembliesToPublishDirectory>false</CopyRefAssembliesToPublishDirectory>
     <IsTransformWebConfigDisabled>true</IsTransformWebConfigDisabled>
     <OutputType>Exe</OutputType>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Version>1.0.6</Version>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
