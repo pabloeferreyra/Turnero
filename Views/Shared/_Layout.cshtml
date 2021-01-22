@@ -9,6 +9,7 @@
     <title>@ViewData["Title"] - Turnero</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/toastr.min.css" />
 </head>
 <body>
     <header>
@@ -35,7 +36,7 @@
                         {
                             <ul class="navbar-nav flex-grow-1">
                                 <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle"href="#" id="navbarDropdownMenuLink" data-toggle="dropdown"
+                                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown"
                                        aria-haspopup="true" aria-expanded="false">Manage</a>
                                     <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
                                         <a asp-action="ListUsers" asp-controller="Administration" class="dropdown-item">Users</a>
@@ -44,7 +45,7 @@
                                         <a asp-action="Index" asp-controller="TimeTurn" class="dropdown-item">Horarios</a>
                                     </div>
                                 </li>
-                                
+
                             </ul>
                         }
                     }
@@ -69,6 +70,7 @@
     <script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
     <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/toastr.min.js"></script>
     @RenderSection("Scripts", required: false)
 </body>
 </html>

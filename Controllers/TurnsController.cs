@@ -29,7 +29,6 @@ namespace Turnero.Controllers
 
         }
 
-        // GET: Turns
         [Authorize(Roles = "Ingreso, Medico")]
         public async Task<IActionResult> Index()
         {
@@ -123,7 +122,6 @@ namespace Turnero.Controllers
             return turns1;
         }
 
-        // GET: Turns/Details/5
         [Authorize(Roles = "Ingreso, Medico")]
         public async Task<IActionResult> Details(Guid? id)
         {
@@ -143,7 +141,6 @@ namespace Turnero.Controllers
             return View(turn);
         }
 
-        // GET: Turns/Create
         [Authorize(Roles = "Ingreso, Medico")]
         public async Task<IActionResult> Create()
         {
@@ -155,9 +152,6 @@ namespace Turnero.Controllers
             return View();
         }
 
-        // POST: Turns/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [Authorize(Roles = "Ingreso, Medico")]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -222,7 +216,6 @@ namespace Turnero.Controllers
             return PartialView("_TurnsPartial", turns);
         }
 
-        // GET: Turns/Edit/5
         [Authorize(Roles = "Ingreso")]
         public async Task<IActionResult> Edit(Guid? id)
         {
@@ -273,7 +266,6 @@ namespace Turnero.Controllers
             return View(turn);
         }
 
-        // POST: Turns/Delete/5
         [Authorize(Roles = "Admin, Ingreso")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
@@ -289,6 +281,13 @@ namespace Turnero.Controllers
         private bool TurnExists(Guid id)
         {
             return _context.Turns.Any(e => e.Id == id);
+        }
+
+        [Authorize(Roles = "Admin, Ingreso")]
+        [HttpPost]
+        public bool CheckTurn(Guid medicId, DateTime date, Guid timeTurn)
+        {
+            return _context.Turns.Any(e => e.MedicId == medicId && e.DateTurn.Date == date && e.TimeId == timeTurn);
         }
     }
 }
