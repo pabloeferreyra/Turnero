@@ -18,7 +18,8 @@
 
 <p>
     @{
-        if (SignInManager.IsSignedIn(User) && (User.IsInRole("Ingreso")))
+        //&& (User.IsInRole("Ingreso"))
+        if (SignInManager.IsSignedIn(User))
         {
             <a asp-action="Create">Nuevo Turno</a>
         }

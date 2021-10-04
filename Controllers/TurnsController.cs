@@ -39,8 +39,8 @@ namespace Turnero.Controllers
             return View(turns);
         }
 
-        [AllowAnonymous]
-        //[Authorize(Roles = "Ingreso, Medico")]
+        //[AllowAnonymous]
+        [Authorize(Roles = "Ingreso, Medico")]
         [HttpPost]
         public async Task<IActionResult> GetTurns(DateTime? dateTurn, Guid? medicId)
         {
