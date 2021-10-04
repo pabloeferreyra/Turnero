@@ -16,7 +16,7 @@ namespace Turnero.Controllers
     public class TurnsController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private UserManager<IdentityUser> _userManager;
+        private readonly UserManager<IdentityUser> _userManager;
         public ILogger<AdministrationController> Logger { get; }
 
         public TurnsController(ApplicationDbContext context, 
@@ -86,7 +86,7 @@ namespace Turnero.Controllers
                 turns1.Add(t);
             }
             ViewBag.Date = dateTurn.HasValue ? String.Format("{0:yyyy-MM-dd}", dateTurn) : String.Format("{0:yyyy-MM-dd}", DateTime.Now);
-            ViewBag.IsMedic = medic != null ? true : false;
+            ViewBag.IsMedic = medic != null;
             return turns1;
         }
 
@@ -118,7 +118,7 @@ namespace Turnero.Controllers
                 turns1.Add(t);
             }
             ViewBag.Date = dateTurn.HasValue ? String.Format("{0:yyyy-MM-dd}", dateTurn) : String.Format("{0:yyyy-MM-dd}", DateTime.Now);
-            ViewBag.IsMedic = medic != null ? true : false;
+            ViewBag.IsMedic = medic != null;
             return turns1;
         }
 
