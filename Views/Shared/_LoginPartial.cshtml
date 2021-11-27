@@ -4,7 +4,7 @@
 @inject RoleManager<IdentityRole> RoleManager
 
 <ul class="navbar-nav">
-    @if (SignInManager.IsSignedIn(User))
+@if (SignInManager.IsSignedIn(User))
 {
     <li class="nav-item">
         <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hola, @User.Identity.Name!</a>
@@ -14,9 +14,5 @@
             <button type="submit" class="nav-link btn btn-link text-dark">Salir</button>
         </form>
     </li>
-}
-else
-{
-    
 }
 </ul>

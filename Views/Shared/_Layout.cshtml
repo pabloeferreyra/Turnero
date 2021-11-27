@@ -10,9 +10,13 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" />
     <link rel="stylesheet" href="~/css/toastr.min.css" />
+    <link rel="stylesheet" href="~/css/Login.css" />
 </head>
 <body>
     <header>
+    @{
+        if (SignInManager.IsSignedIn(User))
+        {
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index"><img class="img-thumbnail img-fluid" width="40" height="40" src="~/favicon.ico" /></a>
@@ -20,11 +24,11 @@
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-
+                
                 <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
                     <partial name="_LoginPartial" />
-                    @{
-                        if (SignInManager.IsSignedIn(User) && (User.IsInRole("Ingreso") || User.IsInRole("Medico")))
+                    
+                        @if ((User.IsInRole("Ingreso") || User.IsInRole("Medico")))
                         {
                             <ul class="navbar-nav flex-grow-1">
                                 <li class="nav-item">
@@ -32,7 +36,7 @@
                                 </li>
                             </ul>
                         }
-                        else if (SignInManager.IsSignedIn(User) && User.IsInRole("Admin"))
+                        else if (User.IsInRole("Admin"))
                         {
                             <ul class="navbar-nav flex-grow-1">
                                 <li class="nav-item dropdown">
@@ -48,11 +52,11 @@
 
                             </ul>
                         }
-                    }
-
                 </div>
             </div>
         </nav>
+        }
+    }
     </header>
     <div class="container">
         <main role="main" class="pb-3">

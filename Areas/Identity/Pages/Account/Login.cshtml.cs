@@ -72,7 +72,7 @@ namespace Turnero.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
-            returnUrl ??= Url.Content("~/");
+            returnUrl ??= Url.Content("~/Turns");
 
             if (ModelState.IsValid)
             {
@@ -83,6 +83,10 @@ namespace Turnero.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in.");
+                    if(User.IsInRole("Admin"))
+                    {
+                        returnUrl = Url.Content("~/");
+                    }
                     return LocalRedirect(returnUrl);
                 }
                 else

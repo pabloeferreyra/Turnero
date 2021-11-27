@@ -13,26 +13,24 @@
     else
         String.Format("{0:yyyy-MM-dd}", DateTime.Now);
 }
-
-<h1>Inicio Turnos</h1>
-
-<p>
+<div class="card">
+<h1>Turnos</h1>
+</div>
+<div class="back">
+    <label class="control-label"></label>
+    <input id="DateTurn" name="dateTurn" type="date" class="form-control col-lg-2 col-sm-12" style="display:relative" value="@ViewBag.Date" data-date-format="dd/MM/yyyy" />
+    <select id="Medics" class="form-control col-lg-2 col-sm-12" asp-items="@(new SelectList(ViewBag.Medics, "Id", "Name"))"></select>
+    <button class="btn btn-primary col-md-2 col-sm-12" onclick="SearchTurns('@Url.Action("GetTurns","Turns")')">Buscar</button>
+    <button class="btn btn-secondary col-md-2 col-sm-12" onclick="SearchAllTurns('@Url.Action("GetTurns","Turns")')">Limpiar</button>
     @{
         //&& (User.IsInRole("Ingreso"))
         if (SignInManager.IsSignedIn(User))
         {
-            <a asp-action="Create">Nuevo Turno</a>
+            <a class="btn btn-info col-md-2 col-sm-12" asp-action="Create">Nuevo Turno</a>
         }
     }
-</p>
-<div class="form-group row">
-    <label class="control-label"></label>
-    <input id="DateTurn" name="dateTurn" type="date" class="form-control col-md-3 col-sm-12" value="@ViewBag.Date" data-date-format="dd/MM/yyyy" />
-    <select id="Medics" class="form-control col-md-3 col-sm-12" asp-items="@(new SelectList(ViewBag.Medics, "Id", "Name"))"></select>
-    <button class="btn btn-primary col-md-2 col-sm-12" onclick="SearchTurns('@Url.Action("GetTurns","Turns")')">Buscar</button>
-    <button class="btn btn-secondary col-md-2 col-sm-12" onclick="SearchAllTurns('@Url.Action("GetTurns","Turns")')">Limpiar</button>
 </div>
-<table class="table table-responsive-md">
+<table class="back table table-responsive-md">
     <thead>
         <tr>
             <th>
