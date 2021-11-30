@@ -19,7 +19,7 @@ namespace Turnero.Controllers
         private readonly UserManager<IdentityUser> _userManager;
         public ILogger<AdministrationController> Logger { get; }
 
-        public TurnsController(ApplicationDbContext context, 
+        public TurnsController(ApplicationDbContext context,
             UserManager<IdentityUser> userManager,
             ILogger<AdministrationController> logger)
         {
@@ -30,15 +30,13 @@ namespace Turnero.Controllers
         }
 
         [Authorize(Roles = "Ingreso, Medico")]
-        public async Task<IActionResult> Index(int? pageNumber)
+        public async Task<IActionResult> Index()
         {
             List<Medic> medics = await _context.Medics.ToListAsync();
             List<Turn> turns;
             turns = await TurnListAsync(null);
-            var size = 10;
-            var turnsP = turns.Select(tp => tp);
             ViewBag.Medics = medics;
-            return View(PaginatedList<Turn>.Create(turns, pageNumber ?? 1, size));
+            return View(turns);
         }
 
         //[AllowAnonymous]
