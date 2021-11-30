@@ -30,13 +30,15 @@ namespace Turnero.Controllers
         }
 
         [Authorize(Roles = "Ingreso, Medico")]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? pageNumber)
         {
             List<Medic> medics = await _context.Medics.ToListAsync();
             List<Turn> turns;
             turns = await TurnListAsync(null);
+            var size = 10;
+            var turnsP = turns.Select(tp => tp);
             ViewBag.Medics = medics;
-            return View(turns);
+            return View(PaginatedList<Turn>.Create(turns, pageNumber ?? 1, size));
         }
 
         //[AllowAnonymous]

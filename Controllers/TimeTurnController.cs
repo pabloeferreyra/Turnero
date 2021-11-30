@@ -22,9 +22,11 @@ namespace Turnero.Controllers
         }
 
         // GET: TimeTurn
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? pageNumber)
         {
-            return View(await _context.TimeTurns.OrderBy(t => t.Time).ToListAsync());
+            var size = 10;
+            var tTurns = _context.TimeTurns.OrderBy(t => t.Time);
+            return View(await PaginatedList<TimeTurnViewModel>.CreateAsync(tTurns.AsNoTracking(), pageNumber ?? 1, size));
         }
 
         // GET: TimeTurn/Create
