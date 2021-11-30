@@ -40,7 +40,7 @@ function idleTimer() {
 
     function resetTimer() {
         clearTimeout(t);
-        t = setTimeout(reload, 30000);  // time is in milliseconds (1000 is 1 second)
+        t = setTimeout(reload, 50000);  // time is in milliseconds (1000 is 1 second)
     }
 }
 
@@ -145,7 +145,8 @@ function SearchTurns(urlAction) {
         url: urlAction,
         data: {
             dateTurn: date,
-            medicId: medic
+            medicId: medic,
+            pageNumber: null
         },
         success: function (result) {
             if (result.trim().length == 0) {
@@ -165,7 +166,8 @@ function SearchAllTurns(urlAction) {
         url: urlAction,
         data: {
             dateTurn: null,
-            medicId: null
+            medicId: null,
+            pageNumber: null
         },
         success: function (result) {
             if (result.trim().length == 0) {

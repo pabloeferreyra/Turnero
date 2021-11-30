@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 using Turnero.Models;
 using ApplicationDbContext = Turnero.Data.ApplicationDbContext;
 
@@ -30,19 +30,20 @@ namespace Turnero.Controllers
         }
 
         [Authorize(Roles = "Ingreso, Medico")]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? pageNumber)
         {
             List<Medic> medics = await _context.Medics.ToListAsync();
             List<Turn> turns;
             turns = await TurnListAsync(null);
             ViewBag.Medics = medics;
-            return View(turns);
+            var size = 20;
+            return View(PaginatedList<Turn>.Create(turns, pageNumber ?? 1, size));
         }
 
         //[AllowAnonymous]
         [Authorize(Roles = "Ingreso, Medico")]
         [HttpPost]
-        public async Task<IActionResult> GetTurns(DateTime? dateTurn, Guid? medicId)
+        public async Task<IActionResult> GetTurns(DateTime? dateTurn, Guid? medicId, int? pageNumber)
         {
             List<Medic> medics = await _context.Medics.ToListAsync();
             List<Turn> turns;
@@ -55,7 +56,8 @@ namespace Turnero.Controllers
                 turns = await TurnListAsync(dateTurn);
             }
             ViewBag.Medics = medics;
-            return PartialView("_TurnsPartial", turns);
+            var size = 20;
+            return PartialView("_TurnsPartial", PaginatedList<Turn>.Create(turns, pageNumber ?? 1, size));
         }
 
         public async Task<List<Turn>> TurnListAsync(DateTime? dateTurn, Guid? medicId)
@@ -173,7 +175,7 @@ namespace Turnero.Controllers
         [Authorize(Roles = "Medico")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Accessed(Guid? id)
+        public async Task<IActionResult> Accessed(Guid? id, int? pageNumber)
         {
             var turn = await _context.Turns.FindAsync(id);
             if (turn == null)
@@ -213,7 +215,8 @@ namespace Turnero.Controllers
                 }
             }
             List<Turn> turns = await this.TurnListAsync(null);
-            return PartialView("_TurnsPartial", turns);
+            var size = 20;
+            return PartialView("_TurnsPartial", PaginatedList<Turn>.Create(turns, pageNumber ?? 1, size));
         }
 
         [Authorize(Roles = "Ingreso")]
@@ -269,13 +272,14 @@ namespace Turnero.Controllers
         [Authorize(Roles = "Admin, Ingreso")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(Guid id)
+        public async Task<IActionResult> DeleteConfirmed(Guid id, int? pageNumber)
         {
             var turn = await _context.Turns.FindAsync(id);
             _context.Turns.Remove(turn);
             await _context.SaveChangesAsync();
             List<Turn> turns = await this.TurnListAsync(null);
-            return PartialView("_TurnsPartial", turns);
+            var size = 20;
+            return PartialView("_TurnsPartial", PaginatedList<Turn>.Create(turns, pageNumber ?? 1, size));
         }
 
         private bool TurnExists(Guid id)
