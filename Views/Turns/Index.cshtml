@@ -30,72 +30,10 @@
         }
     }
 </div>
-<table class="back table table-responsive-md">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.FirstOrDefault().Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.FirstOrDefault().Dni)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.FirstOrDefault().SocialWork)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.FirstOrDefault().Reason)
-            </th>
-            @{
-                if (SignInManager.IsSignedIn(User) && (User.IsInRole("Ingreso")))
-                {
-                    <th>
-                        @Html.DisplayNameFor(model => model.FirstOrDefault().Medic)
-                    </th>
-                }
-            }
-            <th>
-                @Html.DisplayNameFor(model => model.FirstOrDefault().DateTurn)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.FirstOrDefault().Time)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody id="TurnsPartial">
+<div class="container" id="TurnsPartial">
+
             <partial name="_TurnsPartial" model="@Model" />
-    </tbody>
-</table>
-<div class="container">
-    <div class="row">
-        @{
-        var prevDisabled = !Model.HasPreviousPage ? "disabled" : "";
-        var nextDisabled = !Model.HasNextPage ? "disabled" : "";
-        }
-        <ul class="pagination">
-            <li class="page-item">
-                <a asp-action="Index"
-                    asp-route-sortOrder="@ViewData["CurrentSort"]"
-                    asp-route-pageNumber="@(Model.PageIndex - 1)"
-                    asp-route-currentFilter="@ViewData["CurrentFilter"]"
-                    class="page-link btn btn-default @prevDisabled">
-                    Anterior
-                </a>
-            </li>
-            <li class="page-item active">
-               <span class="page-link">@(Model.PageIndex) </span><span class="sr-only">(current)</span>
-            </li>
-            <li class="page-item">
-                <a asp-action="Index"
-                    asp-route-sortOrder="@ViewData["CurrentSort"]"
-                    asp-route-pageNumber="@(Model.PageIndex + 1)"
-                    asp-route-currentFilter="@ViewData["CurrentFilter"]"
-                    class=" page-link btn btn-default @nextDisabled">
-                    Siguiente
-                </a>
-            </li>
-        </ul>
-    </div>
+    
 </div>
     @section scripts{
         <script src="~/js/turn.js"></script>
