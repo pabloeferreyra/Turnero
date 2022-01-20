@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <UserSecretsId>aspnet-Turnero-1D8EA02B-D124-439A-B5F8-DE2044EFFABA</UserSecretsId>
 	  <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
     <CopyRefAssembliesToPublishDirectory>false</CopyRefAssembliesToPublishDirectory>
