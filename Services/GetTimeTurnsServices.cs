@@ -7,28 +7,28 @@ using System.Threading.Tasks;
 using Turnero.Data;
 using Turnero.Models;
 using Turnero.Services.Interfaces;
+using Turnero.Services.Repositories;
 
 namespace Turnero.Services
 {
     public class GetTimeTurnsServices : IGetTimeTurnsServices
     {
-        private readonly ApplicationDbContext _context;
         private readonly ILoggerServices _logger;
+        private readonly ITimeTurnRepository _timeTurnRepository;
 
-        public GetTimeTurnsServices(ApplicationDbContext context, ILoggerServices logger)
+        public GetTimeTurnsServices(ILoggerServices logger,
+                                    ITimeTurnRepository timeTurnRepository)
         {
-            _context = context;
             _logger = logger;
+            _timeTurnRepository = timeTurnRepository;
         }
 
         public async Task<List<TimeTurnViewModel>> GetTimeTurns()
         {
             try
             {
-                List<TimeTurnViewModel> timeTurns;
-                timeTurns = await _context.TimeTurns.OrderBy(t => t.Time).ToListAsync();
                 _logger.Debug("Tiempos obtenidos");
-                return timeTurns;
+                return await _timeTurnRepository.GetList();
             }
             catch(Exception ex)
             {
@@ -41,10 +41,8 @@ namespace Turnero.Services
         {
             try
             {
-                IQueryable<TimeTurnViewModel> timeTurns;
-                timeTurns = _context.TimeTurns.OrderBy(t => t.Time);
                 _logger.Debug("Tiempos obtenidos");
-                return timeTurns;
+                return _timeTurnRepository.GetQueryable();
             }
             catch (Exception ex)
             {
@@ -57,10 +55,8 @@ namespace Turnero.Services
         {
             try
             {
-                TimeTurnViewModel timeTurn;
-                timeTurn = await _context.TimeTurns.FirstOrDefaultAsync(t => t.Id == id);
                 _logger.Info($"Tiempo {id} obtenido");
-                return timeTurn;
+                return await _timeTurnRepository.GetbyId(id);
             }
             catch(Exception ex)
             {
@@ -73,7 +69,7 @@ namespace Turnero.Services
         {
             try
             {
-                return _context.TimeTurns.Any(e => e.Id == id);
+                return _timeTurnRepository.Exists(id);
             }
             catch (Exception ex)
             {

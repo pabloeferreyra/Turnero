@@ -5,25 +5,26 @@ using System.Threading.Tasks;
 using Turnero.Data;
 using Turnero.Models;
 using Turnero.Services.Interfaces;
+using Turnero.Services.Repositories;
 
 namespace Turnero.Services
 {
     public class DeleteTimeTurnServices : IDeleteTimeTurnServices
     {
-        private readonly ApplicationDbContext _context;
         private readonly ILoggerServices _logger;
-        public DeleteTimeTurnServices(ApplicationDbContext context, ILoggerServices logger)
+        private readonly ITimeTurnRepository _timeTurnRepository;
+        public DeleteTimeTurnServices(ILoggerServices logger,
+                                      ITimeTurnRepository timeTurnRepository)
         {
-            _context = context;
             _logger = logger;
+            _timeTurnRepository = timeTurnRepository;
         }
 
         public async Task Delete(TimeTurnViewModel timeTurn)
         {
             try
             {
-                _context.TimeTurns.Remove(timeTurn);
-                await _context.SaveChangesAsync();
+                await _timeTurnRepository.DeleteTT(timeTurn);
                 _logger.Info($"Tiempo {timeTurn.Id} eliminado correctamente");
             }
             catch (Exception ex)

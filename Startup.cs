@@ -14,6 +14,7 @@ using System.IO;
 using Microsoft.CodeAnalysis.Options;
 using Turnero.Services.Interfaces;
 using Turnero.Services;
+using Turnero.Services.Repositories;
 
 namespace Turnero
 {
@@ -94,7 +95,7 @@ namespace Turnero
 
             services.AddScoped<ILoggerServices, LoggerServices>();
 
-
+            services.AddScoped<ITimeTurnRepository, TimeTurnRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
