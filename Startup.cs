@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.HttpOverrides;
 using System.IO;
 using Microsoft.CodeAnalysis.Options;
+using Turnero.Services.Interfaces;
+using Turnero.Services;
 
 namespace Turnero
 {
@@ -76,6 +78,23 @@ namespace Turnero
                 options.AddPolicy("DeleteRolePolicy",
                     policy => policy.RequireClaim("Delete Role"));
             });
+
+            services.AddScoped<IInsertTurnsServices, InsertTurnsServices>();
+            services.AddScoped<IUpdateTurnsServices, UpdateTurnsServices>();
+            services.AddScoped<IGetTurnsServices, GetTurnsServices>();
+
+            services.AddScoped<IInsertMedicServices, InsertMedicServices>();
+            services.AddScoped<IUpdateMedicServices, UpdateMedicServices>();
+            services.AddScoped<IInsertMedicServices, InsertMedicServices>();
+            services.AddScoped<IGetMedicsServices, GetMedicsServices>();
+
+            services.AddScoped<IInsertTimeTurnServices, InsertTimeTurnServices>();
+            services.AddScoped<IDeleteTimeTurnServices, DeleteTimeTurnServices>();
+            services.AddScoped<IGetTimeTurnsServices, GetTimeTurnsServices>();
+
+            services.AddScoped<ILoggerServices, LoggerServices>();
+
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

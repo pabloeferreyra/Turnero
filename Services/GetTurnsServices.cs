@@ -15,44 +15,36 @@ namespace Turnero.Services
     {
         private readonly ApplicationDbContext _context;
 
-        private GetTurnsServices(ApplicationDbContext context)
+        public GetTurnsServices(ApplicationDbContext context)
         {
             _context = context;
         }
-        public async Task<List<Turn>> GetTurns(ClaimsPrincipal currentUser, DateTime? dateTurn, Guid? medicId)
+        public async Task<List<Turn>> GetTurns(DateTime? dateTurn, Guid? medicId)
         {
             try
             {
-                var user = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
-                var medic = await _context.Medics.Where(m => m.UserGuid == user).FirstOrDefaultAsync();
                 List<Turn> turns = new List<Turn>();
                 if (medicId != null)
                 {
                     if (dateTurn.HasValue)
-                        turns = await _context.Turns.Where(m => m.MedicId == medicId && m.DateTurn == dateTurn).OrderBy(t => t.Time.Time).ToListAsync();
+                        turns = await _context.Turns.Include(m => m.Medic).Include(t => t.Time).Where(m => m.Medic.Id == medicId && m.DateTurn == dateTurn).OrderBy(t => t.Time.Time).ToListAsync();
                     else
-                        turns = await _context.Turns.Where(m => m.MedicId == medicId && m.DateTurn == DateTime.Today).OrderBy(t => t.Time.Time).ToListAsync();
+                        turns = await _context.Turns.Include(m => m.Medic).Include(t => t.Time).Where(m => m.Medic.Id == medicId && m.DateTurn == DateTime.Today).OrderBy(t => t.Time.Time).ToListAsync();
                 }
                 else
                 {
                     if (dateTurn.HasValue)
-                        turns = await _context.Turns.Where(m => m.DateTurn == dateTurn).OrderBy(t => t.Time.Time).ToListAsync();
+                        turns = await _context.Turns.Include(m => m.Medic).Include(t => t.Time).Where(m => m.DateTurn == dateTurn).OrderBy(t => t.Time.Time).ToListAsync();
                     else
-                        turns = await _context.Turns.OrderBy(t => t.Time.Time).ToListAsync();
+                        turns = await _context.Turns.Include(m => m.Medic).Include(t => t.Time).Where(m => m.DateTurn <= DateTime.Today && m.DateTurn >= DateTime.Today.AddDays(-10)).OrderBy(t => t.Time.Time).ToListAsync();
                 }
-                List<Turn> turns1 = new List<Turn>();
-                foreach (var t in turns)
-                {
-                    t.Time = await _context.TimeTurns.FirstOrDefaultAsync(ti => ti.Id == t.TimeId);
-                    t.Medic = await _context.Medics.FirstOrDefaultAsync(m => m.Id == t.MedicId);
-                    turns1.Add(t);
-                }
-                File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", $"{dateTurn} Turnos {turns1.Count()} llegaron correctamente");
-                return turns1;
+
+                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", $"{dateTurn} Turnos {turns1.Count()} llegaron correctamente");
+                return turns;
             }
             catch (Exception ex)
             {
-                File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
+                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
                 return null;
             }
         }
@@ -61,18 +53,18 @@ namespace Turnero.Services
         {
             try
             {
-                File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", $"Turno {id}");
-                return await _context.Turns
+                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", $"Turno {id}");
+                return await _context.Turns.Include(m => m.Medic).Include(t => t.Time)
                     .FirstOrDefaultAsync(m => m.Id == id);
             }
             catch(Exception ex)
             {
-                File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
+                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
                 return null;
             }
         }
 
-        public async Task<bool> Exists(Guid id)
+        public bool Exists(Guid id)
         {
             try
             {
@@ -80,7 +72,7 @@ namespace Turnero.Services
             }
             catch(Exception ex)
             {
-                File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
+                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
                 return false;
             }
         }

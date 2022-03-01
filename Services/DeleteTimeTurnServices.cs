@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Turnero.Data;
 using Turnero.Models;
@@ -11,7 +12,7 @@ namespace Turnero.Services
     {
         private readonly ApplicationDbContext _context;
 
-        private DeleteTimeTurnServices(ApplicationDbContext context)
+        public DeleteTimeTurnServices(ApplicationDbContext context)
         {
             _context = context;
         }
@@ -22,11 +23,26 @@ namespace Turnero.Services
             {
                 _context.TimeTurns.Remove(timeTurn);
                 await _context.SaveChangesAsync();
-                File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", $"Tiempo {timeTurn.Id} eliminado");
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", $"Tiempo {timeTurn.Id} eliminado");
+                }
+                else
+                {
+                    //File.WriteAllText("C:\\infoLog.txt", $"Tiempo {timeTurn.Id} eliminado");
+                }
             }
             catch (Exception ex)
             {
-                File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
+                }
+                else
+                {
+                    //File.WriteAllText("C:\\infoLog.txt", ex.Message);
+                }
+                
             }
         }
     }

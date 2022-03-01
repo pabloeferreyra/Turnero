@@ -1,19 +1,16 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.IO;
-using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
+using Turnero.Data;
 using Turnero.Models;
 using Turnero.Services.Interfaces;
-using ApplicationDbContext = Turnero.Data.ApplicationDbContext;
 
 namespace Turnero.Services
 {
-    class InsertTurnsServices : IInsertTurnsServices
+    public class InsertTurnsServices : IInsertTurnsServices
     {
         private readonly ApplicationDbContext _context;
-        private InsertTurnsServices(ApplicationDbContext context)
+        public InsertTurnsServices(ApplicationDbContext context)
         {
             _context = context;
         }
@@ -24,12 +21,12 @@ namespace Turnero.Services
                 turn.Id = Guid.NewGuid();
                 _context.Add(turn);
                 await _context.SaveChangesAsync();
-                File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", "Turno agregado correctamente");
+                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", "Turno agregado correctamente");
                 return true;
             }
             catch (Exception ex)
             {
-                File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
+                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
                 return false;
             }
         }

@@ -11,7 +11,7 @@ namespace Turnero.Services
     {
         private readonly ApplicationDbContext _context;
 
-        private InsertTimeTurnServices(ApplicationDbContext context)
+        public InsertTimeTurnServices(ApplicationDbContext context)
         {
             _context = context;
         }
@@ -22,12 +22,12 @@ namespace Turnero.Services
             {
                 timeTurnViewModel.Id = Guid.NewGuid();
                 _context.Add(timeTurnViewModel);
-                File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", $"Horario {timeTurnViewModel.Id} creado");
+                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", $"Horario {timeTurnViewModel.Id} creado");
                 await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
-                File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
+                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
             }
         }
     }

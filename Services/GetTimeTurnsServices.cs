@@ -14,7 +14,7 @@ namespace Turnero.Services
     {
         private readonly ApplicationDbContext _context;
 
-        private GetTimeTurnsServices(ApplicationDbContext context)
+        public GetTimeTurnsServices(ApplicationDbContext context)
         {
             _context = context;
         }
@@ -25,12 +25,12 @@ namespace Turnero.Services
             {
                 List<TimeTurnViewModel> timeTurns;
                 timeTurns = await _context.TimeTurns.OrderBy(t => t.Time).ToListAsync();
-                File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", "Tiempos obtenidos");
+                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", "Tiempos obtenidos");
                 return timeTurns;
             }
             catch(Exception ex)
             {
-                File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
+                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
                 return null;
             }
         }
@@ -41,12 +41,12 @@ namespace Turnero.Services
             {
                 IQueryable<TimeTurnViewModel> timeTurns;
                 timeTurns = _context.TimeTurns.OrderBy(t => t.Time);
-                File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", "Tiempos obtenidos");
+                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", "Tiempos obtenidos");
                 return timeTurns;
             }
             catch (Exception ex)
             {
-                File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
+                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
                 return null;
             }
         }
@@ -57,12 +57,12 @@ namespace Turnero.Services
             {
                 TimeTurnViewModel timeTurn;
                 timeTurn = await _context.TimeTurns.FirstOrDefaultAsync(t => t.Id == id);
-                File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", $"Tiempo {id} obtenido");
+                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", $"Tiempo {id} obtenido");
                 return timeTurn;
             }
             catch(Exception ex)
             {
-                File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
+                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
                 return null;
             }
         }
@@ -75,7 +75,7 @@ namespace Turnero.Services
             }
             catch (Exception ex)
             {
-                File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
+                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
                 return false;
             }
         }

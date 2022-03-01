@@ -17,12 +17,12 @@ namespace Turnero.Controllers
     public class TurnsController : Controller
     {
         private readonly UserManager<IdentityUser> _userManager;
-        private readonly IInsertTurnsServices _insertTurns;
-        private readonly ILogger<TurnsController> _logger;
-        private readonly IGetTurnsServices _getTurns;
-        private readonly IUpdateTurnsServices _updateTurns;
-        private readonly IGetMedicsServices _getMedics;
-        private readonly IGetTimeTurnsServices _getTimeTurns;
+        public IInsertTurnsServices _insertTurns;
+        public ILogger<TurnsController> _logger;
+        public IGetTurnsServices _getTurns;
+        public IUpdateTurnsServices _updateTurns;
+        public IGetMedicsServices _getMedics;
+        public IGetTimeTurnsServices _getTimeTurns;
 
         public TurnsController(UserManager<IdentityUser> userManager,
                                ILogger<TurnsController> logger,
@@ -76,7 +76,10 @@ namespace Turnero.Controllers
         public async Task<List<Turn>> TurnListAsync(DateTime? dateTurn, Guid? medicId)
         {
             var user = this.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            List<Turn> turns = await this._getTurns.GetTurns(this.User, dateTurn, medicId);
+            var medic = await _getMedics.GetMedicByUserId(user);
+            ViewBag.Date = dateTurn.HasValue ? String.Format("{0:yyyy-MM-dd}", dateTurn) : String.Format("{0:yyyy-MM-dd}", DateTime.Now);
+            ViewBag.IsMedic = medic != null;
+            List<Turn> turns = await this._getTurns.GetTurns(dateTurn, medicId);
             return turns;
         }
 
@@ -90,8 +93,6 @@ namespace Turnero.Controllers
 
             var turn = await this._getTurns.GetTurn((Guid)id);
             
-            turn.Medic = await _getMedics.GetMedicById(turn.MedicId);
-            
             if (turn == null)
             {
                 return NotFound();
@@ -104,10 +105,8 @@ namespace Turnero.Controllers
         public async Task<IActionResult> Create()
         {
             ViewBag.DateTurn = DateTime.Today;
-            List<Medic> medics = await _getMedics.GetMedics();
-            List<TimeTurnViewModel> time = await _getTimeTurns.GetTimeTurns();
-            ViewBag.Medics = medics;
-            ViewBag.Time = time;
+            ViewBag.Medics = await _getMedics.GetMedics();
+            ViewBag.Time = await _getTimeTurns.GetTimeTurns();
             return View();
         }
 
@@ -148,12 +147,7 @@ namespace Turnero.Controllers
                 return View("NotFound");
             }
 
-            var user = this.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            var medic = await _getMedics.GetMedicByUserId(user);
-            turn.Medic = medic;
-            turn.MedicId = medic.Id;
-
-            if (!await _getTurns.Exists(turn.Id))
+            if (!_getTurns.Exists(turn.Id))
             {
                 ViewBag.ErrorMessage = $"Turn with Id = {id} cannot be found";
                 return View("NotFound");
@@ -179,8 +173,8 @@ namespace Turnero.Controllers
             var turn = await _getTurns.GetTurn((Guid)id);
             List<Medic> medics = await _getMedics.GetMedics();
             List<TimeTurnViewModel> time = await _getTimeTurns.GetTimeTurns();
-            ViewBag.Medic = turn.MedicId;
-            ViewBag.TimeId = turn.TimeId;
+            ViewBag.Medic = turn.Medic.Id;
+            ViewBag.TimeId = turn.Time.Id;
             ViewBag.Medics = medics;
             ViewBag.Time = time;
             if (turn == null)
@@ -196,7 +190,7 @@ namespace Turnero.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Turn turn)
         {
-            if (!await _getTurns.Exists(turn.Id))
+            if (!_getTurns.Exists(turn.Id))
             {
                 ViewBag.ErrorMessage = $"Turn with Id = {turn.Id} cannot be found";
                 return View("NotFound");

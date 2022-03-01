@@ -13,7 +13,7 @@ namespace Turnero.Services
     {
         private readonly ApplicationDbContext _context;
 
-        private UpdateTurnsServices(ApplicationDbContext context)
+        public UpdateTurnsServices(ApplicationDbContext context)
         {
             _context = context;
         }
@@ -27,12 +27,12 @@ namespace Turnero.Services
                     turn.Accessed = true;
                     _context.Update(turn);
                     await _context.SaveChangesAsync();
-                    File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", $"Turno {turn.Id} ingresado");
+                    //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", $"Turno {turn.Id} ingresado");
                 }
             }
             catch (Exception ex)
             {
-                File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
+                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
             }
         }
 
@@ -42,11 +42,11 @@ namespace Turnero.Services
             {
                 _context.Update(turn);
                 await _context.SaveChangesAsync();
-                File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", $"Turno {turn.Id} Actualizado");
+                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", $"Turno {turn.Id} Actualizado");
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
+                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
             }
         }
 
@@ -56,11 +56,11 @@ namespace Turnero.Services
             {
                 _context.Turns.Remove(turn);
                 await _context.SaveChangesAsync();
-                File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", $"Turno {turn.Id} Eliminado");
+                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", $"Turno {turn.Id} Eliminado");
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
+                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
             }
         }
     }
