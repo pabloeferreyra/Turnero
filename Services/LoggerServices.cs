@@ -16,11 +16,11 @@ namespace Turnero.Services
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                File.WriteAllText(@"/tmp/TurneroLogs/infoLog.txt", info);
+                File.WriteAllText(@"/tmp/TurneroLogs/infoLog.txt", DateTime.Now +": "+ info);
             }
             else if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                File.WriteAllText(@"C:\infoLog.txt", info);
+                File.WriteAllText(@"D:\infoLog.txt", DateTime.Now + ": " + info);
             }
         }
 
@@ -28,11 +28,11 @@ namespace Turnero.Services
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                File.WriteAllText(@"/tmp/TurneroLogs/debugLog.txt", debug);
+                File.WriteAllText(@"/tmp/TurneroLogs/debugLog.txt", DateTime.Now + ": " + debug);
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                File.WriteAllText(@"C:\debugLog.txt", debug);
+                File.WriteAllText(@"D:\debugLog.txt", DateTime.Now + ": " + debug);
             }
         }
 
@@ -40,11 +40,11 @@ namespace Turnero.Services
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                File.WriteAllText(@"/tmp/TurneroLogs/errorLog.txt", error + " " + ex);
+                File.WriteAllText(@"/tmp/TurneroLogs/errorLog.txt", DateTime.Now + ": " + error + " - " + ex);
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                File.WriteAllText(@"C:\errorLog.txt", error + " " + ex);
+                File.WriteAllText(@"D:\errorLog.txt", DateTime.Now + ": " + error + " - " + ex);
             }
         }
     }
