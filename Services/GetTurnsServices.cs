@@ -14,10 +14,12 @@ namespace Turnero.Services
     public class GetTurnsServices : IGetTurnsServices
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILoggerServices _logger;
 
-        public GetTurnsServices(ApplicationDbContext context)
+        public GetTurnsServices(ApplicationDbContext context, ILoggerServices logger)
         {
             _context = context;
+            _logger = logger;
         }
         public async Task<List<Turn>> GetTurns(DateTime? dateTurn, Guid? medicId)
         {
@@ -39,12 +41,12 @@ namespace Turnero.Services
                         turns = await _context.Turns.Include(m => m.Medic).Include(t => t.Time).Where(m => m.DateTurn <= DateTime.Today && m.DateTurn >= DateTime.Today.AddDays(-10)).OrderBy(t => t.Time.Time).ToListAsync();
                 }
 
-                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", $"{dateTurn} Turnos {turns1.Count()} llegaron correctamente");
+                _logger.Info($"{dateTurn} Turnos {turns.Count()} llegaron correctamente");
                 return turns;
             }
             catch (Exception ex)
             {
-                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
+                _logger.Error(ex.Message, ex);
                 return null;
             }
         }
@@ -53,13 +55,13 @@ namespace Turnero.Services
         {
             try
             {
-                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", $"Turno {id}");
+                _logger.Info($"Turno {id}");
                 return await _context.Turns.Include(m => m.Medic).Include(t => t.Time)
                     .FirstOrDefaultAsync(m => m.Id == id);
             }
             catch(Exception ex)
             {
-                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
+                _logger.Error(ex.Message, ex);
                 return null;
             }
         }
@@ -72,7 +74,7 @@ namespace Turnero.Services
             }
             catch(Exception ex)
             {
-                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
+                _logger.Error(ex.Message, ex);
                 return false;
             }
         }

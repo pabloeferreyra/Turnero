@@ -13,10 +13,12 @@ namespace Turnero.Services
     public class GetMedicsServices : IGetMedicsServices
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILoggerServices _logger;
 
-        public GetMedicsServices(ApplicationDbContext context)
+        public GetMedicsServices(ApplicationDbContext context, ILoggerServices logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async Task<List<Medic>> GetMedics()
@@ -24,12 +26,12 @@ namespace Turnero.Services
             try
             {
                 var med = await _context.Medics.ToListAsync();
-                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", "Medicos traidos correctamente");
+                _logger.Debug("Medicos traidos correctamente");
                 return med;
             }
             catch(Exception ex)
             {
-                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
+                _logger.Error(ex.Message, ex);
                 return new List<Medic>();
             }
         }
@@ -39,12 +41,12 @@ namespace Turnero.Services
             try
             {
                 Medic med = await _context.Medics.SingleOrDefaultAsync(m => m.Id == id);
-                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", "Medico traido correctamente");
+                _logger.Debug("Medico traido correctamente");
                 return med;
             }
             catch (Exception ex)
             {
-                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
+                _logger.Error(ex.Message, ex);
                 return new Medic();
             }
         }
@@ -54,12 +56,12 @@ namespace Turnero.Services
             try
             {
                 Medic med = await _context.Medics.SingleOrDefaultAsync(m => m.UserGuid == id);
-                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", "Medico traido correctamente");
+                _logger.Debug("Medico traido correctamente por usuario");
                 return med;
             }
             catch (Exception ex)
             {
-                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
+                _logger.Error(ex.Message, ex);
                 return new Medic();
             }
         }
@@ -69,11 +71,10 @@ namespace Turnero.Services
             try
             {
                 return _context.Medics.Any(m => m.Id == id);
-
             }
             catch(Exception ex)
             {
-                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
+                _logger.Error(ex.Message, ex);
                 return false;
             }
         }

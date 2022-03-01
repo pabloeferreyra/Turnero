@@ -11,6 +11,6 @@ namespace Turnero.Services.Interfaces
         Task<List<TimeTurnViewModel>> GetTimeTurns();
         IQueryable<TimeTurnViewModel> GetTimeTurnsQ();
         Task<TimeTurnViewModel> GetTimeTurn(Guid id);
-        Task<bool> TimeTurnViewModelExists(Guid id);
+        bool TimeTurnViewModelExists(Guid id);
     }
 }

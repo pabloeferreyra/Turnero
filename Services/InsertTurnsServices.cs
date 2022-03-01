@@ -10,9 +10,11 @@ namespace Turnero.Services
     public class InsertTurnsServices : IInsertTurnsServices
     {
         private readonly ApplicationDbContext _context;
-        public InsertTurnsServices(ApplicationDbContext context)
+        private readonly ILoggerServices _logger;
+        public InsertTurnsServices(ApplicationDbContext context, ILoggerServices logger)
         {
             _context = context;
+            _logger = logger;
         }
         public async Task<bool> CreateTurnAsync( Turn turn)
         {
@@ -21,12 +23,12 @@ namespace Turnero.Services
                 turn.Id = Guid.NewGuid();
                 _context.Add(turn);
                 await _context.SaveChangesAsync();
-                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", "Turno agregado correctamente");
+                _logger.Debug("Turno agregado correctamente");
                 return true;
             }
             catch (Exception ex)
             {
-                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
+                _logger.Error(ex.Message, ex);
                 return false;
             }
         }

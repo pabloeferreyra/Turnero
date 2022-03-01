@@ -13,10 +13,12 @@ namespace Turnero.Services
     public class GetTimeTurnsServices : IGetTimeTurnsServices
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILoggerServices _logger;
 
-        public GetTimeTurnsServices(ApplicationDbContext context)
+        public GetTimeTurnsServices(ApplicationDbContext context, ILoggerServices logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async Task<List<TimeTurnViewModel>> GetTimeTurns()
@@ -25,12 +27,12 @@ namespace Turnero.Services
             {
                 List<TimeTurnViewModel> timeTurns;
                 timeTurns = await _context.TimeTurns.OrderBy(t => t.Time).ToListAsync();
-                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", "Tiempos obtenidos");
+                _logger.Debug("Tiempos obtenidos");
                 return timeTurns;
             }
             catch(Exception ex)
             {
-                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
+                _logger.Error(ex.Message, ex);
                 return null;
             }
         }
@@ -41,12 +43,12 @@ namespace Turnero.Services
             {
                 IQueryable<TimeTurnViewModel> timeTurns;
                 timeTurns = _context.TimeTurns.OrderBy(t => t.Time);
-                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", "Tiempos obtenidos");
+                _logger.Debug("Tiempos obtenidos");
                 return timeTurns;
             }
             catch (Exception ex)
             {
-                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
+                _logger.Error(ex.Message, ex);
                 return null;
             }
         }
@@ -57,17 +59,17 @@ namespace Turnero.Services
             {
                 TimeTurnViewModel timeTurn;
                 timeTurn = await _context.TimeTurns.FirstOrDefaultAsync(t => t.Id == id);
-                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", $"Tiempo {id} obtenido");
+                _logger.Info($"Tiempo {id} obtenido");
                 return timeTurn;
             }
             catch(Exception ex)
             {
-                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
+                _logger.Error(ex.Message, ex);
                 return null;
             }
         }
 
-        public async Task<bool> TimeTurnViewModelExists(Guid id)
+        public bool TimeTurnViewModelExists(Guid id)
         {
             try
             {
@@ -75,7 +77,7 @@ namespace Turnero.Services
             }
             catch (Exception ex)
             {
-                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
+                _logger.Error(ex.Message, ex);
                 return false;
             }
         }

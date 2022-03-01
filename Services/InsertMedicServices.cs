@@ -10,10 +10,12 @@ namespace Turnero.Services
     public class InsertMedicServices : IInsertMedicServices
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILoggerServices _logger;
 
-        public InsertMedicServices(ApplicationDbContext context)
+        public InsertMedicServices(ApplicationDbContext context, ILoggerServices logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async Task Create(Medic medic)
@@ -23,11 +25,11 @@ namespace Turnero.Services
                 medic.Id = Guid.NewGuid();
                 _context.Add(medic);
                 await _context.SaveChangesAsync();
-                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", $"Creado Medico {medic.Id}");
+                _logger.Info($"Creado Medico {medic.Id}");
             }
             catch (Exception ex)
             {
-                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
+                _logger.Error(ex.Message, ex);
             }
         }
     }

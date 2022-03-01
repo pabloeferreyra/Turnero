@@ -10,10 +10,12 @@ namespace Turnero.Services
     public class UpdateMedicServices : IUpdateMedicServices
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILoggerServices _logger;
 
-        public UpdateMedicServices(ApplicationDbContext context)
+        public UpdateMedicServices(ApplicationDbContext context, ILoggerServices logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async Task<bool> Update(Medic medic)
@@ -26,7 +28,7 @@ namespace Turnero.Services
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
+                _logger.Error(ex.Message, ex);
                 return false;
             }
         }
@@ -40,7 +42,7 @@ namespace Turnero.Services
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
+                _logger.Error(ex.Message, ex);
             }
         }
     }

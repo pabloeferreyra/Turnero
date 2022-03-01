@@ -11,10 +11,11 @@ namespace Turnero.Services
     public class DeleteTimeTurnServices : IDeleteTimeTurnServices
     {
         private readonly ApplicationDbContext _context;
-
-        public DeleteTimeTurnServices(ApplicationDbContext context)
+        private readonly ILoggerServices _logger;
+        public DeleteTimeTurnServices(ApplicationDbContext context, ILoggerServices logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async Task Delete(TimeTurnViewModel timeTurn)
@@ -23,26 +24,11 @@ namespace Turnero.Services
             {
                 _context.TimeTurns.Remove(timeTurn);
                 await _context.SaveChangesAsync();
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                {
-                    //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", $"Tiempo {timeTurn.Id} eliminado");
-                }
-                else
-                {
-                    //File.WriteAllText("C:\\infoLog.txt", $"Tiempo {timeTurn.Id} eliminado");
-                }
+                _logger.Info($"Tiempo {timeTurn.Id} eliminado correctamente");
             }
             catch (Exception ex)
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                {
-                    //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
-                }
-                else
-                {
-                    //File.WriteAllText("C:\\infoLog.txt", ex.Message);
-                }
-                
+                _logger.Error(ex.Message, ex);
             }
         }
     }

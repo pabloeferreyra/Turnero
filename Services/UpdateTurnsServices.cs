@@ -12,10 +12,12 @@ namespace Turnero.Services
     public class UpdateTurnsServices : IUpdateTurnsServices
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILoggerServices _logger;
 
-        public UpdateTurnsServices(ApplicationDbContext context)
+        public UpdateTurnsServices(ApplicationDbContext context, ILoggerServices logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async void Accessed(ClaimsPrincipal currentUser, Turn turn)
@@ -27,12 +29,12 @@ namespace Turnero.Services
                     turn.Accessed = true;
                     _context.Update(turn);
                     await _context.SaveChangesAsync();
-                    //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", $"Turno {turn.Id} ingresado");
+                    _logger.Debug($"Turno {turn.Id} ingresado");
                 }
             }
             catch (Exception ex)
             {
-                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
+                _logger.Error(ex.Message, ex);
             }
         }
 
@@ -42,11 +44,11 @@ namespace Turnero.Services
             {
                 _context.Update(turn);
                 await _context.SaveChangesAsync();
-                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", $"Turno {turn.Id} Actualizado");
+                _logger.Debug($"Turno {turn.Id} Actualizado");
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
+                _logger.Error(ex.Message, ex);
             }
         }
 
@@ -56,11 +58,11 @@ namespace Turnero.Services
             {
                 _context.Turns.Remove(turn);
                 await _context.SaveChangesAsync();
-                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", $"Turno {turn.Id} Eliminado");
+                _logger.Debug($"Turno {turn.Id} Eliminado");
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                //File.WriteAllText("@/tmp/TurneroLogs/infoLog.txt", ex.Message);
+                _logger.Error(ex.Message, ex);
             }
         }
     }
