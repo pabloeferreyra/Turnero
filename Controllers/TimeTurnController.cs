@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Turnero.Data;
 using Turnero.Models;
+using Turnero.Services.Interfaces;
 
 namespace Turnero.Controllers
 {
@@ -15,17 +16,26 @@ namespace Turnero.Controllers
     public class TimeTurnController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IGetTimeTurnsServices _getTimeTurns;
+        private readonly IInsertTimeTurnServices _insertTimeTurn;
+        private readonly IDeleteTimeTurnServices _deleteTimeTurn;
 
-        public TimeTurnController(ApplicationDbContext context)
+        public TimeTurnController(ApplicationDbContext context,
+                                  IGetTimeTurnsServices getTimeTurns,
+                                  IInsertTimeTurnServices insertTimeTurn, 
+                                  IDeleteTimeTurnServices deleteTimeTurn)
         {
             _context = context;
+            _getTimeTurns = getTimeTurns;
+            _insertTimeTurn = insertTimeTurn;
+            _deleteTimeTurn = deleteTimeTurn;
         }
 
         // GET: TimeTurn
         public async Task<IActionResult> Index(int? pageNumber)
         {
             var size = 10;
-            var tTurns = _context.TimeTurns.OrderBy(t => t.Time);
+            var tTurns = _getTimeTurns.GetTimeTurnsQ();
             return View(await PaginatedList<TimeTurnViewModel>.CreateAsync(tTurns.AsNoTracking(), pageNumber ?? 1, size));
         }
 
@@ -44,9 +54,7 @@ namespace Turnero.Controllers
         {
             if (ModelState.IsValid)
             {
-                timeTurnViewModel.Id = Guid.NewGuid();
-                _context.Add(timeTurnViewModel);
-                await _context.SaveChangesAsync();
+                await _insertTimeTurn.Create(timeTurnViewModel);
                 return RedirectToAction(nameof(Index));
             }
             return View(timeTurnViewModel);
@@ -60,8 +68,7 @@ namespace Turnero.Controllers
                 return NotFound();
             }
 
-            var timeTurnViewModel = await _context.TimeTurns
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var timeTurnViewModel = await _getTimeTurns.GetTimeTurn((Guid)id);
             if (timeTurnViewModel == null)
             {
                 return NotFound();
@@ -75,15 +82,9 @@ namespace Turnero.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
-            var timeTurnViewModel = await _context.TimeTurns.FindAsync(id);
-            _context.TimeTurns.Remove(timeTurnViewModel);
-            await _context.SaveChangesAsync();
+            var timeTurnViewModel = await _getTimeTurns.GetTimeTurn(id);
+            await _deleteTimeTurn.Delete(timeTurnViewModel);
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool TimeTurnViewModelExists(Guid id)
-        {
-            return _context.TimeTurns.Any(e => e.Id == id);
         }
     }
 }
