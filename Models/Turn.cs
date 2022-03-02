@@ -9,15 +9,11 @@ namespace Turnero.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
         
-        [Display(Name = "Nombre Paciente"), Required]
+        [Display(Name = "Nombre"), Required]
         public string Name { get; set; }
 
         [StringLength(10, MinimumLength = 6), Required]
         public string Dni { get; set; }
-        
-        public Guid MedicId { get; set; }
-
-        public Guid TimeId { get; set; }
         
         [Display(Name = "Médico")]
         public Medic Medic { get; set; }
@@ -33,7 +29,7 @@ namespace Turnero.Models
         [Display(Name = "Obra Social")]
         public string SocialWork { get; set; }
         
-        [Display(Name ="Motivo Consulta")]
+        [Display(Name ="Motivo")]
         public string Reason { get; set; }
 
         [Display(Name = "Ingresado")]

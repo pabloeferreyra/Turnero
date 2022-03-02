@@ -137,16 +137,25 @@ function Create(urlAction) {
     });
 }
 
+function AddNumber() {
+    $('#pNumber').val(parseInt($('#pNumber').val()) + 1);
+}
+
+function RemNumber() {
+    $('#pNumber').val(parseInt($('#pNumber').val()) - 1);
+}
+
 function SearchTurns(urlAction) {
     var date = $("#DateTurn").val();
     var medic = $("#Medics :selected").val();
+    var pNum = $('#pNumber').val();
     $.ajax({
-        type: "POST",
+        type: "GET",
         url: urlAction,
         data: {
             dateTurn: date,
             medicId: medic,
-            pageNumber: null
+            pageNumber: pNum
         },
         success: function (result) {
             if (result.trim().length == 0) {
@@ -162,7 +171,7 @@ function SearchTurns(urlAction) {
 
 function SearchAllTurns(urlAction) {
     $.ajax({
-        type: "POST",
+        type: "GET",
         url: urlAction,
         data: {
             dateTurn: null,

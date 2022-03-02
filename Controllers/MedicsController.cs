@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Turnero.Data;
 using Turnero.Models;
+using Turnero.Services.Interfaces;
 
 namespace Turnero.Controllers
 {
@@ -18,24 +19,33 @@ namespace Turnero.Controllers
         private readonly ApplicationDbContext _context;
         private readonly RoleManager<IdentityRole> roleManager;
         private readonly UserManager<IdentityUser> userManager;
+        private readonly IGetMedicsServices _getMedicsServices;
+        private readonly IInsertMedicServices _insertMedicServices;
+        private readonly IUpdateMedicServices _updateMedicServices;
         public ILogger<AdministrationController> Logger { get; }
 
         public MedicsController(RoleManager<IdentityRole> roleManager,
                                 UserManager<IdentityUser> userManager,
                                 ILogger<AdministrationController> logger,
-            ApplicationDbContext context)
+                                ApplicationDbContext context,
+                                IGetMedicsServices getMedicsServices,
+                                IInsertMedicServices insertMedicServices, 
+                                IUpdateMedicServices updateMedicServices)
         {
             this.roleManager = roleManager;
             this.userManager = userManager;
             this.Logger = logger;
             _context = context;
+            _getMedicsServices = getMedicsServices;
+            _insertMedicServices = insertMedicServices;
+            _updateMedicServices = updateMedicServices;
         }
 
         // GET: Medics
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Medics.ToListAsync());
+            return View(await _getMedicsServices.GetMedics());
         }
 
         // GET: Medics/Details/5
@@ -47,8 +57,7 @@ namespace Turnero.Controllers
                 return NotFound();
             }
 
-            var medic = await _context.Medics
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var medic = await _getMedicsServices.GetMedicById((Guid)id);
             if (medic == null)
             {
                 return NotFound();
@@ -78,9 +87,7 @@ namespace Turnero.Controllers
         {
             if (ModelState.IsValid)
             {
-                medic.Id = Guid.NewGuid();
-                _context.Add(medic);
-                await _context.SaveChangesAsync();
+                await _insertMedicServices.Create(medic);
                 return RedirectToAction(nameof(Index));
             }
             return View(medic);
@@ -95,7 +102,7 @@ namespace Turnero.Controllers
                 return NotFound();
             }
 
-            var medic = await _context.Medics.FindAsync(id);
+            var medic = await _getMedicsServices.GetMedicById((Guid)id);
             if (medic == null)
             {
                 return NotFound();
@@ -117,21 +124,13 @@ namespace Turnero.Controllers
                 ViewBag.ErrorMessage = $"Medic with Id = {medic.Id} cannot be found";
                 return View("NotFound");
             }
-            else
-
-           if (ModelState.IsValid)
+            else if (ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(medic);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException ex)
-                {
-                    Logger.LogError($"Error editing medic {ex}");
+                bool resUpd = await _updateMedicServices.Update(medic);
+                if(!resUpd)
+                { 
                     return View("Error");
                 }
-
             }
             return RedirectToAction("Index");
         }
@@ -146,8 +145,7 @@ namespace Turnero.Controllers
                 return View("NotFound");
             }
 
-            var medic = await _context.Medics
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var medic = await _getMedicsServices.GetMedicById((Guid)id);
             if (medic == null)
             {
                 ViewBag.ErrorMessage = $"Medic with Id = {id} cannot be found";
@@ -163,15 +161,17 @@ namespace Turnero.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
-            var medic = await _context.Medics.FindAsync(id);
-            _context.Medics.Remove(medic);
-            await _context.SaveChangesAsync();
+            if (MedicExists(id))
+            {
+                var medic = await _getMedicsServices.GetMedicById(id);
+                await _updateMedicServices.Delete(medic);
+            }
             return RedirectToAction("Index");
         }
 
         private bool MedicExists(Guid id)
         {
-            return _context.Medics.Any(e => e.Id == id);
+            return _getMedicsServices.ExistMedic(id);
         }
     }
 }

@@ -9,43 +9,55 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Turnero.Models;
+using Turnero.Services.Interfaces;
 using ApplicationDbContext = Turnero.Data.ApplicationDbContext;
 
 namespace Turnero.Controllers
 {
     public class TurnsController : Controller
     {
-        private readonly ApplicationDbContext _context;
         private readonly UserManager<IdentityUser> _userManager;
-        public ILogger<AdministrationController> Logger { get; }
+        public IInsertTurnsServices _insertTurns;
+        public ILogger<TurnsController> _logger;
+        public IGetTurnsServices _getTurns;
+        public IUpdateTurnsServices _updateTurns;
+        public IGetMedicsServices _getMedics;
+        public IGetTimeTurnsServices _getTimeTurns;
 
-        public TurnsController(ApplicationDbContext context,
-            UserManager<IdentityUser> userManager,
-            ILogger<AdministrationController> logger)
+        public TurnsController(UserManager<IdentityUser> userManager,
+                               ILogger<TurnsController> logger,
+                               IInsertTurnsServices insertTurns,
+                               IGetTurnsServices getTurns,
+                               IUpdateTurnsServices updateTurns,
+                               IGetMedicsServices getMedics, 
+                               IGetTimeTurnsServices getTimeTurns)
         {
-            _context = context;
             _userManager = userManager;
-            this.Logger = logger;
-
+            _logger = logger;
+            _insertTurns = insertTurns;
+            _getTurns = getTurns;
+            _updateTurns = updateTurns;
+            _getMedics = getMedics;
+            _getTimeTurns = getTimeTurns;
         }
 
         [Authorize(Roles = "Ingreso, Medico")]
         public async Task<IActionResult> Index(int? pageNumber)
         {
-            List<Medic> medics = await _context.Medics.ToListAsync();
+            List<Medic> medics = await _getMedics.GetMedics();
             List<Turn> turns;
-            turns = await TurnListAsync(null);
+            turns = await TurnListAsync(null, null);
             ViewBag.Medics = medics;
-            var size = 100;
-            return View(PaginatedList<Turn>.Create(turns, pageNumber ?? 1, size));
+            var size = 10;
+            return View(PaginatedList<Turn>.Create(turns, pageNumber ?? 1, size));  
         }
 
         //[AllowAnonymous]
         [Authorize(Roles = "Ingreso, Medico")]
-        [HttpPost]
+        [HttpGet]
         public async Task<IActionResult> GetTurns(DateTime? dateTurn, Guid? medicId, int? pageNumber)
         {
-            List<Medic> medics = await _context.Medics.ToListAsync();
+            List<Medic> medics = await _getMedics.GetMedics();
             List<Turn> turns;
             if (medicId != null)
             {
@@ -53,75 +65,22 @@ namespace Turnero.Controllers
             }
             else
             {
-                turns = await TurnListAsync(dateTurn);
+                turns = await TurnListAsync(dateTurn, null);
             }
             ViewBag.Medics = medics;
-            var size = 100;
-            return PartialView("_TurnsPartial", PaginatedList<Turn>.Create(turns, pageNumber ?? 1, size));
+            var size = 10;
+            var ret = PaginatedList<Turn>.Create(turns, pageNumber ?? 1, size);
+            return PartialView("_TurnsPartial", ret);
         }
 
         public async Task<List<Turn>> TurnListAsync(DateTime? dateTurn, Guid? medicId)
         {
-            ClaimsPrincipal currentUser = this.User;
-            var user = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
-            var medic = await _context.Medics.Where(m => m.UserGuid == user).FirstOrDefaultAsync();
-            List<Turn> turns = new List<Turn>();
-            if (medicId != null)
-            {
-                if (dateTurn.HasValue)
-                    turns = await _context.Turns.Where(m => m.MedicId == medicId && m.DateTurn == dateTurn).OrderBy(t => t.Time.Time).ToListAsync();
-                else
-                    turns = await _context.Turns.Where(m => m.MedicId == medicId && m.DateTurn == DateTime.Today).OrderBy(t => t.Time.Time).ToListAsync();
-            }
-            else
-            {
-                if (dateTurn.HasValue)
-                    turns = await _context.Turns.Where(m => m.DateTurn == dateTurn).OrderBy(t => t.Time.Time).ToListAsync();
-                else
-                    turns = await _context.Turns.OrderBy(t => t.Time.Time).ToListAsync();
-            }
-            List<Turn> turns1 = new List<Turn>();
-            foreach (var t in turns)
-            {
-                t.Time = await _context.TimeTurns.FirstOrDefaultAsync(ti => ti.Id == t.TimeId);
-                t.Medic = await _context.Medics.FirstOrDefaultAsync(m => m.Id == t.MedicId);
-                turns1.Add(t);
-            }
+            var user = this.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var medic = await _getMedics.GetMedicByUserId(user);
             ViewBag.Date = dateTurn.HasValue ? String.Format("{0:yyyy-MM-dd}", dateTurn) : String.Format("{0:yyyy-MM-dd}", DateTime.Now);
             ViewBag.IsMedic = medic != null;
-            return turns1;
-        }
-
-        public async Task<List<Turn>> TurnListAsync(DateTime? dateTurn)
-        {
-            ClaimsPrincipal currentUser = this.User;
-            var user = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
-            var medic = await _context.Medics.Where(m => m.UserGuid == user).FirstOrDefaultAsync();
-            List<Turn> turns = new List<Turn>();
-            if (medic != null)
-            {
-                if (dateTurn.HasValue)
-                    turns = await _context.Turns.Where(m => m.MedicId == medic.Id && m.DateTurn == dateTurn).OrderBy(t => t.Time.Time).ToListAsync();
-                else
-                    turns = await _context.Turns.Where(m => m.MedicId == medic.Id && m.DateTurn == DateTime.Today).OrderBy(t => t.Time.Time).ToListAsync();
-            }
-            else
-            {
-                if (dateTurn.HasValue)
-                    turns = await _context.Turns.Where(m => m.DateTurn == dateTurn).OrderBy(t => t.Time.Time).ToListAsync();
-                else
-                    turns = await _context.Turns.Where(m => m.DateTurn == DateTime.Today).OrderBy(t => t.Time.Time).ToListAsync();
-            }
-            List<Turn> turns1 = new List<Turn>();
-            foreach (var t in turns)
-            {
-                t.Time = await _context.TimeTurns.FirstOrDefaultAsync(ti => ti.Id == t.TimeId);
-                t.Medic = await _context.Medics.FirstOrDefaultAsync(m => m.Id == t.MedicId);
-                turns1.Add(t);
-            }
-            ViewBag.Date = dateTurn.HasValue ? String.Format("{0:yyyy-MM-dd}", dateTurn) : String.Format("{0:yyyy-MM-dd}", DateTime.Now);
-            ViewBag.IsMedic = medic != null;
-            return turns1;
+            List<Turn> turns = await this._getTurns.GetTurns(dateTurn, medicId);
+            return turns;
         }
 
         [Authorize(Roles = "Ingreso, Medico")]
@@ -132,9 +91,8 @@ namespace Turnero.Controllers
                 return NotFound();
             }
 
-            var turn = await _context.Turns
-                .FirstOrDefaultAsync(m => m.Id == id);
-            turn.Medic = await _context.Medics.FirstOrDefaultAsync(m => m.Id == turn.MedicId);
+            var turn = await this._getTurns.GetTurn((Guid)id);
+            
             if (turn == null)
             {
                 return NotFound();
@@ -147,10 +105,8 @@ namespace Turnero.Controllers
         public async Task<IActionResult> Create()
         {
             ViewBag.DateTurn = DateTime.Today;
-            List<Medic> medics = await _context.Medics.ToListAsync();
-            List<TimeTurnViewModel> time = await _context.TimeTurns.OrderBy(t => t.Time).ToListAsync();
-            ViewBag.Medics = medics;
-            ViewBag.Time = time;
+            ViewBag.Medics = await _getMedics.GetMedics();
+            ViewBag.Time = await _getTimeTurns.GetTimeTurns();
             return View();
         }
 
@@ -161,13 +117,11 @@ namespace Turnero.Controllers
         {
             if (ModelState.IsValid)
             {
-                ClaimsPrincipal currentUser = this.User;
-                var user = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
-                var medic = await _context.Medics.Where(m => m.UserGuid == user).FirstOrDefaultAsync();
-                turn.Id = Guid.NewGuid();
-                _context.Add(turn);
-                await _context.SaveChangesAsync();
+                bool resInsert = await this._insertTurns.CreateTurnAsync(turn);
+               if (resInsert)
                 return RedirectToAction(nameof(Index));
+               else
+                return RedirectToAction("Index");
             }
             return RedirectToAction("Index");
         }
@@ -177,20 +131,23 @@ namespace Turnero.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Accessed(Guid? id, int? pageNumber)
         {
-            var turn = await _context.Turns.FindAsync(id);
+            Turn turn;
+            if (id != null)
+            {
+                turn = await this._getTurns.GetTurn((Guid)id);
+            }
+            else
+            {
+                ViewBag.ErrorMessage = $"Turn with no id cannot be found";
+                return View("NotFound");
+            }
             if (turn == null)
             {
                 ViewBag.ErrorMessage = $"Turn with Id = {id} cannot be found";
                 return View("NotFound");
             }
 
-            ClaimsPrincipal currentUser = this.User;
-            var user = currentUser.FindFirst(ClaimTypes.NameIdentifier).Value;
-            var medic = await _context.Medics.Where(m => m.UserGuid == user).FirstOrDefaultAsync();
-            turn.Medic = medic;
-            turn.MedicId = medic.Id;
-
-            if (!TurnExists(turn.Id))
+            if (!_getTurns.Exists(turn.Id))
             {
                 ViewBag.ErrorMessage = $"Turn with Id = {id} cannot be found";
                 return View("NotFound");
@@ -198,24 +155,10 @@ namespace Turnero.Controllers
 
             if (ModelState.IsValid)
             {
-                try
-                {
-                    if (turn.DateTurn == DateTime.Today)
-                    {
-                        turn.Accessed = true;
-                        _context.Update(turn);
-                        await _context.SaveChangesAsync();
-                    }
-                }
-                catch (DbUpdateConcurrencyException ex)
-                {
-
-                    Logger.LogError($"Error editing Turn {ex}");
-                    return View("Error");
-                }
+                this._updateTurns.Accessed(turn);
             }
-            List<Turn> turns = await this.TurnListAsync(null);
-            var size = 100;
+            List<Turn> turns = await this.TurnListAsync(null, null);
+            var size = 10;
             return PartialView("_TurnsPartial", PaginatedList<Turn>.Create(turns, pageNumber ?? 1, size));
         }
 
@@ -227,11 +170,11 @@ namespace Turnero.Controllers
                 return View("NotFound");
             }
 
-            var turn = await _context.Turns.FindAsync(id);
-            List<Medic> medics = await _context.Medics.ToListAsync();
-            List<TimeTurnViewModel> time = await _context.TimeTurns.OrderBy(t => t.Time).ToListAsync();
-            ViewBag.Medic = turn.MedicId;
-            ViewBag.TimeId = turn.TimeId;
+            var turn = await _getTurns.GetTurn((Guid)id);
+            List<Medic> medics = await _getMedics.GetMedics();
+            List<TimeTurnViewModel> time = await _getTimeTurns.GetTimeTurns();
+            ViewBag.Medic = turn.Medic.Id;
+            ViewBag.TimeId = turn.Time.Id;
             ViewBag.Medics = medics;
             ViewBag.Time = time;
             if (turn == null)
@@ -245,25 +188,16 @@ namespace Turnero.Controllers
         [Authorize(Roles = "Ingreso")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Turn turn)
+        public IActionResult Edit(Turn turn)
         {
-            if (!TurnExists(turn.Id))
+            if (!_getTurns.Exists(turn.Id))
             {
                 ViewBag.ErrorMessage = $"Turn with Id = {turn.Id} cannot be found";
                 return View("NotFound");
             }
             if (ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(turn);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException ex)
-                {
-                    Logger.LogError($"Error editing turn {ex}");
-                    return View("Error");
-                }
+                _updateTurns.Update(turn);
                 return RedirectToAction(nameof(Index));
             }
             return View(turn);
@@ -274,24 +208,11 @@ namespace Turnero.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id, int? pageNumber)
         {
-            var turn = await _context.Turns.FindAsync(id);
-            _context.Turns.Remove(turn);
-            await _context.SaveChangesAsync();
-            List<Turn> turns = await this.TurnListAsync(null);
-            var size = 100;
+            var turn = await _getTurns.GetTurn(id);
+            _updateTurns.Delete(turn);
+            List<Turn> turns = await this.TurnListAsync(null, null);
+            var size = 10;
             return PartialView("_TurnsPartial", PaginatedList<Turn>.Create(turns, pageNumber ?? 1, size));
-        }
-
-        private bool TurnExists(Guid id)
-        {
-            return _context.Turns.Any(e => e.Id == id);
-        }
-
-        [Authorize(Roles = "Admin, Ingreso")]
-        [HttpPost]
-        public bool CheckTurn(Guid medicId, DateTime date, Guid timeTurn)
-        {
-            return _context.Turns.Any(e => e.MedicId == medicId && e.DateTurn.Date == date && e.TimeId == timeTurn);
         }
     }
 }

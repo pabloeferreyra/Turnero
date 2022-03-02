@@ -12,6 +12,9 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.HttpOverrides;
 using System.IO;
 using Microsoft.CodeAnalysis.Options;
+using Turnero.Services.Interfaces;
+using Turnero.Services;
+using Turnero.Services.Repositories;
 
 namespace Turnero
 {
@@ -28,6 +31,8 @@ namespace Turnero
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddControllers().AddNewtonsoftJson(options => 
+            options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
             services.AddDefaultIdentity<IdentityUser>(options =>
@@ -74,6 +79,25 @@ namespace Turnero
                 options.AddPolicy("DeleteRolePolicy",
                     policy => policy.RequireClaim("Delete Role"));
             });
+
+            services.AddScoped<IInsertTurnsServices, InsertTurnsServices>();
+            services.AddScoped<IUpdateTurnsServices, UpdateTurnsServices>();
+            services.AddScoped<IGetTurnsServices, GetTurnsServices>();
+
+            services.AddScoped<IInsertMedicServices, InsertMedicServices>();
+            services.AddScoped<IUpdateMedicServices, UpdateMedicServices>();
+            services.AddScoped<IInsertMedicServices, InsertMedicServices>();
+            services.AddScoped<IGetMedicsServices, GetMedicsServices>();
+
+            services.AddScoped<IInsertTimeTurnServices, InsertTimeTurnServices>();
+            services.AddScoped<IDeleteTimeTurnServices, DeleteTimeTurnServices>();
+            services.AddScoped<IGetTimeTurnsServices, GetTimeTurnsServices>();
+
+            services.AddScoped<ILoggerServices, LoggerServices>();
+
+            services.AddScoped<ITimeTurnRepository, TimeTurnRepository>();
+            services.AddScoped<IMedicRepository, MedicRepository>();
+            services.AddScoped<ITurnRepository, TurnsRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
