@@ -6,29 +6,28 @@ using System.Threading.Tasks;
 using Turnero.Data;
 using Turnero.Models;
 using Turnero.Services.Interfaces;
+using Turnero.Services.Repositories;
 
 namespace Turnero.Services
 {
     public class UpdateTurnsServices : IUpdateTurnsServices
     {
-        private readonly ApplicationDbContext _context;
         private readonly ILoggerServices _logger;
+        private readonly ITurnRepository _turnRepository;
 
-        public UpdateTurnsServices(ApplicationDbContext context, ILoggerServices logger)
+        public UpdateTurnsServices(ILoggerServices logger, ITurnRepository turnRepository)
         {
-            _context = context;
             _logger = logger;
+            _turnRepository = turnRepository;
         }
 
-        public async void Accessed(ClaimsPrincipal currentUser, Turn turn)
+        public async void Accessed(Turn turn)
         {
             try
             {
                 if(turn.DateTurn <= DateTime.Today)
                 {
-                    turn.Accessed = true;
-                    _context.Update(turn);
-                    await _context.SaveChangesAsync();
+                    await _turnRepository.Access(turn);
                     _logger.Debug($"Turno {turn.Id} ingresado");
                 }
             }
@@ -42,8 +41,7 @@ namespace Turnero.Services
         {
             try
             {
-                _context.Update(turn);
-                await _context.SaveChangesAsync();
+                await _turnRepository.UpdateTurn(turn);
                 _logger.Debug($"Turno {turn.Id} Actualizado");
             }
             catch (DbUpdateConcurrencyException ex)
@@ -56,8 +54,7 @@ namespace Turnero.Services
         {
             try
             {
-                _context.Turns.Remove(turn);
-                await _context.SaveChangesAsync();
+                await _turnRepository.DeleteTurn(turn);
                 _logger.Debug($"Turno {turn.Id} Eliminado");
             }
             catch (DbUpdateConcurrencyException ex)

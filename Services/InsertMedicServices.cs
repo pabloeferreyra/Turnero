@@ -4,27 +4,26 @@ using System.Threading.Tasks;
 using Turnero.Data;
 using Turnero.Models;
 using Turnero.Services.Interfaces;
+using Turnero.Services.Repositories;
 
 namespace Turnero.Services
 {
     public class InsertMedicServices : IInsertMedicServices
     {
-        private readonly ApplicationDbContext _context;
         private readonly ILoggerServices _logger;
+        private readonly IMedicRepository _medicRepository;
 
-        public InsertMedicServices(ApplicationDbContext context, ILoggerServices logger)
+        public InsertMedicServices(ILoggerServices logger, IMedicRepository medicRepository)
         {
-            _context = context;
             _logger = logger;
+            _medicRepository = medicRepository;
         }
 
         public async Task Create(Medic medic)
         {
             try
             {
-                medic.Id = Guid.NewGuid();
-                _context.Add(medic);
-                await _context.SaveChangesAsync();
+                await _medicRepository.NewMedic(medic);
                 _logger.Info($"Creado Medico {medic.Id}");
             }
             catch (Exception ex)

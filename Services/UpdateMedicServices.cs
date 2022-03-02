@@ -4,26 +4,26 @@ using System.Threading.Tasks;
 using Turnero.Data;
 using Turnero.Models;
 using Turnero.Services.Interfaces;
+using Turnero.Services.Repositories;
 
 namespace Turnero.Services
 {
     public class UpdateMedicServices : IUpdateMedicServices
     {
-        private readonly ApplicationDbContext _context;
         private readonly ILoggerServices _logger;
+        private readonly IMedicRepository _medicRepository;
 
-        public UpdateMedicServices(ApplicationDbContext context, ILoggerServices logger)
+        public UpdateMedicServices(ILoggerServices logger, IMedicRepository medicRepository)
         {
-            _context = context;
             _logger = logger;
+            _medicRepository = medicRepository;
         }
 
         public async Task<bool> Update(Medic medic)
         {
             try
             {
-                _context.Update(medic);
-                await _context.SaveChangesAsync();
+                await _medicRepository.UpdateMedic(medic);
                 return true;
             }
             catch (DbUpdateConcurrencyException ex)
@@ -37,8 +37,7 @@ namespace Turnero.Services
         {
             try
             {
-                _context.Medics.Remove(medic);
-                await _context.SaveChangesAsync();
+                await _medicRepository.DeleteMedic(medic);
             }
             catch (DbUpdateConcurrencyException ex)
             {

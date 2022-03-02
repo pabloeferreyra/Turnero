@@ -10,15 +10,12 @@ namespace Turnero.Services
 {
     public class InsertTimeTurnServices : IInsertTimeTurnServices
     {
-        private readonly ApplicationDbContext _context;
         private readonly ILoggerServices _logger;
         private readonly ITimeTurnRepository _timeTurnRepository;
 
-        public InsertTimeTurnServices(ApplicationDbContext context,
-                                      ILoggerServices logger,
+        public InsertTimeTurnServices(ILoggerServices logger,
                                       ITimeTurnRepository timeTurnRepository)
         {
-            _context = context;
             _logger = logger;
             _timeTurnRepository = timeTurnRepository;
         }

@@ -7,25 +7,26 @@ using System.Threading.Tasks;
 using Turnero.Data;
 using Turnero.Models;
 using Turnero.Services.Interfaces;
+using Turnero.Services.Repositories;
 
 namespace Turnero.Services
 {
     public class GetMedicsServices : IGetMedicsServices
     {
-        private readonly ApplicationDbContext _context;
         private readonly ILoggerServices _logger;
+        private readonly IMedicRepository _medicRepository;
 
-        public GetMedicsServices(ApplicationDbContext context, ILoggerServices logger)
+        public GetMedicsServices(ILoggerServices logger, IMedicRepository medicRepository)
         {
-            _context = context;
             _logger = logger;
+            _medicRepository = medicRepository;
         }
 
         public async Task<List<Medic>> GetMedics()
         {
             try
             {
-                var med = await _context.Medics.ToListAsync();
+                var med = await _medicRepository.GetList();
                 _logger.Debug("Medicos traidos correctamente");
                 return med;
             }
@@ -40,7 +41,7 @@ namespace Turnero.Services
         {
             try
             {
-                Medic med = await _context.Medics.SingleOrDefaultAsync(m => m.Id == id);
+                Medic med = await _medicRepository.GetById(id);
                 _logger.Debug("Medico traido correctamente");
                 return med;
             }
@@ -55,7 +56,7 @@ namespace Turnero.Services
         {
             try
             {
-                Medic med = await _context.Medics.SingleOrDefaultAsync(m => m.UserGuid == id);
+                Medic med = await _medicRepository.GetByUserId(id);
                 _logger.Debug("Medico traido correctamente por usuario");
                 return med;
             }
@@ -70,7 +71,7 @@ namespace Turnero.Services
         {
             try
             {
-                return _context.Medics.Any(m => m.Id == id);
+                return _medicRepository.Exists(id);
             }
             catch(Exception ex)
             {

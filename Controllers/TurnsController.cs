@@ -155,7 +155,7 @@ namespace Turnero.Controllers
 
             if (ModelState.IsValid)
             {
-                this._updateTurns.Accessed(this.User, turn);
+                this._updateTurns.Accessed(turn);
             }
             List<Turn> turns = await this.TurnListAsync(null, null);
             var size = 10;
@@ -188,7 +188,7 @@ namespace Turnero.Controllers
         [Authorize(Roles = "Ingreso")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Turn turn)
+        public IActionResult Edit(Turn turn)
         {
             if (!_getTurns.Exists(turn.Id))
             {

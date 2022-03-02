@@ -4,25 +4,24 @@ using System.Threading.Tasks;
 using Turnero.Data;
 using Turnero.Models;
 using Turnero.Services.Interfaces;
+using Turnero.Services.Repositories;
 
 namespace Turnero.Services
 {
     public class InsertTurnsServices : IInsertTurnsServices
     {
-        private readonly ApplicationDbContext _context;
         private readonly ILoggerServices _logger;
-        public InsertTurnsServices(ApplicationDbContext context, ILoggerServices logger)
+        private readonly ITurnRepository _turnRepository;
+        public InsertTurnsServices(ILoggerServices logger, ITurnRepository turnRepository)
         {
-            _context = context;
             _logger = logger;
+            _turnRepository = turnRepository;
         }
-        public async Task<bool> CreateTurnAsync( Turn turn)
+        public async Task<bool> CreateTurnAsync(Turn turn)
         {
             try
             {
-                turn.Id = Guid.NewGuid();
-                _context.Add(turn);
-                await _context.SaveChangesAsync();
+                await _turnRepository.CreateTurn(turn);
                 _logger.Debug("Turno agregado correctamente");
                 return true;
             }

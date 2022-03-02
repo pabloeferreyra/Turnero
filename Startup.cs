@@ -96,6 +96,8 @@ namespace Turnero
             services.AddScoped<ILoggerServices, LoggerServices>();
 
             services.AddScoped<ITimeTurnRepository, TimeTurnRepository>();
+            services.AddScoped<IMedicRepository, MedicRepository>();
+            services.AddScoped<ITurnRepository, TurnsRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
