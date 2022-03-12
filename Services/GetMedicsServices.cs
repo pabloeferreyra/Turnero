@@ -26,8 +26,12 @@ namespace Turnero.Services
         {
             try
             {
+                _ = Task.Run(async () =>
+                {
+                    _logger.Debug("Medicos traidos correctamente");
+                });
                 var med = await _medicRepository.GetList();
-                _logger.Debug("Medicos traidos correctamente");
+                
                 return med;
             }
             catch(Exception ex)
@@ -41,8 +45,12 @@ namespace Turnero.Services
         {
             try
             {
+                _ = Task.Run(async () =>
+                {
+                    _logger.Debug("Medico traido correctamente");
+                });
                 Medic med = await _medicRepository.GetById(id);
-                _logger.Debug("Medico traido correctamente");
+               
                 return med;
             }
             catch (Exception ex)
@@ -56,8 +64,12 @@ namespace Turnero.Services
         {
             try
             {
+                _ = Task.Run(async () =>
+                {
+                    _logger.Debug("Medico traido correctamente por usuario");
+                });
                 Medic med = await _medicRepository.GetByUserId(id);
-                _logger.Debug("Medico traido correctamente por usuario");
+                
                 return med;
             }
             catch (Exception ex)

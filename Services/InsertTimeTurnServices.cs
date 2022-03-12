@@ -24,7 +24,10 @@ namespace Turnero.Services
         {
             try
             {
-                _logger.Debug($"Horario {timeTurnViewModel.Id} creado");
+                _ = Task.Run(async () =>
+                {
+                    _logger.Debug($"Horario {timeTurnViewModel.Id} creado");
+                });
                 await _timeTurnRepository.CreateTT(timeTurnViewModel);
             }
             catch (Exception ex)
