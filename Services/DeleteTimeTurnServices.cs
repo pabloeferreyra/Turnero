@@ -25,7 +25,10 @@ namespace Turnero.Services
             try
             {
                 await _timeTurnRepository.DeleteTT(timeTurn);
-                _logger.Info($"Tiempo {timeTurn.Id} eliminado correctamente");
+                _ = Task.Run(async () =>
+                {
+                    _logger.Info($"Tiempo {timeTurn.Id} eliminado correctamente");
+                });
             }
             catch (Exception ex)
             {
