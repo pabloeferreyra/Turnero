@@ -26,17 +26,17 @@ namespace Turnero.Services
         {
             try
             {
-                _ = Task.Run(async () =>
-                {
-                    _logger.Debug("Medicos traidos correctamente");
-                });
+                //_ = Task.Run(async () =>
+                //{
+                //    _logger.Debug("Medicos traidos correctamente");
+                //});
                 var med = await _medicRepository.GetList();
                 
                 return med;
             }
             catch(Exception ex)
             {
-                _logger.Error(ex.Message, ex);
+                //_logger.Error(ex.Message, ex);
                 return new List<Medic>();
             }
         }
@@ -45,17 +45,17 @@ namespace Turnero.Services
         {
             try
             {
-                _ = Task.Run(async () =>
-                {
-                    _logger.Debug("Medico traido correctamente");
-                });
+                //_ = Task.Run(async () =>
+                //{
+                //    _logger.Debug("Medico traido correctamente");
+                //});
                 Medic med = await _medicRepository.GetById(id);
                
                 return med;
             }
             catch (Exception ex)
             {
-                _logger.Error(ex.Message, ex);
+                //_logger.Error(ex.Message, ex);
                 return new Medic();
             }
         }
@@ -64,17 +64,17 @@ namespace Turnero.Services
         {
             try
             {
-                _ = Task.Run(async () =>
-                {
-                    _logger.Debug("Medico traido correctamente por usuario");
-                });
+                //_ = Task.Run(async () =>
+                //{
+                //    _logger.Debug("Medico traido correctamente por usuario");
+                //});
                 Medic med = await _medicRepository.GetByUserId(id);
                 
                 return med;
             }
             catch (Exception ex)
             {
-                _logger.Error(ex.Message, ex);
+                //_logger.Error(ex.Message, ex);
                 return new Medic();
             }
         }
@@ -87,7 +87,7 @@ namespace Turnero.Services
             }
             catch(Exception ex)
             {
-                _logger.Error(ex.Message, ex);
+                //_logger.Error(ex.Message, ex);
                 return false;
             }
         }

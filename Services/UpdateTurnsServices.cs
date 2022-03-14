@@ -28,15 +28,15 @@ namespace Turnero.Services
                 if(turn.DateTurn <= DateTime.Today)
                 {
                     await _turnRepository.Access(turn);
-                    _ = Task.Run(async () =>
-                    {
-                        _logger.Debug($"Turno {turn.Id} ingresado");
-                    });
+                    //_ = Task.Run(async () =>
+                    //{
+                    //    _logger.Debug($"Turno {turn.Id} ingresado");
+                    //});
                 }
             }
             catch (Exception ex)
             {
-                _logger.Error(ex.Message, ex);
+                //_logger.Error(ex.Message, ex);
             }
         }
 
@@ -45,15 +45,15 @@ namespace Turnero.Services
             try
             {
                 await _turnRepository.UpdateTurn(turn);
-                _ = Task.Run(async () =>
-                  {
-                      _logger.Debug($"Turno {turn.Id} Actualizado");
-                  });
+                //_ = Task.Run(async () =>
+                //  {
+                //      _logger.Debug($"Turno {turn.Id} Actualizado");
+                //  });
                 
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                _logger.Error(ex.Message, ex);
+                //_logger.Error(ex.Message, ex);
             }
         }
 
@@ -62,14 +62,14 @@ namespace Turnero.Services
             try
             {
                 await _turnRepository.DeleteTurn(turn);
-                _ = Task.Run(async () =>
-                {
-                    _logger.Debug($"Turno {turn.Id} Eliminado");
-                });
+                //_ = Task.Run(async () =>
+                //{
+                //    _logger.Debug($"Turno {turn.Id} Eliminado");
+                //});
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                _logger.Error(ex.Message, ex);
+                //_logger.Error(ex.Message, ex);
             }
         }
     }
