@@ -28,7 +28,7 @@ namespace Turnero.Services
             {
                 //_ = Task.Run(async () =>
                 //{
-                //    _logger.Debug("Medicos traidos correctamente");
+                    _logger.Debug("Medicos traidos correctamente");
                 //});
                 var med = await _medicRepository.GetList();
                 
@@ -36,7 +36,7 @@ namespace Turnero.Services
             }
             catch(Exception ex)
             {
-                //_logger.Error(ex.Message, ex);
+                _logger.Error(ex.Message, ex);
                 return new List<Medic>();
             }
         }
@@ -47,7 +47,7 @@ namespace Turnero.Services
             {
                 //_ = Task.Run(async () =>
                 //{
-                //    _logger.Debug("Medico traido correctamente");
+                    _logger.Debug("Medico traido correctamente");
                 //});
                 Medic med = await _medicRepository.GetById(id);
                
@@ -55,7 +55,7 @@ namespace Turnero.Services
             }
             catch (Exception ex)
             {
-                //_logger.Error(ex.Message, ex);
+                _logger.Error(ex.Message, ex);
                 return new Medic();
             }
         }
@@ -66,7 +66,7 @@ namespace Turnero.Services
             {
                 //_ = Task.Run(async () =>
                 //{
-                //    _logger.Debug("Medico traido correctamente por usuario");
+                    _logger.Debug("Medico traido correctamente por usuario");
                 //});
                 Medic med = await _medicRepository.GetByUserId(id);
                 
@@ -74,7 +74,7 @@ namespace Turnero.Services
             }
             catch (Exception ex)
             {
-                //_logger.Error(ex.Message, ex);
+                _logger.Error(ex.Message, ex);
                 return new Medic();
             }
         }
@@ -87,7 +87,7 @@ namespace Turnero.Services
             }
             catch(Exception ex)
             {
-                //_logger.Error(ex.Message, ex);
+                _logger.Error(ex.Message, ex);
                 return false;
             }
         }

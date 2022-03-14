@@ -30,13 +30,13 @@ namespace Turnero.Services
                     await _turnRepository.Access(turn);
                     //_ = Task.Run(async () =>
                     //{
-                    //    _logger.Debug($"Turno {turn.Id} ingresado");
+                        _logger.Debug($"Turno {turn.Id} ingresado");
                     //});
                 }
             }
             catch (Exception ex)
             {
-                //_logger.Error(ex.Message, ex);
+                _logger.Error(ex.Message, ex);
             }
         }
 
@@ -47,13 +47,13 @@ namespace Turnero.Services
                 await _turnRepository.UpdateTurn(turn);
                 //_ = Task.Run(async () =>
                 //  {
-                //      _logger.Debug($"Turno {turn.Id} Actualizado");
+                      _logger.Debug($"Turno {turn.Id} Actualizado");
                 //  });
                 
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                //_logger.Error(ex.Message, ex);
+                _logger.Error(ex.Message, ex);
             }
         }
 
@@ -64,12 +64,12 @@ namespace Turnero.Services
                 await _turnRepository.DeleteTurn(turn);
                 //_ = Task.Run(async () =>
                 //{
-                //    _logger.Debug($"Turno {turn.Id} Eliminado");
+                    _logger.Debug($"Turno {turn.Id} Eliminado");
                 //});
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                //_logger.Error(ex.Message, ex);
+                _logger.Error(ex.Message, ex);
             }
         }
     }
