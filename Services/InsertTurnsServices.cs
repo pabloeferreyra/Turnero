@@ -24,13 +24,13 @@ namespace Turnero.Services
                 await _turnRepository.CreateTurn(turn);
                 //_ = Task.Run(async () =>
                 //{
-                //    _logger.Debug("Turno agregado correctamente");
+                    _logger.Debug("Turno agregado correctamente");
                 //});
                 return true;
             }
             catch (Exception ex)
             {
-                //_logger.Error(ex.Message, ex);
+                _logger.Error(ex.Message, ex);
                 return false;
             }
         }
