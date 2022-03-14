@@ -27,15 +27,15 @@ namespace Turnero.Services
         {
             try
             {
-                _ = Task.Run(async () =>
-                {
-                    _logger.Debug("Tiempos obtenidos");
-                });
+                //_ = Task.Run(async () =>
+                //{
+                //    _logger.Debug("Tiempos obtenidos");
+                //});
                 return await _timeTurnRepository.GetList();
             }
             catch (Exception ex)
             {
-                _logger.Error(ex.Message, ex);
+                //_logger.Error(ex.Message, ex);
                 return null;
             }
         }
@@ -44,15 +44,15 @@ namespace Turnero.Services
         {
             try
             {
-                _ = Task.Run(async () =>
-                {
-                    _logger.Debug("Tiempos obtenidos");
-                });
+                //_ = Task.Run(async () =>
+                //{
+                //    _logger.Debug("Tiempos obtenidos");
+                //});
                 return _timeTurnRepository.GetQueryable();
             }
             catch (Exception ex)
             {
-                _logger.Error(ex.Message, ex);
+                //_logger.Error(ex.Message, ex);
                 return null;
             }
         }
@@ -61,15 +61,15 @@ namespace Turnero.Services
         {
             try
             {
-                _ = Task.Run(async () =>
-                {
-                    _logger.Info($"Tiempo {id} obtenido");
-                });
+                //_ = Task.Run(async () =>
+                //{
+                //    _logger.Info($"Tiempo {id} obtenido");
+                //});
                 return await _timeTurnRepository.GetbyId(id);
             }
             catch(Exception ex)
             {
-                _logger.Error(ex.Message, ex);
+                //_logger.Error(ex.Message, ex);
                 return null;
             }
         }
@@ -82,7 +82,7 @@ namespace Turnero.Services
             }
             catch (Exception ex)
             {
-                _logger.Error(ex.Message, ex);
+                //_logger.Error(ex.Message, ex);
                 return false;
             }
         }

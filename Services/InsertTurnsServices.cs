@@ -22,15 +22,15 @@ namespace Turnero.Services
             try
             {
                 await _turnRepository.CreateTurn(turn);
-                _ = Task.Run(async () =>
-                {
-                    _logger.Debug("Turno agregado correctamente");
-                });
+                //_ = Task.Run(async () =>
+                //{
+                //    _logger.Debug("Turno agregado correctamente");
+                //});
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.Error(ex.Message, ex);
+                //_logger.Error(ex.Message, ex);
                 return false;
             }
         }

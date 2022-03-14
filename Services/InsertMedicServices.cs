@@ -23,15 +23,15 @@ namespace Turnero.Services
         {
             try
             {
-                _ = Task.Run(async () =>
-                {
-                    _logger.Info($"Creado Medico {medic.Id}");
-                });
+                //_ = Task.Run(async () =>
+                //{
+                //    _logger.Info($"Creado Medico {medic.Id}");
+                //});
                 await _medicRepository.NewMedic(medic);
             }
             catch (Exception ex)
             {
-                _logger.Error(ex.Message, ex);
+                //_logger.Error(ex.Message, ex);
             }
         }
     }

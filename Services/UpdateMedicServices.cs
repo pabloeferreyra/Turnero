@@ -28,7 +28,7 @@ namespace Turnero.Services
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                _logger.Error(ex.Message, ex);
+                //_logger.Error(ex.Message, ex);
                 return false;
             }
         }
@@ -41,7 +41,7 @@ namespace Turnero.Services
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                _logger.Error(ex.Message, ex);
+                //_logger.Error(ex.Message, ex);
             }
         }
     }
