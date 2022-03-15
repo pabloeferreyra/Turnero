@@ -83,7 +83,7 @@ namespace Turnero.Controllers
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
             var timeTurnViewModel = await _getTimeTurns.GetTimeTurn(id);
-            await _deleteTimeTurn.Delete(timeTurnViewModel);
+            _deleteTimeTurn.Delete(timeTurnViewModel);
             return RedirectToAction(nameof(Index));
         }
     }
