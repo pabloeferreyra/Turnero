@@ -28,10 +28,10 @@ namespace Turnero.Services
                 if(turn.DateTurn <= DateTime.Today)
                 {
                     await _turnRepository.Access(turn);
-                    //_ = Task.Run(async () =>
-                    //{
+                    _ = Task.Run(async () =>
+                    {
                         _logger.Debug($"Turno {turn.Id} ingresado");
-                    //});
+                    });
                 }
             }
             catch (Exception ex)
@@ -45,10 +45,10 @@ namespace Turnero.Services
             try
             {
                 await _turnRepository.UpdateTurn(turn);
-                //_ = Task.Run(async () =>
-                //  {
+                _ = Task.Run(async () =>
+                  {
                       _logger.Debug($"Turno {turn.Id} Actualizado");
-                //  });
+                  });
                 
             }
             catch (DbUpdateConcurrencyException ex)
@@ -62,10 +62,10 @@ namespace Turnero.Services
             try
             {
                 await _turnRepository.DeleteTurn(turn);
-                //_ = Task.Run(async () =>
-                //{
+                _ = Task.Run(async () =>
+                {
                     _logger.Debug($"Turno {turn.Id} Eliminado");
-                //});
+                });
             }
             catch (DbUpdateConcurrencyException ex)
             {
