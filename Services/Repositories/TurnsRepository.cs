@@ -68,30 +68,28 @@ namespace Turnero.Services.Repositories
 
         public async Task DeleteTurn(Turn turn)
         {
-           await this.DeleteAsync(turn);
+            turn.MedicId = turn.Medic.Id;
+            turn.TimeId = turn.Time.Id;
+            turn.Medic = null;
+            turn.Time = null;
+            await this.DeleteAsync(turn);
         }
 
         public async Task UpdateTurn(Turn turn)
         {
-        _ = Task.Run(async () =>
-            {
                 turn.MedicId = turn.Medic.Id;
                 turn.TimeId = turn.Time.Id;
                 turn.Medic = null;
                 turn.Time = null;
-            });
             await this.UpdateAsync(turn);
         }
 
         public async Task CreateTurn(Turn turn)
         {
-            _ = Task.Run(async () =>
-                {
                     turn.MedicId = turn.Medic.Id;
                     turn.TimeId = turn.Time.Id;
                     turn.Medic = null;
                     turn.Time = null;
-            });
             await this.CreateAsync(turn);
         }
     }
