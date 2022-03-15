@@ -28,10 +28,10 @@ namespace Turnero.Services
                 if(turn.DateTurn <= DateTime.Today)
                 {
                     await _turnRepository.Access(turn);
-                    //_ = Task.Run(async () =>
-                    //{
+                    _ = Task.Run(async () =>
+                    {
                         _logger.Debug($"Turno {turn.Id} ingresado");
-                    //});
+                    });
                 }
             }
             catch (Exception ex)
