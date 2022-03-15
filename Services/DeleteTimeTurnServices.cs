@@ -20,15 +20,12 @@ namespace Turnero.Services
             _timeTurnRepository = timeTurnRepository;
         }
 
-        public async Task Delete(TimeTurnViewModel timeTurn)
+        public void Delete(TimeTurnViewModel timeTurn)
         {
             try
             {
-                await _timeTurnRepository.DeleteTT(timeTurn);
-                //_ = Task.Run(async () =>
-                //{
-                    _logger.Info($"Tiempo {timeTurn.Id} eliminado correctamente");
-                //});
+                _timeTurnRepository.DeleteTT(timeTurn);
+                _logger.Info($"Tiempo {timeTurn.Id} eliminado correctamente");
             }
             catch (Exception ex)
             {

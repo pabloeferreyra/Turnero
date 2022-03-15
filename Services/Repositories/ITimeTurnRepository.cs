@@ -14,6 +14,6 @@ namespace Turnero.Services.Repositories
         bool Exists(Guid id);
         Task CreateTT(TimeTurnViewModel timeTurn);
 
-        Task DeleteTT(TimeTurnViewModel timeTurn);
+        void DeleteTT(TimeTurnViewModel timeTurn);
     }
 }

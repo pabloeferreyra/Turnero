@@ -5,6 +5,6 @@ namespace Turnero.Services.Interfaces
 {
     public interface IDeleteTimeTurnServices
     {
-        Task Delete(TimeTurnViewModel timeTurn);
+        void Delete(TimeTurnViewModel timeTurn);
     }
 }

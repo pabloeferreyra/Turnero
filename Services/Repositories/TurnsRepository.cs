@@ -72,7 +72,7 @@ namespace Turnero.Services.Repositories
             turn.TimeId = turn.Time.Id;
             turn.Medic = null;
             turn.Time = null;
-            await this.DeleteAsync(turn);
+            this.Delete(turn);
         }
 
         public async Task UpdateTurn(Turn turn)

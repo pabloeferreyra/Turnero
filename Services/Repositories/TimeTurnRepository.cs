@@ -39,9 +39,9 @@ namespace Turnero.Services.Repositories
             await CreateAsync(timeTurn);
         }
 
-        public async Task DeleteTT(TimeTurnViewModel timeTurn)
+        public void DeleteTT(TimeTurnViewModel timeTurn)
         {
-            await DeleteAsync(timeTurn);
+            Delete(timeTurn);
         }
     }
 }
