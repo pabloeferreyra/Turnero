@@ -19,12 +19,6 @@ namespace Turnero.Data
             builder.Entity<Turn>()
             .Property(b => b.DateTurn)
             .HasDefaultValueSql("getdate()");
-            builder.Entity<Medic>()
-            .HasMany(m => m.Turns)
-            .WithOne(t => t.Medic);
-            builder.Entity<TimeTurnViewModel>()
-                .HasMany(t => t.Turns)
-                .WithOne(v => v.Time);
         }
         public DbSet<Turn> Turns { get; set; }
         public DbSet<Medic> Medics { get; set; }

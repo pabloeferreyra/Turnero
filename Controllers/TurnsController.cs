@@ -173,8 +173,8 @@ namespace Turnero.Controllers
             var turn = await _getTurns.GetTurn((Guid)id);
             List<Medic> medics = await _getMedics.GetMedics();
             List<TimeTurnViewModel> time = await _getTimeTurns.GetTimeTurns();
-            ViewBag.Medic = turn.Medic.Id;
-            ViewBag.TimeId = turn.Time.Id;
+            ViewBag.Medic = turn.Medic;
+            ViewBag.TimeId = turn.Time;
             ViewBag.Medics = medics;
             ViewBag.Time = time;
             if (turn == null)

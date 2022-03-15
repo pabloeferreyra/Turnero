@@ -17,6 +17,7 @@ namespace Turnero.Models
         
         [Display(Name = "Médico")]
         public Medic Medic { get; set; }
+        public Guid MedicId { get; set; }
         
         [Display(Name = "Fecha"), Required]
         [DataType(DataType.Date)]
@@ -25,6 +26,7 @@ namespace Turnero.Models
 
         [Display(Name = "Hora")]
         public TimeTurnViewModel Time { get; set; }
+        public Guid TimeId { get; set; }
         
         [Display(Name = "Obra Social")]
         public string SocialWork { get; set; }

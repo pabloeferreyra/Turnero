@@ -30,7 +30,7 @@ namespace Turnero.Services.Repositories
 
         public async Task CreateAsync(T entity)
         {
-            await this._context.Set<T>().AddAsync(entity);
+            this._context.Set<T>().Add(entity);
             await this._context.SaveChangesAsync();
         }
 
