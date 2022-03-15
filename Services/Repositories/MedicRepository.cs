@@ -42,7 +42,7 @@ namespace Turnero.Services.Repositories
 
         public async Task DeleteMedic (Medic medic)
         {
-            await this.DeleteAsync(medic);
+            this.Delete(medic);
         }
 
         public async Task UpdateMedic(Medic medic)
