@@ -93,11 +93,15 @@ namespace Turnero
             services.AddScoped<IDeleteTimeTurnServices, DeleteTimeTurnServices>();
             services.AddScoped<IGetTimeTurnsServices, GetTimeTurnsServices>();
 
+            services.AddScoped<IExportService, ExportService>();
+
             services.AddScoped<ILoggerServices, LoggerServices>();
 
             services.AddScoped<ITimeTurnRepository, TimeTurnRepository>();
             services.AddScoped<IMedicRepository, MedicRepository>();
             services.AddScoped<ITurnRepository, TurnsRepository>();
+
+            services.AddScoped<IExportRepository, ExportRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -19,9 +19,10 @@
 <div class="back row">
     <label class="control-label"></label>
     <input id="DateTurn" name="dateTurn" type="date" class="form-control col-lg-2 col-sm-12" style="display:relative" value="@ViewBag.Date" data-date-format="dd/MM/yyyy" />
-    <select id="Medics" class="form-control col-lg-2 col-sm-12" asp-items="@(new SelectList(ViewBag.Medics, "Id", "Name"))"></select>
+    <select id="Medics" class="form-control col-lg-2 col-sm-12" asp-items="@(new SelectList(ViewBag.Medics, "Id", "Name", ViewBag.MedicId))"></select>
     <button class="btn btn-primary col-md-2 col-sm-12" onclick="SearchTurns('@Url.Action("GetTurns","Turns")')">Buscar</button>
     <button class="btn btn-secondary col-md-2 col-sm-12" onclick="SearchAllTurns('@Url.Action("GetTurns","Turns")')">Limpiar</button>
+    <button class="btn btn-secondary col-md-2 col-sm-12" onclick="ExportTurns('@Url.Action("Export","Turns")')">Exportar</button>
     @{
         //&& (User.IsInRole("Ingreso"))
         if (SignInManager.IsSignedIn(User))
