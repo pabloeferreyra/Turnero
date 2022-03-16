@@ -169,6 +169,28 @@ function SearchTurns(urlAction) {
     });
 }
 
+function ExportTurns(urlAction) {
+    var date = $("#DateTurn").val();
+    var medic = $("#Medics :selected").val();
+    $.ajax({
+        type: "POST",
+        url: urlAction,
+        data: {
+            date: date,
+            medicId: medic
+        },
+        success: function (result) {
+            if (result.trim().length != 0) {
+                toastr.success('exportado con exito!', 'Todo listo!');
+            }
+            
+        },
+        error: function (req, status, error) {
+            toastr.error(error, 'error');
+        }
+    });
+}
+
 function SearchAllTurns(urlAction) {
     $.ajax({
         type: "GET",

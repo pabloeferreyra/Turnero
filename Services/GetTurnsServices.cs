@@ -17,7 +17,8 @@ namespace Turnero.Services
         private readonly ILoggerServices _logger;
         private readonly ITurnRepository _turnRepository;
 
-        public GetTurnsServices(ILoggerServices logger, ITurnRepository turnRepository)
+        public GetTurnsServices(ILoggerServices logger,
+                                ITurnRepository turnRepository)
         {
             _logger = logger;
             _turnRepository = turnRepository;
@@ -26,10 +27,10 @@ namespace Turnero.Services
         {
             try
             {
-                //_ = Task.Run(async () =>
-                //{
+                _ = Task.Run(async () =>
+                {
                     _logger.Info($"{dateTurn} Turnos llegaron correctamente");
-                //});
+                });
                 return await _turnRepository.GetList(dateTurn, medicId);
             }
             catch (Exception ex)
@@ -43,10 +44,10 @@ namespace Turnero.Services
         {
             try
             {
-                //_ = Task.Run(async () =>
-                //{
+                _ = Task.Run(async () =>
+                {
                     _logger.Info($"Turno {id}");
-                //});
+                });
                 return await _turnRepository.GetById(id);
             }
             catch(Exception ex)

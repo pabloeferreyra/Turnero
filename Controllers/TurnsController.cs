@@ -10,8 +10,8 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Turnero.Models;
 using Turnero.Services.Interfaces;
-using ApplicationDbContext = Turnero.Data.ApplicationDbContext;
-
+using OfficeOpenXml;
+using OfficeOpenXml.Table;
 namespace Turnero.Controllers
 {
     public class TurnsController : Controller
@@ -23,14 +23,16 @@ namespace Turnero.Controllers
         public IUpdateTurnsServices _updateTurns;
         public IGetMedicsServices _getMedics;
         public IGetTimeTurnsServices _getTimeTurns;
+        public IExportService _exportService;
 
         public TurnsController(UserManager<IdentityUser> userManager,
                                ILogger<TurnsController> logger,
                                IInsertTurnsServices insertTurns,
                                IGetTurnsServices getTurns,
                                IUpdateTurnsServices updateTurns,
-                               IGetMedicsServices getMedics, 
-                               IGetTimeTurnsServices getTimeTurns)
+                               IGetMedicsServices getMedics,
+                               IGetTimeTurnsServices getTimeTurns,
+                               IExportService exportService)
         {
             _userManager = userManager;
             _logger = logger;
@@ -39,6 +41,7 @@ namespace Turnero.Controllers
             _updateTurns = updateTurns;
             _getMedics = getMedics;
             _getTimeTurns = getTimeTurns;
+            _exportService = exportService;
         }
 
         [Authorize(Roles = "Ingreso, Medico")]
@@ -79,8 +82,16 @@ namespace Turnero.Controllers
             var medic = await _getMedics.GetMedicByUserId(user);
             ViewBag.Date = dateTurn.HasValue ? String.Format("{0:yyyy-MM-dd}", dateTurn) : String.Format("{0:yyyy-MM-dd}", DateTime.Now);
             ViewBag.IsMedic = medic != null;
-            List<Turn> turns = await this._getTurns.GetTurns(dateTurn, medicId);
-            return turns;
+            if (ViewBag.IsMedic)
+            {
+                ViewBag.MedicId = medic.Id;
+                return await this._getTurns.GetTurns(dateTurn, medic.Id);
+            }
+            else
+            {
+                ViewBag.MedicId = null;
+                return await this._getTurns.GetTurns(dateTurn, medicId);
+            }
         }
 
         [Authorize(Roles = "Ingreso, Medico")]
@@ -173,7 +184,7 @@ namespace Turnero.Controllers
             var turn = await _getTurns.GetTurn((Guid)id);
             List<Medic> medics = await _getMedics.GetMedics();
             List<TimeTurnViewModel> time = await _getTimeTurns.GetTimeTurns();
-            ViewBag.Medic = turn.Medic;
+            ViewBag.MedicId = turn.Medic;
             ViewBag.TimeId = turn.Time;
             ViewBag.Medics = medics;
             ViewBag.Time = time;
@@ -213,6 +224,17 @@ namespace Turnero.Controllers
             List<Turn> turns = await this.TurnListAsync(null, null);
             var size = 10;
             return PartialView("_TurnsPartial", PaginatedList<Turn>.Create(turns, pageNumber ?? 1, size));
+        }
+
+        [AllowAnonymous]
+        [HttpPost, ActionName("Export")]
+        public async Task<IActionResult> ExportExcelAsync(DateTime date, Guid medicId)
+        {
+            var stream = await _exportService.ExportExcelAsync(date, medicId);
+            stream.Position = 0;
+            var contentType = "application/octet-stream";
+            var fileName = "turns.xlsx";
+            return File(stream, contentType, fileName);
         }
     }
 }
