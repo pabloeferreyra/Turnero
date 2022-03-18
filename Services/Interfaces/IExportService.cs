@@ -6,6 +6,6 @@ namespace Turnero.Services.Interfaces
 {
     public interface IExportService
     {
-        public Task<MemoryStream> ExportExcelAsync(DateTime date, Guid medicId);
+        public Task<byte[]> ExportExcelAsync(DateTime date, Guid medicId, string filename);
     }
 }

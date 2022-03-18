@@ -7,6 +7,6 @@ namespace Turnero.Services.Repositories
 {
     public interface IExportRepository
     {
-        public Task<MemoryStream> ExportExcelAsync(DateTime date, Guid medicId);
+        public Task<byte[]> ExportExcelAsync(DateTime date, Guid medicId, string filename);
     }
 }

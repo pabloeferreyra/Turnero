@@ -33,13 +33,14 @@ namespace Turnero.Services.Repositories
             {
                 if(date != null)
                 {
-                    return await this.FindByCondition(m => m.Medic.Id == id && m.DateTurn == date)
+                    return await this.FindByCondition(m => m.MedicId == id && m.DateTurn.Date == date.Value.Date)
                         .Include(m => m.Medic).Include(t => t.Time)
-                        .OrderBy(t => t.Time.Time).ToListAsync();
+                        .OrderBy(t => t.Time.Time)
+                        .ToListAsync();
                 }
                 else
                 {
-                    return await this.FindByCondition(m => m.Medic.Id == id && m.DateTurn == DateTime.Today)
+                    return await this.FindByCondition(m => m.MedicId == id && m.DateTurn == DateTime.Today)
                         .Include(m => m.Medic).Include(t => t.Time)
                         .OrderBy(t => t.Time.Time).ToListAsync();
                 }
@@ -59,6 +60,14 @@ namespace Turnero.Services.Repositories
                         .OrderBy(t => t.Time.Time).ToListAsync();
                 }
             }
+        }
+        public async Task<List<Turn>> ForExport(DateTime date, Guid id)
+        {
+            
+            return await this.FindByCondition(m => m.MedicId == id && m.DateTurn.Date == date.Date)
+                .Include(m => m.Medic).Include(t => t.Time)
+                .OrderBy(t => t.Time.Time)
+                .ToListAsync();
         }
 
         public bool TurnExists(Guid id)

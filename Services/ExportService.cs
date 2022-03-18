@@ -15,9 +15,9 @@ namespace Turnero.Services
             _exportRepository = exportRepository;
         }
 
-        public async Task<MemoryStream> ExportExcelAsync(DateTime date, Guid medicId)
+        public async Task<byte[]> ExportExcelAsync(DateTime date, Guid medicId, string filename)
         {
-            return await _exportRepository.ExportExcelAsync(date, medicId);
+            return await _exportRepository.ExportExcelAsync(date, medicId, filename);
         }
     }
 }

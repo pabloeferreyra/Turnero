@@ -1,0 +1,30 @@
+﻿@model MedicTime
+@using Microsoft.AspNetCore.Identity
+@using (Html.BeginForm(null, null, FormMethod.Post, new { id = "__AjaxAntiForgeryForm" }))
+{
+    @Html.AntiForgeryToken()
+}
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+@{
+    ViewData["Title"] = "Exportar Turnos";
+    if (ViewBag.Date == null)
+        ViewBag.Date = String.Format("{0:yyyy-MM-dd}", DateTime.Now);
+    else
+        String.Format("{0:yyyy-MM-dd}", DateTime.Now);
+}
+<div class="card">
+<h1>Exportar Turnos</h1>
+</div>
+<form autocomplete="off" asp-controller="Turns" asp-antiforgery="true" asp-action="Export" method="post">
+    <div class="card-body register-card-body">
+        <div class="form-row">
+            <h3>@ViewBag.Date</h3>
+            <select asp-for="MedicId" class="form-control col-lg-2 col-sm-12" asp-items="@(new SelectList(ViewBag.Medics, "Id", "Name", ViewBag.MedicId))"></select>
+            <button type="submit" id="btnsubmit" class="btn btn-success">Exportar</button>
+        </div>
+
+    </div>
+    <div class="card-footer">
+    </div>
+</form>

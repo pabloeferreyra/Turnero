@@ -10,19 +10,20 @@ namespace Turnero.Services.Repositories
 {
     public class ExportRepository : TurnsRepository, IExportRepository
     {
-        public ExportRepository(ApplicationDbContext context) : base(context)
+        private IMedicRepository _medic;
+        public ExportRepository(ApplicationDbContext context, IMedicRepository medic) : base(context)
         {
+            _medic = medic;
         }
 
-        public async Task<MemoryStream> ExportExcelAsync(DateTime date, Guid medicId)
+        public async Task<byte[]> ExportExcelAsync(DateTime date, Guid medicId, string filename)
         {
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
             var turns = await GetList(date, medicId);
-            var stream = new MemoryStream();
-            using (var xlPackage = new ExcelPackage(stream))
+            using (var xlPackage = new ExcelPackage())
             {
                 // Define a worksheet
-                var worksheet = xlPackage.Workbook.Worksheets.Add("Users");
+                var worksheet = xlPackage.Workbook.Worksheets.Add(filename);
 
                 var customStyle = xlPackage.Workbook.Styles.CreateNamedStyle("CustomStyle");
                 customStyle.Style.Font.UnderLine = true;
@@ -31,22 +32,19 @@ namespace Turnero.Services.Repositories
                 // First row
                 var startRow = 5;
                 var row = startRow;
-
-                worksheet.Cells["A1"].Value = "Turnos del dia "+ date.ToShortDateString();
-                using (var r = worksheet.Cells["A1:C1"])
+                var medic = await this._medic.GetById(medicId);
+                worksheet.Cells["A1"].Value = "Turnos del dia "+ date.ToShortDateString() + " " + medic.Name;
+                using (var r = worksheet.Cells["A1:D1"])
                 { 
                     r.Merge = true;
-                    r.Style.Font.Color.SetColor(Color.Green);
-                    r.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                    r.Style.Fill.BackgroundColor.SetColor(Color.FromArgb(23, 55, 93));
                 }
 
-                worksheet.Cells["A4"].Value = "Nombre";
-                worksheet.Cells["B4"].Value = "Hora";
-                worksheet.Cells["C4"].Value = "Obra Social";
-                worksheet.Cells["D4"].Value = "Motivo";
-                worksheet.Cells["A4:D4"].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                worksheet.Cells["A4:D4"].Style.Fill.BackgroundColor.SetColor(Color.Yellow);
+                worksheet.Cells["A3"].Value = "Nombre";
+                worksheet.Cells["B3"].Value = "Hora";
+                worksheet.Cells["C3"].Value = "Obra Social";
+                worksheet.Cells["D3"].Value = "Motivo";
+                worksheet.Cells["A3:D3"].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                worksheet.Cells["A3:D3"].Style.Fill.BackgroundColor.SetColor(Color.Green);
 
                 row = 5;
                 foreach (var turn in turns)
@@ -62,11 +60,8 @@ namespace Turnero.Services.Repositories
                 xlPackage.Workbook.Properties.Title = "Turnos";
                 xlPackage.Workbook.Properties.Author = "PF Software";
 
-                xlPackage.Save();
-            }
-
-            stream.Position = 0;
-            return stream;
+                return xlPackage.GetAsByteArray();
+            }   
         }
     }
 }

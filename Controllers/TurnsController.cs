@@ -226,15 +226,25 @@ namespace Turnero.Controllers
             return PartialView("_TurnsPartial", PaginatedList<Turn>.Create(turns, pageNumber ?? 1, size));
         }
 
-        [AllowAnonymous]
-        [HttpPost, ActionName("Export")]
-        public async Task<IActionResult> ExportExcelAsync(DateTime date, Guid medicId)
+        [Authorize(Roles = "Ingreso, Medico")]
+        public async Task<IActionResult> Export()
         {
-            var stream = await _exportService.ExportExcelAsync(date, medicId);
-            stream.Position = 0;
-            var contentType = "application/octet-stream";
-            var fileName = "turns.xlsx";
-            return File(stream, contentType, fileName);
+            List<Medic> medics = await _getMedics.GetMedics();
+            ViewBag.Medics = medics;
+            return View();
+        }
+
+        [HttpPost, ActionName("Export")]
+        public async Task<IActionResult> ExportExcelAsync(MedicTime medicTime)
+        {
+            DateTime date = DateTime.Today;
+            var filename = "turns";
+            var medicName = await _getMedics.GetMedicById(medicTime.MedicId);
+            var reportname = medicName.Name+": " + date.Year + "-" + date.Month + "-" + date.Day + ".xlsx";
+            var stream = await _exportService.ExportExcelAsync(date, medicTime.MedicId, filename);
+            var contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+            
+            return File(stream, contentType, reportname);
         }
     }
 }
