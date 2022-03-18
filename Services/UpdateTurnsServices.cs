@@ -28,7 +28,7 @@ namespace Turnero.Services
                 if(turn.DateTurn <= DateTime.Today)
                 {
                     await _turnRepository.Access(turn);
-                    _ = Task.Run(async () =>
+                    _ = Task.Run(() =>
                     {
                         _logger.Debug($"Turno {turn.Id} ingresado");
                     });
@@ -45,7 +45,7 @@ namespace Turnero.Services
             try
             {
                 await _turnRepository.UpdateTurn(turn);
-                _ = Task.Run(async () =>
+                _ = Task.Run(() =>
                   {
                       _logger.Debug($"Turno {turn.Id} Actualizado");
                   });
@@ -62,7 +62,7 @@ namespace Turnero.Services
             try
             {
                 await _turnRepository.DeleteTurn(turn);
-                _ = Task.Run(async () =>
+                _ = Task.Run(() =>
                 {
                     _logger.Debug($"Turno {turn.Id} Eliminado");
                 });
