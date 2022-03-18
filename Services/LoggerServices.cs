@@ -16,7 +16,7 @@ namespace Turnero.Services
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                File.WriteAllText(@"/tmp/TurneroLogs/infoLog.txt", DateTime.Now +": "+ info);
+                File.WriteAllText(@"/root/TurneroLogs/infoLog.txt", DateTime.Now +": "+ info);
             }
             else if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
@@ -28,7 +28,7 @@ namespace Turnero.Services
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                File.WriteAllText(@"/tmp/TurneroLogs/debugLog.txt", DateTime.Now + ": " + debug);
+                File.WriteAllText(@"/root/TurneroLogs/debugLog.txt", DateTime.Now + ": " + debug);
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
@@ -40,7 +40,7 @@ namespace Turnero.Services
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                File.WriteAllText(@"/tmp/TurneroLogs/errorLog.txt", DateTime.Now + ": " + error + " - " + ex);
+                File.WriteAllText(@"/root/TurneroLogs/errorLog.txt", DateTime.Now + ": " + error + " - " + ex);
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
