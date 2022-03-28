@@ -21,13 +21,13 @@ namespace Turnero.Services
             _turnRepository = turnRepository;
         }
 
-        public async void Accessed(Turn turn)
+        public void Accessed(Turn turn)
         {
             try
             {
                 if(turn.DateTurn <= DateTime.Today)
                 {
-                    await _turnRepository.Access(turn);
+                    _turnRepository.Access(turn);
                     _ = Task.Run(() =>
                     {
                         _logger.Debug($"Turno {turn.Id} ingresado");

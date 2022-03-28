@@ -10,7 +10,7 @@ namespace Turnero.Services.Repositories
         Task<List<Turn>> GetList(DateTime? date, Guid? id);
         Task<Turn> GetById(Guid id);
         bool TurnExists(Guid id);
-        Task Access(Turn turn);
+        void Access(Turn turn);
         Task DeleteTurn(Turn turn);
         Task UpdateTurn(Turn turn);
         Task CreateTurn(Turn turn);

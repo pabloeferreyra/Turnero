@@ -14,10 +14,10 @@ namespace Turnero.Services.Repositories
         {
         }
 
-        public async Task Access(Turn turn)
+        public void Access(Turn turn)
         {
             turn.Accessed = true;
-            await this.UpdateAsync(turn);
+            this.Update(turn);
         }
 
         public async Task<Turn> GetById(Guid id)
