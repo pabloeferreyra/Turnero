@@ -14,14 +14,9 @@ namespace Turnero.Services.Repositories
         {
             this._context = context;
         }
-        public IQueryable<T> FindAll()
-        {
-            return this._context.Set<T>().AsNoTracking();
-        }
-        public IQueryable<T> FindByCondition(Expression<Func<T, bool>> expression)
-        {
-            return this._context.Set<T>().Where(expression).AsNoTracking();
-        }
+        public IQueryable<T> FindAll() => this._context.Set<T>().AsNoTracking();
+        public IQueryable<T> FindByCondition(Expression<Func<T, bool>> expression) => this._context.Set<T>().Where(expression).AsNoTracking();
+
         public void Create(T entity)
         {
             this._context.Set<T>().Add(entity);
