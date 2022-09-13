@@ -12,7 +12,7 @@
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <IsPackable>true</IsPackable>
-    <Nullable>warnings</Nullable>
+    <Nullable>disable</Nullable>
     <SignAssembly>False</SignAssembly>
   </PropertyGroup>
 
