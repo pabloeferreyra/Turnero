@@ -6,34 +6,38 @@
 }
 
 <link rel="stylesheet" href="~/css/Login.css" />
-
-<div class="container">
-    <div class="wrapper">
-        <form id="account" class="form-signin" method="post">
-            <img class="rounded mx-auto d-block" src="~/favicon.ico" />
-            <hr />
-            <div asp-validation-summary="All" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Input.User"></label>
-                <input asp-for="Input.User" class="form-control" />
-                <span asp-validation-for="Input.User" class="text-danger"></span>
+      <div class="container py-5 h-100">
+        <div class="row d-flex justify-content-center align-items-center h-100">
+            <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+                <div     class="card shadow-2-strong" style="border-radius: 1rem;">
+                    <div class="card-body p-5 text-center">
+                        <form id="account" method="post">
+                            <img class="rounded mx-auto d-block" src="~/favicon.ico" />
+                            <hr />
+                            <div asp-validation-summary="All" class="text-danger"></div>
+                            <div class="form-outline mb-4">
+                                <input asp-for="Input.User" class="form-control form-control-lg" placeholder="User" />
+                                
+                                <span asp-validation-for="Input.User" class="text-danger"></span>
+                            </div>
+                            <div class="form-outline mb-4">
+                                <input asp-for="Input.Password" class="form-control form-control-lg" placeholder="Password" />
+                                <span asp-validation-for="Input.Password" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                            <button type="submit" class="btn btn-primary btn-lg btn-block">Ingresar</button>
+                            </div>
+                            <div class="form-group">
+                                <p>
+                                    <a id="forgot-password" asp-page="./ForgotPassword">Contraseña perdida?</a>
+                                </p>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="Input.Password"></label>
-                <input asp-for="Input.Password" class="form-control" />
-                <span asp-validation-for="Input.Password" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <button type="submit" class="btn btn-lg btn-primary btn-block">Ingresar</button>
-            </div>
-            <div class="form-group">
-                <p>
-                    <a id="forgot-password" asp-page="./ForgotPassword">Contraseña perdida?</a>
-                </p>
-            </div>
-        </form>
+        </div>
     </div>
-</div>
 
 
 @section Scripts {
