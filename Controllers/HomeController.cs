@@ -6,21 +6,29 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Turnero.Models;
+using Turnero.Services.Interfaces;
 
 namespace Turnero.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-
-        public HomeController(ILogger<HomeController> logger)
+        public IGetTurnsServices _getTurns;
+        public HomeController(ILogger<HomeController> logger, IGetTurnsServices getTurns)
         {
             _logger = logger;
+            _getTurns = getTurns;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var turnsAsync = await _getTurns.GetTurns(null, null);
+            List<int> turns = new List<int>
+            {
+                turnsAsync.Where(t => t.Accessed).Count(),
+                turnsAsync.Where(t => t.Accessed == false).Count()
+            };
+            return View(turns);
         }
     }
 }

@@ -1,8 +1,21 @@
-﻿@{
+﻿@model List<int>
+@{
     ViewData["Title"] = "Home Page";
 }
-
-<div class="text-center">
-    <h1 class="display-4">Bienvenido</h1>
-    <p>Turnero sencillo para consultorios</p>
+<div class="container">
+    <div class="text-center">
+        <h1 class="display-4">Bienvenido</h1>
+        <p>Turnero sencillo para consultorios</p>
+    </div>
+    <div class="card">
+        <div class="card-header">
+            Turnos del dia de hoy
+        </div>
+        <div class="card-body">
+            <p>Turnos no ingresados @Model[0]</p>
+            <p>Turnos ingresados @Model[1]</p>
+        </div>
+    </div>
 </div>
+
+
