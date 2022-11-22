@@ -27,9 +27,9 @@ namespace Turnero.Services
         {
             try
             {
-                _ = Task.Run(async () =>
-                {
+                _ = Task.Run(() => {
                     _logger.Info($"{dateTurn} Turnos llegaron correctamente");
+                    return Task.CompletedTask;
                 });
                 return await _turnRepository.GetList(dateTurn, medicId);
             }
@@ -44,7 +44,7 @@ namespace Turnero.Services
         {
             try
             {
-                _ = Task.Run(async () =>
+                _ = Task.Run(() =>
                 {
                     _logger.Info($"Turno {id}");
                 });

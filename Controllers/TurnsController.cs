@@ -240,7 +240,7 @@ namespace Turnero.Controllers
             DateTime date = DateTime.Today;
             var filename = "turns";
             var medicName = await _getMedics.GetMedicById(medicTime.MedicId);
-            var reportname = medicName.Name+": " + date.Year + "-" + date.Month + "-" + date.Day + ".xlsx";
+            var reportname = medicName.Name+"_" + date.Year + "-" + date.Month + "-" + date.Day + ".xlsx";
             var stream = await _exportService.ExportExcelAsync(date, medicTime.MedicId, filename);
             var contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
             
