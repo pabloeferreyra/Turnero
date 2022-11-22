@@ -51,7 +51,7 @@ namespace Turnero.Controllers
             List<Turn> turns;
             turns = await TurnListAsync(null, null);
             ViewBag.Medics = medics;
-            var size = 10;
+            var size = 50;
             return View(PaginatedList<Turn>.Create(turns, pageNumber ?? 1, size));  
         }
 
@@ -71,7 +71,7 @@ namespace Turnero.Controllers
                 turns = await TurnListAsync(dateTurn, null);
             }
             ViewBag.Medics = medics;
-            var size = 10;
+            var size = 50;
             var ret = PaginatedList<Turn>.Create(turns, pageNumber ?? 1, size);
             return PartialView("_TurnsPartial", ret);
         }
@@ -169,7 +169,7 @@ namespace Turnero.Controllers
                 this._updateTurns.Accessed(turn);
             }
             List<Turn> turns = await this.TurnListAsync(null, null);
-            var size = 10;
+            var size = 50;
             return PartialView("_TurnsPartial", PaginatedList<Turn>.Create(turns, pageNumber ?? 1, size));
         }
 
@@ -222,7 +222,7 @@ namespace Turnero.Controllers
             var turn = await _getTurns.GetTurn(id);
             _updateTurns.Delete(turn);
             List<Turn> turns = await this.TurnListAsync(null, null);
-            var size = 10;
+            var size = 50;
             return PartialView("_TurnsPartial", PaginatedList<Turn>.Create(turns, pageNumber ?? 1, size));
         }
 
