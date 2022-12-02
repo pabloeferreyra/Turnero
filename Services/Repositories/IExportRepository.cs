@@ -1,12 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
-using System.IO;
+﻿using System;
 using System.Threading.Tasks;
 
-namespace Turnero.Services.Repositories
+namespace Turnero.Services.Repositories;
+
+public interface IExportRepository
 {
-    public interface IExportRepository
-    {
-        public Task<byte[]> ExportExcelAsync(DateTime date, Guid medicId, string filename);
-    }
+    public Task<byte[]> ExportExcelAsync(DateTime date, Guid medicId, string filename);
 }

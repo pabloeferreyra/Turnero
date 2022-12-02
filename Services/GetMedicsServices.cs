@@ -1,95 +1,90 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
-using Turnero.Data;
 using Turnero.Models;
 using Turnero.Services.Interfaces;
 using Turnero.Services.Repositories;
 
-namespace Turnero.Services
+namespace Turnero.Services;
+
+public class GetMedicsServices : IGetMedicsServices
 {
-    public class GetMedicsServices : IGetMedicsServices
+    private readonly ILoggerServices _logger;
+    private readonly IMedicRepository _medicRepository;
+
+    public GetMedicsServices(ILoggerServices logger, IMedicRepository medicRepository)
     {
-        private readonly ILoggerServices _logger;
-        private readonly IMedicRepository _medicRepository;
+        _logger = logger;
+        _medicRepository = medicRepository;
+    }
 
-        public GetMedicsServices(ILoggerServices logger, IMedicRepository medicRepository)
+    public async Task<List<Medic>> GetMedics()
+    {
+        try
         {
-            _logger = logger;
-            _medicRepository = medicRepository;
+            //_ = Task.Run(async () =>
+            //{
+                _logger.Debug("Medicos traidos correctamente");
+            //});
+            var med = await _medicRepository.GetList();
+            
+            return med;
         }
-
-        public async Task<List<Medic>> GetMedics()
+        catch(Exception ex)
         {
-            try
-            {
-                //_ = Task.Run(async () =>
-                //{
-                    _logger.Debug("Medicos traidos correctamente");
-                //});
-                var med = await _medicRepository.GetList();
-                
-                return med;
-            }
-            catch(Exception ex)
-            {
-                _logger.Error(ex.Message, ex);
-                return new List<Medic>();
-            }
+            _logger.Error(ex.Message, ex);
+            return new List<Medic>();
         }
+    }
 
-        public async Task<Medic> GetMedicById(Guid id)
+    public async Task<Medic> GetMedicById(Guid id)
+    {
+        try
         {
-            try
-            {
-                //_ = Task.Run(async () =>
-                //{
-                    _logger.Debug("Medico traido correctamente");
-                //});
-                Medic med = await _medicRepository.GetById(id);
-               
-                return med;
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex.Message, ex);
-                return new Medic();
-            }
+            //_ = Task.Run(async () =>
+            //{
+                _logger.Debug("Medico traido correctamente");
+            //});
+            Medic med = await _medicRepository.GetById(id);
+           
+            return med;
         }
-
-        public async Task<Medic> GetMedicByUserId(string id)
+        catch (Exception ex)
         {
-            try
-            {
-                //_ = Task.Run(async () =>
-                //{
-                    _logger.Debug("Medico traido correctamente por usuario");
-                //});
-                Medic med = await _medicRepository.GetByUserId(id);
-                
-                return med;
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex.Message, ex);
-                return new Medic();
-            }
+            _logger.Error(ex.Message, ex);
+            return new Medic();
         }
+    }
 
-        public bool ExistMedic(Guid id)
+    public async Task<Medic> GetMedicByUserId(string id)
+    {
+        try
         {
-            try
-            {
-                return _medicRepository.Exists(id);
-            }
-            catch(Exception ex)
-            {
-                _logger.Error(ex.Message, ex);
-                return false;
-            }
+            //_ = Task.Run(async () =>
+            //{
+                _logger.Debug("Medico traido correctamente por usuario");
+            //});
+            Medic med = await _medicRepository.GetByUserId(id);
+            
+            return med;
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex.Message, ex);
+            return new Medic();
+        }
+    }
+
+    public bool ExistMedic(Guid id)
+    {
+        try
+        {
+            return _medicRepository.Exists(id);
+        }
+        catch(Exception ex)
+        {
+            _logger.Error(ex.Message, ex);
+            return false;
         }
     }
 }

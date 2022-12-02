@@ -1,90 +1,86 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Turnero.Data;
 using Turnero.Models;
 using Turnero.Services.Interfaces;
 using Turnero.Services.Repositories;
 
-namespace Turnero.Services
+namespace Turnero.Services;
+
+public class GetTimeTurnsServices : IGetTimeTurnsServices
 {
-    public class GetTimeTurnsServices : IGetTimeTurnsServices
+    private readonly ILoggerServices _logger;
+    private readonly ITimeTurnRepository _timeTurnRepository;
+
+    public GetTimeTurnsServices(ILoggerServices logger,
+                                ITimeTurnRepository timeTurnRepository)
     {
-        private readonly ILoggerServices _logger;
-        private readonly ITimeTurnRepository _timeTurnRepository;
+        _logger = logger;
+        _timeTurnRepository = timeTurnRepository;
+    }
 
-        public GetTimeTurnsServices(ILoggerServices logger,
-                                    ITimeTurnRepository timeTurnRepository)
+    public async Task<List<TimeTurnViewModel>> GetTimeTurns()
+    {
+        try
         {
-            _logger = logger;
-            _timeTurnRepository = timeTurnRepository;
+            //_ = Task.Run(async () =>
+            //{
+                _logger.Debug("Tiempos obtenidos");
+            //});
+            return await _timeTurnRepository.GetList();
         }
-
-        public async Task<List<TimeTurnViewModel>> GetTimeTurns()
+        catch (Exception ex)
         {
-            try
-            {
-                //_ = Task.Run(async () =>
-                //{
-                    _logger.Debug("Tiempos obtenidos");
-                //});
-                return await _timeTurnRepository.GetList();
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex.Message, ex);
-                return null;
-            }
+            _logger.Error(ex.Message, ex);
+            return null;
         }
+    }
 
-        public IQueryable<TimeTurnViewModel> GetTimeTurnsQ()
+    public IQueryable<TimeTurnViewModel> GetTimeTurnsQ()
+    {
+        try
         {
-            try
-            {
-                //_ = Task.Run(async () =>
-                //{
-                    _logger.Debug("Tiempos obtenidos");
-                //});
-                return _timeTurnRepository.GetQueryable();
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex.Message, ex);
-                return null;
-            }
+            //_ = Task.Run(async () =>
+            //{
+                _logger.Debug("Tiempos obtenidos");
+            //});
+            return _timeTurnRepository.GetQueryable();
         }
-
-        public async Task<TimeTurnViewModel> GetTimeTurn(Guid id)
+        catch (Exception ex)
         {
-            try
-            {
-                //_ = Task.Run(async () =>
-                //{
-                    _logger.Info($"Tiempo {id} obtenido");
-                //});
-                return await _timeTurnRepository.GetbyId(id);
-            }
-            catch(Exception ex)
-            {
-                _logger.Error(ex.Message, ex);
-                return null;
-            }
+            _logger.Error(ex.Message, ex);
+            return null;
         }
+    }
 
-        public bool TimeTurnViewModelExists(Guid id)
+    public async Task<TimeTurnViewModel> GetTimeTurn(Guid id)
+    {
+        try
         {
-            try
-            {
-                return _timeTurnRepository.Exists(id);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex.Message, ex);
-                return false;
-            }
+            //_ = Task.Run(async () =>
+            //{
+                _logger.Info($"Tiempo {id} obtenido");
+            //});
+            return await _timeTurnRepository.GetbyId(id);
+        }
+        catch(Exception ex)
+        {
+            _logger.Error(ex.Message, ex);
+            return null;
+        }
+    }
+
+    public bool TimeTurnViewModelExists(Guid id)
+    {
+        try
+        {
+            return _timeTurnRepository.Exists(id);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex.Message, ex);
+            return false;
         }
     }
 }
