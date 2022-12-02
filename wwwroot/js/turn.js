@@ -1,4 +1,6 @@
-﻿$(function () {
+﻿var currentDate = "";
+var time = "";
+$(window).on("load", function () {
     var tdate = new Date();
     var dd = tdate.getDate(); //yields day
     var MM = tdate.getMonth() + 1; //yields month
@@ -20,8 +22,8 @@
     if (MM < 10) {
         MM = '0' + MM;
     }
-    var currentDate = yyyy + "-" + MM + "-" + dd;
-    var time = h + ":" + m;
+    currentDate = yyyy + "-" + MM + "-" + dd;
+    time = h + ":" + m;
     idleTimer();
 });
 
@@ -70,10 +72,22 @@ function accessed(urlAction, id) {
         },
         success: function (result) {
             if (result.trim().length == 0) {
-                toastr.success('no quedan turnos!', 'Todo listo!');
+                Swal.fire({
+                    position: 'top-end',
+                    icon: 'info',
+                    title: 'no quedan turnos!',
+                    showConfirmButton: false,
+                    timer: 1200
+                });
                 $("#TurnsPartial").html(result);
             }
-            toastr.success('Paciente accedio correctamente', 'Accedido');
+            Swal.fire({
+                position: 'top-end',
+                icon: 'success',
+                title: 'Paciente accedio correctamente',
+                showConfirmButton: false,
+                timer: 1200
+            });
             $("#TurnsPartial").html(result);
         },
         error: function (req, status, error) {
@@ -93,7 +107,13 @@ function Delete(urlAction, id) {
         },
         success: function (result) {
             $("#TurnsPartial").html(result);
-            toastr.success('Turno eliminado Correctamente.', 'Correcto!');
+            Swal.fire({
+                position: 'top-end',
+                icon: 'info',
+                title: 'Turno eliminado Correctamente.',
+                showConfirmButton: false,
+                timer: 1200
+            });
         },
         error: function (req, status, error) {
         }
@@ -132,7 +152,13 @@ function Create(urlAction) {
             Reason: $("#reason").val()
         },
         success: function () {
-            toastr.success('Turno creado correctamente.', 'Correcto!').delay(800);
+            Swal.fire({
+                position: 'top-end',
+                icon: 'success',
+                title: 'Turno creado correctamente.',
+                showConfirmButton: false,
+                timer: 1200
+            });
         },
     });
 }
@@ -159,7 +185,13 @@ function SearchTurns(urlAction) {
         },
         success: function (result) {
             if (result.trim().length == 0) {
-                toastr.success('no quedan turnos!', 'Todo listo!');
+                Swal.fire({
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'No quedan turnos!',
+                    showConfirmButton: false,
+                    timer: 1200
+                });
                 $("#TurnsPartial").html(result);
             }
             $("#TurnsPartial").html(result);
@@ -181,12 +213,24 @@ function ExportTurns(urlAction) {
         },
         success: function (result) {
             if (result.trim().length != 0) {
-                toastr.success('exportado con exito!', 'Todo listo!');
+                Swal.fire({
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'Exportado con exito!',
+                    showConfirmButton: false,
+                    timer: 1200
+                });
             }
             
         },
         error: function (req, status, error) {
-            toastr.error(error, 'error');
+            Swal.fire({
+                position: 'top-end',
+                icon: 'error',
+                title: error,
+                showConfirmButton: false,
+                timer: 1200
+            });
         }
     });
 }
@@ -202,7 +246,13 @@ function SearchAllTurns(urlAction) {
         },
         success: function (result) {
             if (result.trim().length == 0) {
-                toastr.success('no quedan turnos!', 'Todo listo!');
+                Swal.fire({
+                    position: 'top-end',
+                    icon: 'info',
+                    title: 'No quedan turnos!',
+                    showConfirmButton: false,
+                    timer: 1200
+                });
                 $("#TurnsPartial").html(result);
             }
             $("#TurnsPartial").html(result);
@@ -215,8 +265,14 @@ function SearchAllTurns(urlAction) {
 //-----------------------------------------------------  turnos  -----------------------------------------------------//
 $("#clientName").blur(function () {
     if ($("#clientName").val() == '') {
-        $("#clientValidation").text('Por favor ingrese nombre de cliente.');
-        toastr.error('Por favor ingrese nombre de cliente.', 'Error');
+        $("#clientValidation").text('Requerido');
+        Swal.fire({
+            position: 'top-end',
+            icon: 'info',
+            title: 'Por favor ingrese nombre de cliente.',
+            showConfirmButton: false,
+            timer: 1200
+        });
         $("#btnCrearTurno").prop('disabled', true);
     }
     else {
@@ -226,14 +282,26 @@ $("#clientName").blur(function () {
 
 $("#dniCliente").blur(function () {
     if ($("#dniCliente").val() == '') {
-        $("#dniValidation").text('Por favor ingrese DNI de cliente.');
-        toastr.error('Por favor ingrese DNI de cliente.', 'Error');
+        $("#clientValidation").text('Requerido');
+        Swal.fire({
+            position: 'top-end',
+            icon: 'info',
+            title: 'Por favor ingrese DNI de cliente.',
+            showConfirmButton: false,
+            timer: 1200
+        });
         $("#btnCrearTurno").prop('disabled', true);
     }
     else {
         if ($("#dniCliente").val().length < 6) {
             $("#dniValidation").text('El DNI debe tener por lo menos 6 (seis) caracteres.');
-            toastr.error('El DNI debe tener por lo menos 6 (seis) caracteres.', 'Error');
+            Swal.fire({
+                position: 'top-end',
+                icon: 'info',
+                title: 'El DNI debe tener por lo menos 6 (seis) caracteres.',
+                showConfirmButton: false,
+                timer: 1200
+            });
             $("#btnCrearTurno").prop('disabled', true);
         }
         else {
@@ -244,8 +312,14 @@ $("#dniCliente").blur(function () {
 
 $("#dateTurn").blur(function () {
     if ($("#dateTurn").val() < currentDate) {
-        $("#dateValidation").text('la fecha no puede ser anterior a la actual.');
-        toastr.error('la fecha no puede ser anterior a la actual.', 'Error');
+        $("#dateValidation").text('Requerido.');
+        Swal.fire({
+            position: 'top-end',
+            icon: 'info',
+            title: 'La fecha no puede ser anterior.',
+            showConfirmButton: false,
+            timer: 1200
+        });
         $("#btnCrearTurno").prop('disabled', true);
     }
     else {
@@ -254,7 +328,14 @@ $("#dateTurn").blur(function () {
 });
 $("#timeTurn").blur(function () {
     if ($("#timeTurn :selected").text() <= time && ($("#dateTurn").val() <= currentDate)) {
-        $("#timeValidation").text('la hora no puede ser anterior a la actual.');
+        $("#timeValidation").text('Requerido.');
+        Swal.fire({
+            position: 'top-end',
+            icon: 'info',
+            title: 'La hora no puede ser anterior.',
+            showConfirmButton: false,
+            timer: 1200
+        });
         $("#btnCrearTurno").prop('disabled', true);
     }
     else {
@@ -273,8 +354,14 @@ $("#timeTurn").blur(function () {
                     $("#btnCrearTurno").prop('disabled', false);
                 }
                 else {
-                    $("#timeValidation").text('el turno ya existe, seleccione otro.');
-                    toastr.error('el turno ya existe, seleccione otro.', 'Error');
+                    $("#timeValidation").text('El turno ya fue tomado, seleccione otro.');
+                    Swal.fire({
+                        position: 'top-end',
+                        icon: 'info',
+                        title: 'El turno ya fue tomado',
+                        showConfirmButton: false,
+                        timer: 1200
+                    });
                     $("#btnCrearTurno").prop('disabled', true);
                 }
             }
