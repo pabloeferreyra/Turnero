@@ -1,38 +1,35 @@
 ﻿using System;
-using System.IO;
 using System.Threading.Tasks;
-using Turnero.Data;
 using Turnero.Models;
 using Turnero.Services.Interfaces;
 using Turnero.Services.Repositories;
 
-namespace Turnero.Services
+namespace Turnero.Services;
+
+public class InsertTurnsServices : IInsertTurnsServices
 {
-    public class InsertTurnsServices : IInsertTurnsServices
+    private readonly ILoggerServices _logger;
+    private readonly ITurnRepository _turnRepository;
+    public InsertTurnsServices(ILoggerServices logger, ITurnRepository turnRepository)
     {
-        private readonly ILoggerServices _logger;
-        private readonly ITurnRepository _turnRepository;
-        public InsertTurnsServices(ILoggerServices logger, ITurnRepository turnRepository)
+        _logger = logger;
+        _turnRepository = turnRepository;
+    }
+    public async Task<bool> CreateTurnAsync(Turn turn)
+    {
+        try
         {
-            _logger = logger;
-            _turnRepository = turnRepository;
+            await _turnRepository.CreateTurn(turn);
+            _ = Task.Run(() =>
+            {
+                _logger.Debug("Turno agregado correctamente");
+            });
+            return true;
         }
-        public async Task<bool> CreateTurnAsync(Turn turn)
+        catch (Exception ex)
         {
-            try
-            {
-                await _turnRepository.CreateTurn(turn);
-                _ = Task.Run(() =>
-                {
-                    _logger.Debug("Turno agregado correctamente");
-                });
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex.Message, ex);
-                return false;
-            }
+            _logger.Error(ex.Message, ex);
+            return false;
         }
     }
 }

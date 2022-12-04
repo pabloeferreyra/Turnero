@@ -1,4 +1,5 @@
-﻿@model PaginatedList<Turnero.Models.Turn>
+﻿@using Turnero.Models;
+@model PaginatedList<Turn>
 @using Microsoft.AspNetCore.Identity
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
@@ -145,7 +146,7 @@
                 </a>
             </li>
             <li class="page-item active">
-               <span class="page-link">@(Model.PageIndex) </span><span class="sr-only">(current)</span>
+               <span class="page-link">@(Model.PageIndex) </span><span class="sr-only"></span>
             </li>
             <li class="page-item">
                 <a onclick="AddNumber();SearchTurns('@Url.Action("GetTurns","Turns")');"

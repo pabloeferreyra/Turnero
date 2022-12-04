@@ -1,18 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
-namespace Turnero.Models
+namespace Turnero.Models;
+
+public class UserClaimsViewModel
 {
-    public class UserClaimsViewModel
+    public UserClaimsViewModel()
     {
-        public UserClaimsViewModel()
-        {
-            Claims = new List<UserClaim>();
-        }
-
-        public string UserId { get; set; }
-        public List<UserClaim> Claims { get; set; }
+        Claims = new List<UserClaim>();
     }
+
+    public string UserId { get; set; }
+    public List<UserClaim> Claims { get; set; }
 }

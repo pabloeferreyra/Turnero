@@ -2,23 +2,22 @@
 using Microsoft.EntityFrameworkCore;
 using Turnero.Models;
 
-namespace Turnero.Data
+namespace Turnero.Data;
+
+public class ApplicationDbContext : IdentityDbContext
 {
-    public class ApplicationDbContext : IdentityDbContext
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        : base(options)
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-            : base(options)
-        {
-        }
-        protected override void OnModelCreating(ModelBuilder builder)
-        {
-            base.OnModelCreating(builder);
-            builder.Entity<Turn>()
-            .Property(b => b.DateTurn)
-            .HasDefaultValueSql("getdate()");
-        }
-        public DbSet<Turn> Turns { get; set; }
-        public DbSet<Medic> Medics { get; set; }
-        public DbSet<TimeTurnViewModel> TimeTurns { get; set; }
     }
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+        builder.Entity<Turn>()
+        .Property(b => b.DateTurn)
+        .HasDefaultValueSql("getdate()");
+    }
+    public DbSet<Turn> Turns { get; set; }
+    public DbSet<Medic> Medics { get; set; }
+    public DbSet<TimeTurnViewModel> TimeTurns { get; set; }
 }

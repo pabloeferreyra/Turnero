@@ -1,10 +1,8 @@
-﻿using System.Threading.Tasks;
-using Turnero.Models;
+﻿using Turnero.Models;
 
-namespace Turnero.Services.Interfaces
+namespace Turnero.Services.Interfaces;
+
+public interface IDeleteTimeTurnServices
 {
-    public interface IDeleteTimeTurnServices
-    {
-        void Delete(TimeTurnViewModel timeTurn);
-    }
+    void Delete(TimeTurnViewModel timeTurn);
 }

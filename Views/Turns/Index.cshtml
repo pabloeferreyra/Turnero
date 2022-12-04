@@ -1,4 +1,5 @@
-﻿@model PaginatedList<Turnero.Models.Turn>
+﻿@using Turnero.Models;
+@model PaginatedList<Turn>
 @using Microsoft.AspNetCore.Identity
 @using (Html.BeginForm(null, null, FormMethod.Post, new { id = "__AjaxAntiForgeryForm" }))
 {

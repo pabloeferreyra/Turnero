@@ -1,7 +1,7 @@
 ﻿ <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <UserSecretsId>aspnet-Turnero-1D8EA02B-D124-439A-B5F8-DE2044EFFABA</UserSecretsId>
 	  <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
     <CopyRefAssembliesToPublishDirectory>false</CopyRefAssembliesToPublishDirectory>
@@ -42,8 +42,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Migrations\20200807225943_InitialCreate.cs" />
-    <Compile Remove="Migrations\20200807225943_InitialCreate.Designer.cs" />
+    <Compile Remove="Migrations\**" />
+    <Compile Remove="packages\**" />
+    <Compile Remove="Turnero.Models\**" />
+    <Content Remove="Migrations\**" />
+    <Content Remove="packages\**" />
+    <Content Remove="Turnero.Models\**" />
+    <EmbeddedResource Remove="Migrations\**" />
+    <EmbeddedResource Remove="packages\**" />
+    <EmbeddedResource Remove="Turnero.Models\**" />
+    <None Remove="Migrations\**" />
+    <None Remove="packages\**" />
+    <None Remove="Turnero.Models\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -52,12 +62,22 @@
 
   <ItemGroup>
     <PackageReference Include="EPPlus" Version="6.1.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="6.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Certificate" Version="7.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="7.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="7.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="7.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="7.0.0" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Models\" />
   </ItemGroup>
 
 </Project>

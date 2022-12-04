@@ -10,81 +10,80 @@ using Turnero.Data;
 using Turnero.Models;
 using Turnero.Services.Interfaces;
 
-namespace Turnero.Controllers
+namespace Turnero.Controllers;
+
+[Authorize(Roles = "Admin")]
+public class TimeTurnController : Controller
 {
-    [Authorize(Roles = "Admin")]
-    public class TimeTurnController : Controller
+    private readonly ApplicationDbContext _context;
+    private readonly IGetTimeTurnsServices _getTimeTurns;
+    private readonly IInsertTimeTurnServices _insertTimeTurn;
+    private readonly IDeleteTimeTurnServices _deleteTimeTurn;
+
+    public TimeTurnController(ApplicationDbContext context,
+                              IGetTimeTurnsServices getTimeTurns,
+                              IInsertTimeTurnServices insertTimeTurn, 
+                              IDeleteTimeTurnServices deleteTimeTurn)
     {
-        private readonly ApplicationDbContext _context;
-        private readonly IGetTimeTurnsServices _getTimeTurns;
-        private readonly IInsertTimeTurnServices _insertTimeTurn;
-        private readonly IDeleteTimeTurnServices _deleteTimeTurn;
+        _context = context;
+        _getTimeTurns = getTimeTurns;
+        _insertTimeTurn = insertTimeTurn;
+        _deleteTimeTurn = deleteTimeTurn;
+    }
 
-        public TimeTurnController(ApplicationDbContext context,
-                                  IGetTimeTurnsServices getTimeTurns,
-                                  IInsertTimeTurnServices insertTimeTurn, 
-                                  IDeleteTimeTurnServices deleteTimeTurn)
+    // GET: TimeTurn
+    public async Task<IActionResult> Index(int? pageNumber)
+    {
+        var size = 10;
+        var tTurns = _getTimeTurns.GetTimeTurnsQ();
+        return View(await PaginatedList<TimeTurnViewModel>.CreateAsync(tTurns.AsNoTracking(), pageNumber ?? 1, size));
+    }
+
+    // GET: TimeTurn/Create
+    public IActionResult Create()
+    {
+        return View();
+    }
+
+    // POST: TimeTurn/Create
+    // To protect from overposting attacks, enable the specific properties you want to bind to, for 
+    // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create([Bind("Id,Time")] TimeTurnViewModel timeTurnViewModel)
+    {
+        if (ModelState.IsValid)
         {
-            _context = context;
-            _getTimeTurns = getTimeTurns;
-            _insertTimeTurn = insertTimeTurn;
-            _deleteTimeTurn = deleteTimeTurn;
-        }
-
-        // GET: TimeTurn
-        public async Task<IActionResult> Index(int? pageNumber)
-        {
-            var size = 10;
-            var tTurns = _getTimeTurns.GetTimeTurnsQ();
-            return View(await PaginatedList<TimeTurnViewModel>.CreateAsync(tTurns.AsNoTracking(), pageNumber ?? 1, size));
-        }
-
-        // GET: TimeTurn/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: TimeTurn/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Time")] TimeTurnViewModel timeTurnViewModel)
-        {
-            if (ModelState.IsValid)
-            {
-                await _insertTimeTurn.Create(timeTurnViewModel);
-                return RedirectToAction(nameof(Index));
-            }
-            return View(timeTurnViewModel);
-        }
-
-        // GET: TimeTurn/Delete/5
-        public async Task<IActionResult> Delete(Guid? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var timeTurnViewModel = await _getTimeTurns.GetTimeTurn((Guid)id);
-            if (timeTurnViewModel == null)
-            {
-                return NotFound();
-            }
-
-            return View(timeTurnViewModel);
-        }
-
-        // POST: TimeTurn/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(Guid id)
-        {
-            var timeTurnViewModel = await _getTimeTurns.GetTimeTurn(id);
-            _deleteTimeTurn.Delete(timeTurnViewModel);
+            await _insertTimeTurn.Create(timeTurnViewModel);
             return RedirectToAction(nameof(Index));
         }
+        return View(timeTurnViewModel);
+    }
+
+    // GET: TimeTurn/Delete/5
+    public async Task<IActionResult> Delete(Guid? id)
+    {
+        if (id == null)
+        {
+            return NotFound();
+        }
+
+        var timeTurnViewModel = await _getTimeTurns.GetTimeTurn((Guid)id);
+        if (timeTurnViewModel == null)
+        {
+            return NotFound();
+        }
+
+        return View(timeTurnViewModel);
+    }
+
+    // POST: TimeTurn/Delete/5
+    [HttpPost, ActionName("Delete")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteConfirmed(Guid id)
+    {
+        var timeTurnViewModel = await _getTimeTurns.GetTimeTurn(id);
+        _deleteTimeTurn.Delete(timeTurnViewModel);
+        return RedirectToAction(nameof(Index));
     }
 }
