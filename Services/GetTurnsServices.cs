@@ -64,4 +64,17 @@ public class GetTurnsServices : IGetTurnsServices
             return false;
         }
     }
+
+    public bool CheckTurn(Guid medicId, DateTime date, Guid timeTurn)
+    {
+        try
+        {
+            return _turnRepository.CheckTurn(medicId, date, timeTurn);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex.Message, ex);
+            return false;
+        }
+    }
 }

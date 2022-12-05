@@ -74,6 +74,10 @@ public class TurnsRepository : RepositoryBase<Turn>, ITurnRepository
     {
         return this.FindByCondition(m => m.Id == id).Any();
     }
+    public bool CheckTurn(Guid medicId, DateTime date, Guid timeTurn)
+    {
+        return this.FindByCondition(e => e.MedicId == medicId && e.DateTurn.Date == date && e.TimeId == timeTurn).Any();
+    }
 
     public async Task DeleteTurn(Turn turn)
     {
