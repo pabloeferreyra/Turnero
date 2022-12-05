@@ -338,33 +338,33 @@ $("#timeTurn").blur(function () {
         });
         $("#btnCrearTurno").prop('disabled', true);
     }
-    else {
-        $.ajax({
-            type: "POST",
-            url: "/Turns/CheckTurn",
-            data: {
-                medicId: $("#medicId :selected").val(),
-                date: $("#dateTurn").val(),
-                timeTurn: $("#timeTurn :selected").val()
-            },
-            complete: function (msj) {
-                value = msj.responseText;
-                if (value == 'false') {
-                    $("#timeValidation").text('');
-                    $("#btnCrearTurno").prop('disabled', false);
-                }
-                else {
-                    $("#timeValidation").text('El turno ya fue tomado, seleccione otro.');
-                    Swal.fire({
-                        position: 'top-end',
-                        icon: 'info',
-                        title: 'El turno ya fue tomado',
-                        showConfirmButton: false,
-                        timer: 1200
-                    });
-                    $("#btnCrearTurno").prop('disabled', true);
-                }
-            }
+    //else {
+    //    $.ajax({
+    //        type: "POST",
+    //        url: "/Turns/CheckTurn",
+    //        data: {
+    //            medicId: $("#medicId :selected").val(),
+    //            date: $("#dateTurn").val(),
+    //            timeTurn: $("#timeTurn :selected").val()
+    //        },
+    //        complete: function (msj) {
+    //            value = msj.responseText;
+    //            if (value == 'false') {
+    //                $("#timeValidation").text('');
+    //                $("#btnCrearTurno").prop('disabled', false);
+    //            }
+    //            else {
+    //                $("#timeValidation").text('El turno ya fue tomado, seleccione otro.');
+    //                Swal.fire({
+    //                    position: 'top-end',
+    //                    icon: 'info',
+    //                    title: 'El turno ya fue tomado',
+    //                    showConfirmButton: false,
+    //                    timer: 1200
+    //                });
+    //                $("#btnCrearTurno").prop('disabled', true);
+    //            }
+    //        }
         });
 
     }
