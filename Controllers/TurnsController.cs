@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -241,5 +242,12 @@ public class TurnsController : Controller
         var contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
         
         return File(stream, contentType, reportname);
+    }
+    
+    [Authorize(Roles = "Admin, Ingreso")]
+    [HttpPost]
+    public bool CheckTurn(Guid medicId, DateTime date, Guid timeTurn)
+    {
+        return _getTurns.CheckTurn(medicId, date, timeTurn);
     }
 }
