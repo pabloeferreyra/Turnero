@@ -20,12 +20,12 @@
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index"><img class="img-thumbnail img-fluid" width="40" height="40" src="~/favicon.ico" /></a>
-                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                                aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                
-                <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
+
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <partial name="_LoginPartial" />
                     
                         @if ((User.IsInRole("Ingreso") || User.IsInRole("Medico")))
@@ -43,8 +43,7 @@
                         {
                             <ul class="navbar-nav flex-grow-1">
                                 <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown"
-                                       aria-haspopup="true" aria-expanded="false">Manage</a>
+                                        <a class="nav-link dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">Manage</a>
                                     <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
                                         <a asp-action="ListUsers" asp-controller="Administration" class="dropdown-item">Users</a>
                                         <a asp-action="ListRoles" asp-controller="Administration" class="dropdown-item">Roles</a>
