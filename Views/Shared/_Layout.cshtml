@@ -26,7 +26,6 @@
                 </button>
 
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <partial name="_LoginPartial" />
                     
                         @if ((User.IsInRole("Ingreso") || User.IsInRole("Medico")))
                         {
@@ -54,6 +53,7 @@
 
                             </ul>
                         }
+                            <partial name="_LoginPartial" />
                 </div>
             </div>
         </nav>
