@@ -32,11 +32,9 @@ public class TimeTurnController : Controller
     }
 
     // GET: TimeTurn
-    public async Task<IActionResult> Index(int? pageNumber)
+    public async Task<IActionResult> Index()
     {
-        var size = 10;
-        var tTurns = _getTimeTurns.GetTimeTurnsQ();
-        return View(await PaginatedList<TimeTurnViewModel>.CreateAsync(tTurns.AsNoTracking(), pageNumber ?? 1, size));
+        return View(await _getTimeTurns.GetTimeTurns());
     }
 
     // GET: TimeTurn/Create

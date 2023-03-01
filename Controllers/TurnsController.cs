@@ -42,20 +42,17 @@ public class TurnsController : Controller
     }
 
     [Authorize(Roles = "Ingreso, Medico")]
-    public async Task<IActionResult> Index(int? pageNumber)
+    public async Task<IActionResult> Index()
     {
         List<Medic> medics = await _getMedics.GetMedics();
-        List<Turn> turns;
-        turns = await TurnListAsync(null, null);
         ViewBag.Medics = medics;
-        var size = 50;
-        return View(PaginatedList<Turn>.Create(turns, pageNumber ?? 1, size));  
+        return View(await TurnListAsync(null, null));  
     }
 
     //[AllowAnonymous]
     [Authorize(Roles = "Ingreso, Medico")]
     [HttpGet]
-    public async Task<IActionResult> GetTurns(DateTime? dateTurn, Guid? medicId, int? pageNumber)
+    public async Task<IActionResult> GetTurns(DateTime? dateTurn, Guid? medicId)
     {
         List<Medic> medics = await _getMedics.GetMedics();
         List<Turn> turns;
@@ -68,9 +65,7 @@ public class TurnsController : Controller
             turns = await TurnListAsync(dateTurn, null);
         }
         ViewBag.Medics = medics;
-        var size = 50;
-        var ret = PaginatedList<Turn>.Create(turns, pageNumber ?? 1, size);
-        return PartialView("_TurnsPartial", ret);
+        return PartialView("_TurnsPartial", turns);
     }
 
     public async Task<List<Turn>> TurnListAsync(DateTime? dateTurn, Guid? medicId)
@@ -137,7 +132,7 @@ public class TurnsController : Controller
     [Authorize(Roles = "Medico")]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Accessed(Guid? id, int? pageNumber)
+    public async Task<IActionResult> Accessed(Guid? id)
     {
         Turn turn;
         if (id != null)
@@ -165,9 +160,7 @@ public class TurnsController : Controller
         {
             this._updateTurns.Accessed(turn);
         }
-        List<Turn> turns = await this.TurnListAsync(null, null);
-        var size = 50;
-        return PartialView("_TurnsPartial", PaginatedList<Turn>.Create(turns, pageNumber ?? 1, size));
+        return PartialView("_TurnsPartial", await this.TurnListAsync(null, null));
     }
 
     [Authorize(Roles = "Ingreso")]
@@ -214,13 +207,11 @@ public class TurnsController : Controller
     [Authorize(Roles = "Admin, Ingreso")]
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> DeleteConfirmed(Guid id, int? pageNumber)
+    public async Task<IActionResult> DeleteConfirmed(Guid id)
     {
         var turn = await _getTurns.GetTurn(id);
         _updateTurns.Delete(turn);
-        List<Turn> turns = await this.TurnListAsync(null, null);
-        var size = 50;
-        return PartialView("_TurnsPartial", PaginatedList<Turn>.Create(turns, pageNumber ?? 1, size));
+        return PartialView("_TurnsPartial", await this.TurnListAsync(null, null));
     }
 
     [Authorize(Roles = "Ingreso, Medico")]
