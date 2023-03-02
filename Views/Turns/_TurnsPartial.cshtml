@@ -3,8 +3,7 @@
 @using Microsoft.AspNetCore.Identity
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
-
-<table id="Turns1" class="back">
+<table class="back table table-responsive-md">
     <thead>
         <tr>
             <th>
@@ -68,7 +67,6 @@
             <td>
                 @Html.DisplayFor(modelItem => item.Time.Time)
             </td>
-            <td></td>
         </tr>
             }
             else
@@ -104,7 +102,7 @@
                 @if (ViewBag.IsMedic)
                 {
                     <span id="confirmaccessedSpan_@item.Id" style="display:none">
-                        <button onclick="accessed('@Url.Action("Accessed","Turns")','@item.Id');" class="btn btn-danger">Si</button>
+                        <button onclick="accessed('@Url.Action("Accessed","Turns")','@item.Id', '@Model.PageIndex');" class="btn btn-danger">Si</button>
                         <a href="#" class="btn btn-primary"
                            onclick="ConfirmAccess('@item.Id', false)">No</a>
                     </span>
@@ -118,7 +116,7 @@
                     {
                         <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-secondary">Editar</a>
                         <span id="confirmaccessedSpan_@item.Id" style="display:none">
-                            <button onclick="Delete('@Url.Action("Delete","Turns")','@item.Id');" class="btn btn-danger">Si</button>
+                            <button onclick="Delete('@Url.Action("Delete","Turns")','@item.Id', '@Model.PageIndex');" class="btn btn-danger">Si</button>
                             <a href="#" class="btn btn-primary"
                                onclick="ConfirmDelete('@item.Id', false)">No</a>
                         </span>
@@ -134,3 +132,29 @@
         }
 </tbody>
 </table>
+<div class="container">
+    <div class="row">
+        @{
+        var prevDisabled = !Model.HasPreviousPage ? "disabled" : "";
+        var nextDisabled = !Model.HasNextPage ? "disabled" : "";
+        }
+        <ul class="pagination">
+            <li class="page-item">
+                <a onclick="RemNumber();SearchTurns('@Url.Action("GetTurns","Turns")')"
+                    class="page-link btn btn-default @prevDisabled">
+                    Anterior
+                </a>
+            </li>
+            <li class="page-item active">
+               <span class="page-link">@(Model.PageIndex) </span><span class="sr-only">(current)</span>
+            </li>
+            <li class="page-item">
+                <a onclick="AddNumber();SearchTurns('@Url.Action("GetTurns","Turns")');"
+                    class=" page-link btn btn-default @nextDisabled">
+                    Siguiente
+                </a>
+            </li>
+        </ul>
+        <input type="hidden" id="pNumber" value="@(Model.PageIndex)" />
+    </div>
+</div>
