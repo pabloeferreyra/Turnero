@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,9 +12,15 @@ namespace Turnero.Services.Repositories;
 
 public class MedicRepository : RepositoryBase<Medic>, IMedicRepository
 {
-    public MedicRepository(ApplicationDbContext context) : base(context)
-    {
+    public IMapper mapper { get; }
 
+    public MedicRepository(ApplicationDbContext context, IMapper mapper) : base(context, mapper)
+    {
+        this.mapper = mapper;
+    }
+
+    public async Task<List<MedicDto>> GetListDto() {
+        return await FindAll().ProjectTo<MedicDto>(this.mapper.ConfigurationProvider).ToListAsync();
     }
 
     public async Task<List<Medic>> GetList()

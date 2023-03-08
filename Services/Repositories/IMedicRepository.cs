@@ -7,6 +7,7 @@ namespace Turnero.Services.Repositories;
 
 public interface IMedicRepository
 {
+    Task<List<MedicDto>> GetListDto();
     Task<List<Medic>> GetList();
     Task<Medic> GetById(Guid id);
     Task<Medic> GetByUserId(string id);

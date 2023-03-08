@@ -1,5 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -10,10 +13,14 @@ namespace Turnero.Services.Repositories;
 public abstract class RepositoryBase<T> : IRepositoryBase<T> where T : class
 {
     protected ApplicationDbContext _context;
-    public RepositoryBase(ApplicationDbContext context)
+    private readonly IMapper mapper;
+
+    public RepositoryBase(ApplicationDbContext context, IMapper mapper)
     {
         this._context = context;
+        this.mapper = mapper;
     }
+
     public IQueryable<T> FindAll() => this._context.Set<T>().AsNoTracking();
     public IQueryable<T> FindByCondition(Expression<Func<T, bool>> expression) => this._context.Set<T>().Where(expression).AsNoTracking();
 

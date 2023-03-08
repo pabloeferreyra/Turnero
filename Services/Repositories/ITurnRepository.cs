@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Turnero.Models;
 
@@ -7,6 +8,7 @@ namespace Turnero.Services.Repositories;
 
 public interface ITurnRepository
 {
+    IQueryable<TurnDTO> GetListDto();
     Task<List<Turn>> GetList(DateTime? date, Guid? id);
     Task<Turn> GetById(Guid id);
     bool TurnExists(Guid id);

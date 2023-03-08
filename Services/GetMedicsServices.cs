@@ -12,10 +12,25 @@ public class GetMedicsServices : IGetMedicsServices
     private readonly ILoggerServices _logger;
     private readonly IMedicRepository _medicRepository;
 
-    public GetMedicsServices(ILoggerServices logger, IMedicRepository medicRepository)
-    {
+    public GetMedicsServices(ILoggerServices logger, IMedicRepository medicRepository) {
         _logger = logger;
         _medicRepository = medicRepository;
+    }
+
+    public async Task<List<MedicDto>> GetMedicsDto() {
+        try {
+            //_ = Task.Run(async () =>
+            //{
+            _logger.Debug("Medicos traidos correctamente");
+            //});
+            var med = await _medicRepository.GetListDto();
+
+            return med;
+        }
+        catch (Exception ex) {
+            _logger.Error(ex.Message, ex);
+            return new List<MedicDto>();
+        }
     }
 
     public async Task<List<Medic>> GetMedics()

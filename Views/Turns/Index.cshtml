@@ -1,5 +1,5 @@
 ﻿@using Turnero.Models;
-@model List<Turn>
+@model List<TurnDTO>
 @using Microsoft.AspNetCore.Identity
 @using (Html.BeginForm(null, null, FormMethod.Post, new { id = "__AjaxAntiForgeryForm" }))
 {
@@ -10,23 +10,25 @@
 @{
     ViewData["Title"] = "Turnos - Turnero";
     if (ViewBag.Date == null)
-        ViewBag.Date = String.Format("{0:yyyy-MM-dd}", DateTime.Now);
+        ViewBag.Date = String.Format("{0:dd/MM/yyyy}", DateTime.Now);
     else
-        String.Format("{0:yyyy-MM-dd}", DateTime.Now);
+        String.Format("{0:dd/M/yyyy}", DateTime.Now);
 }
 <div class="card">
 <h1>Turnos</h1>
 </div>
 <div class="back container-fluid">
     <div class="form-group row">
-        <div class="col-md-1 col-sm-12">
-            <input id="DateTurn" name="dateTurn" type="text" class="form-control" value="@ViewBag.Date" data-date-format="dd/MM/yyyy" />
-        </div>
-        <div class="col-md-2 col-sm-12">
-            <select id="Medics" class="form-control" asp-items="@(new SelectList(ViewBag.Medics, "Id", "Name", ViewBag.MedicId))"></select>
-        </div>
-        <div class="col-md-1 col-sm-12">
-            <button class="form-control btn btn-primary" onclick="SearchTurns('@Url.Action("GetTurns","Turns")')">Buscar</button>
+        <div class="form-group row">
+            <div class="col-md-1 col-sm-12">
+                <input id="DateTurn" name="dateTurn" type="text" class="form-control" value="@ViewBag.Date" data-date-format="dd/MM/yyyy" />
+            </div>
+            <div class="col-md-2 col-sm-12">
+                <select id="Medics" class="form-control" asp-items="@ViewBag.Medics"></select>
+            </div>
+            <div class="col-md-1 col-sm-12">
+                <button class="form-control btn btn-primary" id="btnSearch">Buscar</button>
+            </div>
         </div>
         @{
             if (SignInManager.IsSignedIn(User)) {
@@ -35,9 +37,6 @@
                 </div>
             }
         }
-        <div class="col-md-1 col-sm-12">
-            <button class="form-control btn btn-secondary" onclick="SearchAllTurns('@Url.Action("GetTurns","Turns")')">Limpiar</button>
-        </div>
     </div>
     <div class="row">
             
@@ -50,6 +49,7 @@
             <partial name="_TurnsPartial" model="@Model" />
     
 </div>
-    @section scripts{
-        <script src="~/js/turn.js"></script>
-    }
+@section scripts{
+    <script src="~/js/turn.js"></script>
+    <script src="~/js/turndt.js"></script>
+}

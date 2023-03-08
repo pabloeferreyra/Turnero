@@ -1,98 +1,6 @@
 ﻿var currentDate = "";
 var time = "";
-var table = $('#Turns1').DataTable({
-    paging: true,
-    fixedHeader: true,
-    scrollY: 300,
-    scrollCollapse: true,
-    "searching": true,
-    language: {
-        "lengthMenu": "Mostrando _MENU_ filas por pagina",
-        "zeroRecords": "No se encontro registro",
-        "info": "Mostrando pagina _PAGE_ de _PAGES_",
-        "infoEmpty": "No se encontraron resultados",
-        "infoFiltered": "(Filtrado de _MAX_ total )",
-        "search": "Buscar:",
-        "paginate": {
-            "first": "Primera",
-            "last": "Ultima",
-            "next": "Siguiente",
-            "previous": "Previo"
-        },
-        buttons: {
-            pageLength: {
-                _: "Mostrando %d filas",
-                '-1': "Todas las filas"
-            },
-            "collection": "Exportar"
-        }
-    },
-    responsive: {
-        details: {
-            type: 'inline'
-        }
-    },
-    columnDefs: [{ responsivePriority: 1, targets: 0 }],
-    order: [0, 'asc'],
-    dom: '<"col-md-6"B><"col-md-6 ms-auto"f><"col-md-12"rt><"row"<"col-md-6"i><"col-md-6 ms-auto"p>>',
-    lengthMenu: [
-        [10, 25, 50, -1],
-        ['10 filas', '25 filas', '50 filas', 'Todos']
-    ],
-    buttons: [
-        {
-            extend: 'collection',
-            className: 'custom-html-collection',
-            buttons: [
-                {
-                    extend: 'excelHtml5',
-                    title: "Turnos",
-                    exportOptions: {
-                        columns: [0, 1, 2, 3, 4, 5, 6]
-                    }
-                },
-                {
-                    extend: 'pdfHtml5',
-                    download: 'open',
-                    orientation: 'landscape',
-                    pageSize: 'A4',
-                    title: "Turnos",
-                    exportOptions: {
-                        columns: [0, 1, 2, 3, 4, 5, 6]
-                    }
-                },
-            ]
-        },
-        'spacer',
-        'pageLength'
-
-    ]
-});
-function initTable() {
-    table
-        .buttons()
-        .container();
-    return table;
-}
-
-$(document).ready(function () {
-    initTable();
-    new DateTime(document.getElementById('DateTurn'), {
-        buttons: {
-            today: true,
-        }, 
-        i18n: {
-            today: "Hoy",
-            previous: 'Anterior',
-            next: 'Siguiente',
-            months: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
-            weekdays: ['Dom', 'Lun', 'Mar', 'Miér', 'Jue', 'Vier', 'Sáb']
-        }
-    });
-});
-
 $(window).on("load", function () {
-
     var tdate = new Date();
     var dd = tdate.getDate(); //yields day
     var MM = tdate.getMonth() + 1; //yields month
@@ -116,7 +24,7 @@ $(window).on("load", function () {
     }
     currentDate = yyyy + "-" + MM + "-" + dd;
     time = h + ":" + m;
-    idleTimer();
+    //idleTimer();
 });
 
 function idleTimer() {
@@ -268,7 +176,7 @@ function SearchTurns(urlAction) {
     var medic = $("#Medics :selected").val();
     var pNum = $('#pNumber').val();
     $.ajax({
-        type: "GET",
+        type: "Post",
         url: urlAction,
         data: {
             dateTurn: date,
@@ -285,10 +193,8 @@ function SearchTurns(urlAction) {
                     timer: 1200
                 });
                 $("#TurnsPartial").html(result);
-                initTable();
             }
             $("#TurnsPartial").html(result);
-            initTable();
         },
         error: function (req, status, error) {
         }
@@ -315,7 +221,7 @@ function ExportTurns(urlAction) {
                     timer: 1200
                 });
             }
-            
+
         },
         error: function (req, status, error) {
             Swal.fire({
@@ -432,33 +338,6 @@ $("#timeTurn").blur(function () {
         });
         $("#btnCrearTurno").prop('disabled', true);
     }
-    //else {
-    //    $.ajax({
-    //        type: "POST",
-    //        url: "/Turns/CheckTurn",
-    //        data: {
-    //            medicId: $("#medicId :selected").val(),
-    //            date: $("#dateTurn").val(),
-    //            timeTurn: $("#timeTurn :selected").val()
-    //        },
-    //        complete: function (msj) {
-    //            value = msj.responseText;
-    //            if (value == 'false') {
-    //                $("#timeValidation").text('');
-    //                $("#btnCrearTurno").prop('disabled', false);
-    //            }
-    //            else {
-    //                $("#timeValidation").text('El turno ya fue tomado, seleccione otro.');
-    //                Swal.fire({
-    //                    position: 'top-end',
-    //                    icon: 'info',
-    //                    title: 'El turno ya fue tomado',
-    //                    showConfirmButton: false,
-    //                    timer: 1200
-    //                });
-    //                $("#btnCrearTurno").prop('disabled', true);
-    //            }
-    //        }
 });
 
 //-----------------------------------------------------  turnos  -----------------------------------------------------//
