@@ -11,6 +11,8 @@ namespace Turnero.Utilities {
                 ent => ent.MapFrom(p => p.Time.Time))
                 .ForMember(dto => dto.MedicName,
                 ent => ent.MapFrom(p => p.Medic.Name))
+                .ForMember(dto => dto.MedicId,
+                ent => ent.MapFrom(p => p.Medic.Id))
                 .ForMember(dto => dto.Date, ent => ent.MapFrom(p => p.DateTurn.ToString("dd/MM/yyyy")));
         }
     }

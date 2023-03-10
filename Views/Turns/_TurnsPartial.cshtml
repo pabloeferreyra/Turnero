@@ -3,7 +3,7 @@
 @using Microsoft.AspNetCore.Identity
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
-<table id="turns" class="back table table-responsive-md">
+<table id="turns" class="col-md-12 display responsive nowrap">
     <thead>
         <tr>
             <th>
@@ -21,14 +21,17 @@
             <th>
                 @Html.DisplayNameFor(model => model.FirstOrDefault().MedicName)
             </th>
-          
+            <th>
+                Medic Id
+            </th>
             <th>
                 @Html.DisplayNameFor(model => model.FirstOrDefault().Date)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.FirstOrDefault().Time)
             </th>
-            <th></th>
+            <th>Acción</th>
+            
         </tr>
     </thead>
     </table>

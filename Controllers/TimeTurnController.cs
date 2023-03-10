@@ -9,10 +9,11 @@ using Microsoft.EntityFrameworkCore;
 using Turnero.Data;
 using Turnero.Models;
 using Turnero.Services.Interfaces;
+using Turnero.Utilities;
 
 namespace Turnero.Controllers;
 
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = RolesConstants.Admin)]
 public class TimeTurnController : Controller
 {
     private readonly ApplicationDbContext _context;

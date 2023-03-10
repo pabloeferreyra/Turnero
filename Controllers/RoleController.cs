@@ -3,9 +3,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using System.Threading.Tasks;
+using Turnero.Utilities;
+
 namespace Turnero.Controllers;
 
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = RolesConstants.Admin)]
 public class RoleController : Controller
 {
     RoleManager<IdentityRole> roleManager;

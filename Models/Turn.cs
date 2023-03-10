@@ -43,6 +43,7 @@ public class TurnDTO {
     [Display(Name = "Nombre")]
     public string Name { get; set; }
     public string Dni { get; set; }
+    public Guid MedicId { get; set; }
     [Display(Name = "Médico")]
     public string MedicName { get; set; }
     [Display(Name = "Fecha")]
@@ -55,4 +56,5 @@ public class TurnDTO {
     public string Reason { get; set; }
     [Display(Name = "Ingresado")]
     public bool Accessed { get; set; }
+    public bool IsMedic { get; set; }
 }

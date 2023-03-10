@@ -14,25 +14,22 @@
     else
         String.Format("{0:dd/M/yyyy}", DateTime.Now);
 }
-<div class="card">
-<h1>Turnos</h1>
-</div>
 <div class="back container-fluid">
     <div class="form-group row">
-        <div class="form-group row">
-            <div class="col-md-1 col-sm-12">
-                <input id="DateTurn" name="dateTurn" type="text" class="form-control" value="@ViewBag.Date" data-date-format="dd/MM/yyyy" />
-            </div>
-            <div class="col-md-2 col-sm-12">
-                <select id="Medics" class="form-control" asp-items="@ViewBag.Medics"></select>
-            </div>
-            <div class="col-md-1 col-sm-12">
-                <button class="form-control btn btn-primary" id="btnSearch">Buscar</button>
-            </div>
+        <div class="col-lg-1 col-md-2 col-sm-12">
+            <input id="DateTurn" name="dateTurn" type="text" class="form-control" value="@ViewBag.Date" data-date-format="dd/MM/yyyy" />
+        </div>
+        <div class="col-lg-2 col-md-5 col-sm-12">
+            <select id="Medics" class="form-control" asp-items="@ViewBag.Medics">
+                <option value="" selected>== Seleccione un profesional ==</option>
+            </select>
+        </div>
+        <div class="col-lg-1 col-md-2 col-sm-12">
+            <button class="form-control btn btn-primary" id="btnSearch">Buscar</button>
         </div>
         @{
             if (SignInManager.IsSignedIn(User)) {
-                <div class="col-md-1 col-sm-12">
+                <div class="col-lg-1 col-md-3 col-sm-12">
                     <a class="form-control btn btn-secondary" asp-action="Create">Nuevo Turno</a>
                 </div>
             }
@@ -50,6 +47,5 @@
     
 </div>
 @section scripts{
-    <script src="~/js/turn.js"></script>
-    <script src="~/js/turndt.js"></script>
+    <script src="~/js/turn.min.js"></script>
 }
