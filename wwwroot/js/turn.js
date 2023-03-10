@@ -7,7 +7,8 @@ $(document).ready(function () {
             next: 'Siguiente',
             months: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
             weekdays: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sab']
-        }
+        }, 
+        disableDays: [0],
     });
 
     dt = $('#turns').dataTable({
