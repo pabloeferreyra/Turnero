@@ -90,9 +90,7 @@ builder.Services.AddScoped<ITurnRepository, TurnsRepository>();
 
 builder.Services.AddScoped<IExportRepository, ExportRepository>();
 
-//builder.Services.AddAuthentication(
-//        CertificateAuthenticationDefaults.AuthenticationScheme)
-//    .AddCertificate();
+builder.Services.AddAutoMapper(typeof(Program));
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 

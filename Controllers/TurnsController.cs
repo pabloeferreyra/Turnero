@@ -1,18 +1,25 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Turnero.Models;
 using Turnero.Services.Interfaces;
+using System.Linq;
+using AutoMapper;
+using System.Globalization;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Linq.Dynamic.Core;
+using Microsoft.EntityFrameworkCore;
+using Turnero.Utilities;
+
 namespace Turnero.Controllers;
 
-public class TurnsController : Controller
-{
+public class TurnsController : Controller {
     private readonly UserManager<IdentityUser> _userManager;
     public IInsertTurnsServices _insertTurns;
     public ILogger<TurnsController> _logger;
@@ -21,6 +28,7 @@ public class TurnsController : Controller
     public IGetMedicsServices _getMedics;
     public IGetTimeTurnsServices _getTimeTurns;
     public IExportService _exportService;
+    private readonly IMapper mapper;
 
     public TurnsController(UserManager<IdentityUser> userManager,
                            ILogger<TurnsController> logger,
@@ -29,8 +37,7 @@ public class TurnsController : Controller
                            IUpdateTurnsServices updateTurns,
                            IGetMedicsServices getMedics,
                            IGetTimeTurnsServices getTimeTurns,
-                           IExportService exportService)
-    {
+                           IExportService exportService, IMapper mapper) {
         _userManager = userManager;
         _logger = logger;
         _insertTurns = insertTurns;
@@ -39,131 +46,149 @@ public class TurnsController : Controller
         _getMedics = getMedics;
         _getTimeTurns = getTimeTurns;
         _exportService = exportService;
+        this.mapper = mapper;
     }
 
-    [Authorize(Roles = "Ingreso, Medico")]
-    public async Task<IActionResult> Index()
-    {
-        List<Medic> medics = await _getMedics.GetMedics();
-        ViewBag.Medics = medics;
-        return View(await TurnListAsync(null, null));  
+    [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
+    public async Task<IActionResult> Index() {
+        var medics = await _getMedics.GetMedicsDto();
+        ViewBag.Medics = new SelectList(medics, "Id", "Name");
+        return View(nameof(Index));
     }
 
-    //[AllowAnonymous]
-    [Authorize(Roles = "Ingreso, Medico")]
-    [HttpGet]
-    public async Task<IActionResult> GetTurns(DateTime? dateTurn, Guid? medicId)
-    {
-        List<Medic> medics = await _getMedics.GetMedics();
-        List<Turn> turns;
-        if (medicId != null)
-        {
-            turns = await TurnListAsync(dateTurn, medicId);
+    [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
+    [HttpPost]
+    public async Task<IActionResult> InitializeTurns() {
+
+        var user = this.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+        var isMedic = await _getMedics.GetMedicByUserId(user);
+
+        var turns = this._getTurns.GetTurnsDto();
+        var draw = Request.Form["draw"].FirstOrDefault();
+        var start = Request.Form["start"].FirstOrDefault();
+        var length = Request.Form["length"].FirstOrDefault();
+        var searchValue = Request.Form["search[value]"].FirstOrDefault();
+        int pageSize = length != null ? Convert.ToInt32(length) : 0;
+        int skip = start != null ? Convert.ToInt32(start) : 0;
+        var medic = isMedic == null ? Request.Form["Columns[5][search][value]"].FirstOrDefault() : isMedic.Id.ToString();
+        var dateTurn = Request.Form["Columns[6][search][value]"].FirstOrDefault();
+        var sortColumn = Request.Form["columns[" + Request.Form["order[0][column]"].FirstOrDefault() + "][name]"].FirstOrDefault();
+        var sortColumnDirection = Request.Form["order[0][dir]"].FirstOrDefault();
+        var defa = DateTime.Today.ToString("dd/MM/yyyy");
+        if (!(string.IsNullOrEmpty(sortColumn) && string.IsNullOrEmpty(sortColumnDirection))) {
+            turns = turns.OrderBy(sortColumn + " " + sortColumnDirection);
         }
-        else
-        {
-            turns = await TurnListAsync(dateTurn, null);
+        var data = turns.ToList();
+        if (!string.IsNullOrEmpty(medic)) {
+            data = data.Where(a => a.MedicId == Guid.Parse(medic)).ToList();
         }
-        ViewBag.Medics = medics;
-        return PartialView("_TurnsPartial", turns);
+        if (!string.IsNullOrEmpty(dateTurn)) {
+            data = data.Where(a => a.Date == dateTurn).ToList();
+        }
+        else {
+            data = data.Where(a => a.Date == defa).ToList();
+        }
+        int recordsTotal = data.Count();
+        if (skip != 0) {
+            data = data.Skip(skip).Take(pageSize).ToList();
+        }
+        else if (pageSize != -1) {
+            data = data.Take(pageSize).ToList();
+        }
+
+
+
+        foreach (var t in turns) {
+            t.IsMedic = isMedic != null;
+        }
+
+        var json = new { draw, recordsFiltered = recordsTotal, recordsTotal, data };
+
+        return await Task.FromResult<IActionResult>(Ok(json));
     }
 
-    public async Task<List<Turn>> TurnListAsync(DateTime? dateTurn, Guid? medicId)
-    {
+    public async Task<List<Turn>> TurnListAsync(DateTime? dateTurn, Guid? medicId) {
         var user = this.User.FindFirst(ClaimTypes.NameIdentifier).Value;
         var medic = await _getMedics.GetMedicByUserId(user);
         ViewBag.Date = dateTurn.HasValue ? String.Format("{0:yyyy-MM-dd}", dateTurn) : String.Format("{0:yyyy-MM-dd}", DateTime.Now);
         ViewBag.IsMedic = medic != null;
-        if (ViewBag.IsMedic)
-        {
+        if (ViewBag.IsMedic) {
             ViewBag.MedicId = medic.Id;
             return await this._getTurns.GetTurns(dateTurn, medic.Id);
         }
-        else
-        {
+        else {
             ViewBag.MedicId = null;
             return await this._getTurns.GetTurns(dateTurn, medicId);
         }
     }
 
-    [Authorize(Roles = "Ingreso, Medico")]
-    public async Task<IActionResult> Details(Guid? id)
-    {
-        if (id == null)
-        {
+    [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
+    public async Task<IActionResult> Details(Guid? id) {
+        if (id == null) {
             return NotFound();
         }
 
         var turn = await this._getTurns.GetTurn((Guid)id);
-        
-        if (turn == null)
-        {
+
+        if (turn == null) {
             return NotFound();
         }
 
         return View(turn);
     }
 
-    [Authorize(Roles = "Ingreso, Medico")]
-    public async Task<IActionResult> Create()
-    {
+    [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
+    public async Task<IActionResult> Create() {
         ViewBag.DateTurn = DateTime.Today;
         ViewBag.Medics = await _getMedics.GetMedics();
         ViewBag.Time = await _getTimeTurns.GetTimeTurns();
         return View();
     }
 
-    [Authorize(Roles = "Ingreso, Medico")]
+    [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(Turn turn)
-    {
-        if (ModelState.IsValid)
-        {
+    public async Task<IActionResult> Create(Turn turn) {
+        if (ModelState.IsValid) {
             bool resInsert = await this._insertTurns.CreateTurnAsync(turn);
-           if (resInsert)
-            return RedirectToAction(nameof(Index));
-           else
-            return RedirectToAction(nameof(Index));
+            if (resInsert)
+                return RedirectToAction(nameof(Index));
+            else
+                return RedirectToAction(nameof(Index));
         }
         return RedirectToAction(nameof(Index));
     }
 
-    [Authorize(Roles = "Medico")]
+    [Authorize(Roles = RolesConstants.Medico)]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Accessed(Guid? id)
-    {
+    public async Task<IActionResult> Accessed(Guid? id) {
         Turn turn;
-        if (id != null)
-        {
+        if (id != null) {
             turn = await this._getTurns.GetTurn((Guid)id);
         }
-        else
-        {
+        else {
             ViewBag.ErrorMessage = $"Turn with no id cannot be found";
             return View("NotFound");
         }
-        if (turn == null)
-        {
+        if (turn == null) {
             ViewBag.ErrorMessage = $"Turn with Id = {id} cannot be found";
             return View("NotFound");
         }
 
-        if (!_getTurns.Exists(turn.Id))
-        {
+        if (!_getTurns.Exists(turn.Id)) {
             ViewBag.ErrorMessage = $"Turn with Id = {id} cannot be found";
             return View("NotFound");
         }
 
-        if (ModelState.IsValid)
-        {
+        if (ModelState.IsValid) {
             this._updateTurns.Accessed(turn);
         }
-        return PartialView("_TurnsPartial", await this.TurnListAsync(null, null));
+        return Ok();
     }
 
-    [Authorize(Roles = "Ingreso")]
+    [Authorize(Roles = RolesConstants.Ingreso)]
+    [HttpGet]
     public async Task<IActionResult> Edit(Guid? id)
     {
         if (id == null)
@@ -186,7 +211,7 @@ public class TurnsController : Controller
         return View(turn);
     }
 
-    [Authorize(Roles = "Ingreso")]
+    [Authorize(Roles = RolesConstants.Ingreso)]
     [HttpPost]
     [ValidateAntiForgeryToken]
     public IActionResult Edit(Turn turn)
@@ -204,8 +229,8 @@ public class TurnsController : Controller
         return View(turn);
     }
 
-    [Authorize(Roles = "Admin, Ingreso")]
-    [HttpPost, ActionName("Delete")]
+    [Authorize(Roles = RolesConstants.Admin + ", " + RolesConstants.Ingreso)]
+    [HttpDelete, ActionName("Delete")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(Guid id)
     {
@@ -214,7 +239,7 @@ public class TurnsController : Controller
         return PartialView("_TurnsPartial", await this.TurnListAsync(null, null));
     }
 
-    [Authorize(Roles = "Ingreso, Medico")]
+    [Authorize(Roles = RolesConstants.Ingreso+ ", "+RolesConstants.Medico)]
     public async Task<IActionResult> Export()
     {
         List<Medic> medics = await _getMedics.GetMedics();
@@ -235,7 +260,7 @@ public class TurnsController : Controller
         return File(stream, contentType, reportname);
     }
     
-    [Authorize(Roles = "Admin, Ingreso")]
+    [Authorize(Roles = RolesConstants.Admin +", "+ RolesConstants.Ingreso)]
     [HttpPost]
     public bool CheckTurn(Guid medicId, DateTime date, Guid timeTurn)
     {

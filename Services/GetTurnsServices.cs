@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Turnero.Models;
 using Turnero.Services.Interfaces;
@@ -11,10 +12,8 @@ public class GetTurnsServices : IGetTurnsServices
 {
     private readonly ILoggerServices _logger;
     private readonly ITurnRepository _turnRepository;
-
     public GetTurnsServices(ILoggerServices logger,
-                            ITurnRepository turnRepository)
-    {
+                            ITurnRepository turnRepository) {
         _logger = logger;
         _turnRepository = turnRepository;
     }
@@ -30,6 +29,17 @@ public class GetTurnsServices : IGetTurnsServices
         }
         catch (Exception ex)
         {
+            _logger.Error(ex.Message, ex);
+            return null;
+        }
+    }
+
+    public IQueryable<TurnDTO> GetTurnsDto() {
+        try {
+            
+            return _turnRepository.GetListDto();
+        }
+        catch (Exception ex) {
             _logger.Error(ex.Message, ex);
             return null;
         }

@@ -1,9 +1,9 @@
 ﻿@using Turnero.Models;
-@model List<Turn>
+@model List<TurnDTO>
 @using Microsoft.AspNetCore.Identity
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
-<table class="back table table-responsive-md">
+<table id="turns" class="col-md-12 display responsive nowrap">
     <thead>
         <tr>
             <th>
@@ -18,117 +18,20 @@
             <th>
                 @Html.DisplayNameFor(model => model.FirstOrDefault().Reason)
             </th>
-            @{
-                if (SignInManager.IsSignedIn(User) && (User.IsInRole("Ingreso")))
-                {
-                    <th>
-                        @Html.DisplayNameFor(model => model.FirstOrDefault().Medic)
-                    </th>
-                }
-            }
             <th>
-                @Html.DisplayNameFor(model => model.FirstOrDefault().DateTurn)
+                @Html.DisplayNameFor(model => model.FirstOrDefault().MedicName)
+            </th>
+            <th>
+                Medic Id
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FirstOrDefault().Date)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.FirstOrDefault().Time)
             </th>
-            <th></th>
+            <th>Acción</th>
+            
         </tr>
     </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            if (item.Accessed)
-            {
-        <tr style="background-color:red; color: white">
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Dni)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.SocialWork)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Reason)
-            </td>
-            @{
-                if (SignInManager.IsSignedIn(User) && (User.IsInRole("Ingreso")))
-                {
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Medic.Name)
-                    </td>
-                }
-            }
-            <td>
-                @Html.DisplayFor(modelItem => item.DateTurn)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Time.Time)
-            </td>
-        </tr>
-            }
-            else
-            {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Dni)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.SocialWork)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Reason)
-            </td>
-            @{
-                if (SignInManager.IsSignedIn(User) && (User.IsInRole("Ingreso")))
-                {
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Medic.Name)
-                    </td>
-                }
-            }
-            <td>
-                @Html.DisplayFor(modelItem => item.DateTurn)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Time.Time)
-            </td>
-            <td>
-                @if (ViewBag.IsMedic)
-                {
-                    <span id="confirmaccessedSpan_@item.Id" style="display:none">
-                        <button onclick="accessed('@Url.Action("Accessed","Turns")','@item.Id');" class="btn btn-danger">Si</button>
-                        <a href="#" class="btn btn-primary"
-                           onclick="ConfirmAccess('@item.Id', false)">No</a>
-                    </span>
-                    <span id="accessedSpan_@item.Id">
-                        <a href="#" class="btn btn-primary"
-                           onclick="ConfirmAccess('@item.Id', true)">Ingreso</a>
-                    </span>
-                }
-                @{
-                    if (SignInManager.IsSignedIn(User) && (User.IsInRole("Ingreso")))
-                    {
-                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-secondary">Editar</a>
-                        <span id="confirmaccessedSpan_@item.Id" style="display:none">
-                            <button onclick="Delete('@Url.Action("Delete","Turns")','@item.Id');" class="btn btn-danger">Si</button>
-                            <a href="#" class="btn btn-primary"
-                               onclick="ConfirmDelete('@item.Id', false)">No</a>
-                        </span>
-                        <span id="accessedSpan_@item.Id">
-                            <a href="#" class="btn btn-danger"
-                               onclick="ConfirmDelete('@item.Id', true)">Eliminar</a>
-                        </span>
-                    }
-                }
-            </td>
-        </tr>
-            }
-        }
-</tbody>
-</table>
+    </table>
