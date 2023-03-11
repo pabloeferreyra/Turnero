@@ -11,6 +11,18 @@ $(document).ready(function () {
         disableDays: [0],
     });
 
+    new DateTime(document.getElementById('DateTurnCreate'), {
+        format: 'DD/MM/YYYY',
+        i18n: {
+            previous: 'Anterior',
+            next: 'Siguiente',
+            months: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
+            weekdays: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sab']
+        },
+        disableDays: [0],
+        minDate: new Date(),
+    });
+
     dt = $('#turns').dataTable({
             "processing": true,
             "serverSide": true,
