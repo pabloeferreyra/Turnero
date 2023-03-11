@@ -1,5 +1,5 @@
 ﻿@using Turnero.Models;
-@model PaginatedList<Turn>
+@model List<TurnDTO>
 @using Microsoft.AspNetCore.Identity
 @using (Html.BeginForm(null, null, FormMethod.Post, new { id = "__AjaxAntiForgeryForm" }))
 {
@@ -8,35 +8,44 @@
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
 @{
-    ViewData["Title"] = "Turnos Inicio";
+    ViewData["Title"] = "Turnos - Turnero";
     if (ViewBag.Date == null)
-        ViewBag.Date = String.Format("{0:yyyy-MM-dd}", DateTime.Now);
+        ViewBag.Date = String.Format("{0:dd/MM/yyyy}", DateTime.Now);
     else
-        String.Format("{0:yyyy-MM-dd}", DateTime.Now);
+        String.Format("{0:dd/M/yyyy}", DateTime.Now);
 }
-<div class="card">
-<h1>Turnos</h1>
-</div>
-<div class="back row">
-    <label class="control-label"></label>
-    <input id="DateTurn" name="dateTurn" type="date" class="form-control col-lg-2 col-sm-12" style="display:relative" value="@ViewBag.Date" data-date-format="dd/MM/yyyy" />
-    <select id="Medics" class="form-control col-lg-2 col-sm-12" asp-items="@(new SelectList(ViewBag.Medics, "Id", "Name", ViewBag.MedicId))"></select>
-    <button class="btn btn-primary col-md-2 col-sm-12" onclick="SearchTurns('@Url.Action("GetTurns","Turns")')">Buscar</button>
-    <button class="btn btn-secondary col-md-2 col-sm-12" onclick="SearchAllTurns('@Url.Action("GetTurns","Turns")')">Limpiar</button>
-    
-    @{
-        //&& (User.IsInRole("Ingreso"))
-        if (SignInManager.IsSignedIn(User))
-        {
-            <a class="btn btn-info col-md-2 col-sm-12" asp-action="Create">Nuevo Turno</a>
+<div class="back container-fluid">
+    <div class="form-group row">
+        <div class="col-lg-1 col-md-2 col-sm-12">
+            <input id="DateTurn" name="dateTurn" type="text" class="form-control" value="@ViewBag.Date" data-date-format="dd/MM/yyyy" />
+        </div>
+        <div class="col-lg-2 col-md-5 col-sm-12">
+            <select id="Medics" class="form-control" asp-items="@ViewBag.Medics">
+                <option value="" selected>== Seleccione un profesional ==</option>
+            </select>
+        </div>
+        <div class="col-lg-1 col-md-2 col-sm-12">
+            <button class="form-control btn btn-primary" id="btnSearch">Buscar</button>
+        </div>
+        @{
+            if (SignInManager.IsSignedIn(User)) {
+                <div class="col-lg-1 col-md-3 col-sm-12">
+                    <a class="form-control btn btn-secondary" asp-action="Create">Nuevo Turno</a>
+                </div>
+            }
         }
-    }
+    </div>
+    <div class="row">
+            
+            
+        <div id="control" class="col"></div>
+    </div>
 </div>
-<div class="back row" id="TurnsPartial">
+<div class="back container-fluid" id="TurnsPartial">
 
             <partial name="_TurnsPartial" model="@Model" />
     
 </div>
-    @section scripts{
-        <script src="~/js/turn.js"></script>
-    }
+@section scripts{
+    <script src="~/js/turn.min.js"></script>
+}

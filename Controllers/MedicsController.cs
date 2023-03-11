@@ -7,9 +7,11 @@ using Microsoft.Extensions.Logging;
 using Turnero.Data;
 using Turnero.Models;
 using Turnero.Services.Interfaces;
+using Turnero.Utilities;
 
 namespace Turnero.Controllers;
 
+[Authorize(Roles = RolesConstants.Admin)]
 public class MedicsController : Controller
 {
     private readonly ApplicationDbContext _context;
@@ -37,15 +39,11 @@ public class MedicsController : Controller
         _updateMedicServices = updateMedicServices;
     }
 
-    // GET: Medics
-    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Index()
     {
         return View(await _getMedicsServices.GetMedics());
     }
 
-    // GET: Medics/Details/5
-    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Details(Guid? id)
     {
         if (id == null)
@@ -62,8 +60,6 @@ public class MedicsController : Controller
         return View(medic);
     }
 
-    // GET: Medics/Create
-    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> CreateAsync()
     {
         var users = await userManager.GetUsersInRoleAsync("Medico");
@@ -73,10 +69,6 @@ public class MedicsController : Controller
         return View();
     }
 
-    // POST: Medics/Create
-    // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-    // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-    [Authorize(Roles = "Admin")]
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(Medic medic)
@@ -89,8 +81,6 @@ public class MedicsController : Controller
         return View(medic);
     }
 
-    // GET: Medics/Edit/5
-    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Edit(Guid? id)
     {
         if (id == null)
@@ -106,10 +96,6 @@ public class MedicsController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    // POST: Medics/Edit/5
-    // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-    // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-    [Authorize(Roles = "Admin")]
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(Medic medic)
@@ -131,8 +117,6 @@ public class MedicsController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    // GET: Medics/Delete/5
-    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(Guid? id)
     {
         if (id == null)
@@ -151,8 +135,6 @@ public class MedicsController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    // POST: Medics/Delete/5
-    [Authorize(Roles = "Admin")]
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(Guid id)

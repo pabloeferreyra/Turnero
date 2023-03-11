@@ -16,3 +16,9 @@ public class Medic
 
     public ICollection<Turn> Turns { get; set; }
 }
+
+public class MedicDto {
+    public Guid? Id { get; set; }
+    [Display(Name = "Nombre")]
+    public string Name { get; set; }
+}

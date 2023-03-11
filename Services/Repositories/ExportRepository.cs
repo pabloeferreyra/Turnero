@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using OfficeOpenXml;
 using System;
 using System.Drawing;
@@ -11,7 +12,7 @@ namespace Turnero.Services.Repositories;
 public class ExportRepository : TurnsRepository, IExportRepository
 {
     private IMedicRepository _medic;
-    public ExportRepository(ApplicationDbContext context, IMedicRepository medic) : base(context)
+    public ExportRepository(ApplicationDbContext context, IMedicRepository medic, IMapper mapper) : base(context, mapper)
     {
         _medic = medic;
     }

@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,9 +12,14 @@ namespace Turnero.Services.Repositories;
 
 public class TurnsRepository : RepositoryBase<Turn>, ITurnRepository
 {
-    public TurnsRepository(ApplicationDbContext context) : base(context)
+    private readonly IMapper mapper;
+
+    public TurnsRepository(ApplicationDbContext context, IMapper mapper) : base(context, mapper)
     {
+        this.mapper = mapper;
     }
+
+
 
     public void Access(Turn turn)
     {
@@ -25,6 +32,11 @@ public class TurnsRepository : RepositoryBase<Turn>, ITurnRepository
         return await this.FindByCondition(m => m.Id == id)
             .Include(m => m.Medic)
             .Include(t => t.Time).SingleOrDefaultAsync();
+    }
+
+    public IQueryable<TurnDTO> GetListDto() 
+    {
+        return this.FindAll().ProjectTo<TurnDTO>(this.mapper.ConfigurationProvider);
     }
 
     public async Task<List<Turn>> GetList(DateTime? date, Guid? id)
@@ -61,6 +73,7 @@ public class TurnsRepository : RepositoryBase<Turn>, ITurnRepository
             }
         }
     }
+
     public async Task<List<Turn>> ForExport(DateTime date, Guid id)
     {
         

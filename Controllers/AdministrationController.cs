@@ -8,10 +8,11 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Turnero.Models;
+using Turnero.Utilities;
 
 namespace Turnero.Controllers;
 
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = RolesConstants.Admin)]
 public class AdministrationController : Controller
 {
     private readonly RoleManager<IdentityRole> roleManager;
