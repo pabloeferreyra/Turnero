@@ -154,8 +154,8 @@ $(document).ready(function () {
 
     oTable = $('#turns').DataTable();
     $('#btnSearch').click(function () {
-        oTable.columns(6).search($('#Medics').val().trim());
-        oTable.columns(7).search($('#DateTurn').val().trim());
+        oTable.columns(5).search($('#Medics').val().trim());
+        oTable.columns(6).search($('#DateTurn').val().trim());
         oTable.draw();
     });
 });
