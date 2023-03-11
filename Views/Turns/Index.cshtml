@@ -1,6 +1,6 @@
 ﻿@using Turnero.Models;
-@model List<TurnDTO>
-@using Microsoft.AspNetCore.Identity
+@model List<TurnDTO>;
+@using Microsoft.AspNetCore.Identity;
 @using (Html.BeginForm(null, null, FormMethod.Post, new { id = "__AjaxAntiForgeryForm" }))
 {
     @Html.AntiForgeryToken()
