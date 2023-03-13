@@ -18,6 +18,7 @@ $(document).ready(function () {
             "bDestroy": true,
             "bJQueryUI": true,
             "responsive": false,
+            "scrollX": true,
             "ordering": true,
             "orderMulti": true,
             "autoWidth": true,
