@@ -29,7 +29,8 @@ $(document).ready(function () {
             "bFilter": true,
             "bDestroy": true,
             "bJQueryUI": true,
-            "responsive": true,
+            "responsive": false,
+            "scrollX": true,
             "ordering": true,
             "orderMulti": true,
             "autoWidth": true,
@@ -114,8 +115,8 @@ $(document).ready(function () {
                 }
             },
             lengthMenu: [
-                [10, 25, 50, -1],
-                ['10 filas', '25 filas', '50 filas', 'Todo']
+                [-1, 25, 50],
+                ['Todo','25 filas', '50 filas']
             ],
             buttons: [
                 {
