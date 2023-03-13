@@ -21,6 +21,7 @@ $(document).ready(function () {
             "ordering": true,
             "orderMulti": true,
             "autoWidth": true,
+            "order": [[7, 'asc']],
             "dom": '<"row"<"col-md-6 col-sm-12"B>><"row table-responsive"rt><"row"<"col-md-6 col-sm-12"i><"col-md-6 ms-auto"p>>',
             "language": {
                 "lengthMenu": "Mostrando _MENU_ filas por página",
