@@ -98,7 +98,7 @@ public class TurnsController : Controller {
 
 
 
-        foreach (var t in turns) {
+        foreach (var t in data) {
             t.IsMedic = isMedic != null;
         }
 
