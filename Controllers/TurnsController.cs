@@ -51,8 +51,11 @@ public class TurnsController : Controller {
 
     [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
     public async Task<IActionResult> Index() {
+
         var medics = await _getMedics.GetMedicsDto();
+        var time = await _getTimeTurns.GetTimeTurns();
         ViewBag.Medics = new SelectList(medics, "Id", "Name");
+        ViewBag.Time = new SelectList(time, "Id", "Time");
         return View(nameof(Index));
     }
 
@@ -137,31 +140,23 @@ public class TurnsController : Controller {
         return View(turn);
     }
 
-    [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
-    public async Task<IActionResult> Create() {
-        ViewBag.DateTurn = DateTime.Today;
-        ViewBag.Medics = await _getMedics.GetMedics();
-        ViewBag.Time = await _getTimeTurns.GetTimeTurns();
-        return View();
-    }
 
     [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
     [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(Turn turn) {
-        if (ModelState.IsValid) {
-            bool resInsert = await this._insertTurns.CreateTurnAsync(turn);
-            if (resInsert)
-                return RedirectToAction(nameof(Index));
-            else
-                return RedirectToAction(nameof(Index));
+    public async Task<StatusCodeResult> Create([FromBody]object t) {
+        var tt = JsonSerializer.Serialize(t);
+        Turn turn = JsonSerializer.Deserialize<Turn>(tt);
+        try {
+            await this._insertTurns.CreateTurnAsync(turn);
+            return Ok();
         }
-        return RedirectToAction(nameof(Index));
+        catch {
+            return BadRequest();
+        }
     }
 
     [Authorize(Roles = RolesConstants.Medico)]
     [HttpPost]
-    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Accessed(Guid? id) {
         Turn turn;
         if (id != null) {
@@ -213,7 +208,6 @@ public class TurnsController : Controller {
 
     [Authorize(Roles = RolesConstants.Ingreso)]
     [HttpPost]
-    [ValidateAntiForgeryToken]
     public IActionResult Edit(Turn turn)
     {
         if (!_getTurns.Exists(turn.Id))
@@ -231,12 +225,11 @@ public class TurnsController : Controller {
 
     [Authorize(Roles = RolesConstants.Admin + ", " + RolesConstants.Ingreso)]
     [HttpDelete, ActionName("Delete")]
-    [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(Guid id)
     {
         var turn = await _getTurns.GetTurn(id);
         _updateTurns.Delete(turn);
-        return PartialView("_TurnsPartial", await this.TurnListAsync(null, null));
+        return Ok();
     }
 
     [Authorize(Roles = RolesConstants.Ingreso+ ", "+RolesConstants.Medico)]

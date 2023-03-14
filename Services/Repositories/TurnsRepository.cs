@@ -112,10 +112,6 @@ public class TurnsRepository : RepositoryBase<Turn>, ITurnRepository
 
     public async Task CreateTurn(Turn turn)
     {
-                turn.MedicId = turn.Medic.Id;
-                turn.TimeId = turn.Time.Id;
-                turn.Medic = null;
-                turn.Time = null;
         await this.CreateAsync(turn);
     }
 }

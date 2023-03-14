@@ -1,13 +1,12 @@
 ﻿@using Turnero.Models;
 @model List<TurnDTO>;
 @using Microsoft.AspNetCore.Identity;
-@using (Html.BeginForm(null, null, FormMethod.Post, new { id = "__AjaxAntiForgeryForm" }))
-{
-    @Html.AntiForgeryToken()
-}
+@using Turnero.Utilities;
+
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
 @{
+
     ViewData["Title"] = "Turnos - Turnero";
     if (ViewBag.Date == null)
         ViewBag.Date = String.Format("{0:dd/MM/yyyy}", DateTime.Now);
@@ -19,10 +18,18 @@
         <div class="col-lg-2 col-md-2 col-sm-12">
             <input id="DateTurn" name="dateTurn" type="text" class="form-control" value="@ViewBag.Date" data-date-format="dd/MM/yyyy" />
         </div>
-        <div class="col-lg-4 col-md-5 col-sm-12">
+        <div class="col-lg-2 col-md-5 col-sm-12">
+        @if(User.IsInRole(RolesConstants.Ingreso))
+        {
             <select id="Medics" class="form-control" asp-items="@ViewBag.Medics">
                 <option value="" selected>== Seleccione un profesional ==</option>
-            </select>
+                </select>
+            }
+            else if (User.IsInRole(RolesConstants.Medico)) {
+                <select id="Medics" class="form-control" asp-items="@ViewBag.Medics" disabled>
+                    <option value="" selected>@User.Identity.Name</option>
+                </select>
+            }
         </div>
         <div class="col-lg-2 col-md-2 col-sm-12">
             <button class="form-control btn btn-primary" id="btnSearch">Buscar</button>
@@ -30,7 +37,7 @@
         @{
             if (SignInManager.IsSignedIn(User)) {
                 <div class="col-lg-2 col-md-3 col-sm-12">
-                    <a class="form-control btn btn-secondary" asp-action="Create">Nuevo Turno</a>
+                    <button type="button" id="createTurn" class="form-control btn btn-secondary">Nuevo Turno</button>
                 </div>
             }
         }
@@ -40,12 +47,80 @@
             
         <div id="control" class="col"></div>
     </div>
+
+    <!-- Modal -->
+    <div class="modal modal-lg fade" id="CreateEdit" role="dialog">
+        <div class="modal-dialog">
+
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="card">
+                        <div class="card-header">
+                            <h1>Crear</h1>
+                        </div>
+                        <form method="post">
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label class="control-label">@Html.DisplayNameFor(model => model.FirstOrDefault().Name)</label>
+                                    <input id="clientName" class="form-control" />
+                                    <span id="clientValidation" class="text-danger"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label">@Html.DisplayNameFor(model => model.FirstOrDefault().Dni)</label>
+                                    <input id="dniClient" class="form-control" />
+                                    <span id="dniValidation" class="text-danger"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label">@Html.DisplayNameFor(model => model.FirstOrDefault().MedicName)</label>
+                                    <select id="medicIdCreate"
+                                            class="form-control medicId"
+                                            asp-items="@ViewBag.Medics"></select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label">@Html.DisplayNameFor(model => model.FirstOrDefault().Date)</label>
+                                    <input id="DateTurnCreate" type="text" class="form-control" data-date-format="dd/MM/yyyy" />
+                                    <span id="dateValidation" class="text-danger"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label">@Html.DisplayNameFor(model => model.FirstOrDefault().Time)</label>
+                                    <select id="timeTurnCreate"
+                                            class="form-control"
+                                            asp-items="@ViewBag.Time"></select>
+                                    <span id="timeValidation" class="text-danger"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label">@Html.DisplayNameFor(model => model.FirstOrDefault().SocialWork)</label>
+                                    <input id="socialWorkCreate" class="form-control" />
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label">@Html.DisplayNameFor(model => model.FirstOrDefault().Reason)</label>
+                                    <input id="reasonCreate" class="form-control" />
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <button id="btnCrearTurno" class="btn btn-primary">Crear</button>
+                            </div>
+                        </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    
 </div>
 <div class="back container-fluid" id="TurnsPartial">
 
             <partial name="_TurnsPartial" model="@Model" />
     
 </div>
+
+
+
 @section scripts{
     <script src="~/js/turn.js"></script>
+    <script src="~/js/createTurn.js"></script>
+        @{
+            await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        }
 }
