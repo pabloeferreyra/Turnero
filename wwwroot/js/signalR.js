@@ -22,7 +22,7 @@ connection.start()
             icon: 'success',
             title: "Conexion Exitosa",
             showConfirmButton: false,
-            timer: 600
+            timer: 100
         });
     })
     .catch(function (err) {
