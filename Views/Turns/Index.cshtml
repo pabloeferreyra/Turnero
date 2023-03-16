@@ -1,5 +1,6 @@
 ﻿@using Turnero.Models;
-@model List<TurnDTO>;
+@model TurnDTO;
+
 @using Microsoft.AspNetCore.Identity;
 @using Turnero.Utilities;
 
@@ -49,69 +50,38 @@
     </div>
 
     <!-- Modal -->
-    <div class="modal modal-lg fade" id="CreateEdit" role="dialog">
-        <div class="modal-dialog">
-
+    <div class="modal modal-lg fade" id="Create" role="dialog">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
             <!-- Modal content-->
             <div class="modal-content">
-                <div class="modal-body">
-                    <div class="card">
-                        <div class="card-header">
-                            <h1>Crear</h1>
-                        </div>
-                        <form method="post">
-                            <div class="card-body">
-                                <div class="form-group">
-                                    <label class="control-label">@Html.DisplayNameFor(model => model.FirstOrDefault().Name)</label>
-                                    <input id="clientName" class="form-control" />
-                                    <span id="clientValidation" class="text-danger"></span>
-                                </div>
-                                <div class="form-group">
-                                    <label class="control-label">@Html.DisplayNameFor(model => model.FirstOrDefault().Dni)</label>
-                                    <input id="dniClient" class="form-control" />
-                                    <span id="dniValidation" class="text-danger"></span>
-                                </div>
-                                <div class="form-group">
-                                    <label class="control-label">@Html.DisplayNameFor(model => model.FirstOrDefault().MedicName)</label>
-                                    <select id="medicIdCreate"
-                                            class="form-control medicId"
-                                            asp-items="@ViewBag.Medics"></select>
-                                </div>
-                                <div class="form-group">
-                                    <label class="control-label">@Html.DisplayNameFor(model => model.FirstOrDefault().Date)</label>
-                                    <input id="DateTurnCreate" type="text" class="form-control" data-date-format="dd/MM/yyyy" />
-                                    <span id="dateValidation" class="text-danger"></span>
-                                </div>
-                                <div class="form-group">
-                                    <label class="control-label">@Html.DisplayNameFor(model => model.FirstOrDefault().Time)</label>
-                                    <select id="timeTurnCreate"
-                                            class="form-control"
-                                            asp-items="@ViewBag.Time"></select>
-                                    <span id="timeValidation" class="text-danger"></span>
-                                </div>
-                                <div class="form-group">
-                                    <label class="control-label">@Html.DisplayNameFor(model => model.FirstOrDefault().SocialWork)</label>
-                                    <input id="socialWorkCreate" class="form-control" />
-                                </div>
-                                <div class="form-group">
-                                    <label class="control-label">@Html.DisplayNameFor(model => model.FirstOrDefault().Reason)</label>
-                                    <input id="reasonCreate" class="form-control" />
-                                </div>
-                            </div>
-                            <div class="card-footer">
-                                <button id="btnCrearTurno" class="btn btn-primary">Crear</button>
-                            </div>
-                        </form>
+                <div class="modal-header">
+                    <h2 class="modal-title text-primary text-center">Nuevo Turno</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
+                <div id="CreateFormContent"></div>
             </div>
 
         </div>
     </div>
     
+     <div class="modal modal-lg fade" id="Edit" role="dialog">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title text-primary text-center">Editar Turno para @Html.DisplayFor(model => model.Name)</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div id="EditFormContent">
+                </div>
+            </div>
+
+        </div>
+    </div>
+
 </div>
 <div class="back container-fluid" id="TurnsPartial">
 
-            <partial name="_TurnsPartial" model="@Model" />
+            <partial name="_TurnsPartial" />
     
 </div>
 
@@ -119,8 +89,8 @@
 
 @section scripts{
     <script src="~/js/turn.js"></script>
-    <script src="~/js/createTurn.js"></script>
-        @{
-            await Html.RenderPartialAsync("_ValidationScriptsPartial");
-        }
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

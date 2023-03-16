@@ -62,6 +62,23 @@ public class GetTurnsServices : IGetTurnsServices
         }
     }
 
+    public async Task<TurnDTO> GetTurnDTO(Guid id)
+    {
+        try
+        {
+            _ = Task.Run(() =>
+            {
+                _logger.Info($"Turno {id}");
+            });
+            return await _turnRepository.GetDTOById(id);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex.Message, ex);
+            return null;
+        }
+    }
+
     public bool Exists(Guid id)
     {
         try

@@ -50,6 +50,7 @@ public class TurnDTO {
     public string Date { get; set; }
     [Display(Name = "Hora")]
     public string Time { get; set; }
+    public Guid TimeId { get; set; }
     [Display(Name = "Obra Social")]
     public string SocialWork { get; set; }
     [Display(Name = "Motivo")]

@@ -13,8 +13,6 @@ using Turnero.Services.Interfaces;
 using Turnero.Services.Repositories;
 using Turnero.Services;
 using System.IO;
-using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -98,12 +96,6 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Host.UseWindowsService();
 
-builder.Services.AddAntiforgery(options => {
-    // Set Cookie properties using CookieBuilder properties†.
-    options.FormFieldName = "AntiForgeryField";
-    options.HeaderName = "X-CSRF-TOKEN-TURNERO";
-    options.SuppressXFrameOptionsHeader = false;
-});
 
 var app = builder.Build();
 
@@ -137,6 +129,8 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
+
+app.UseCookiePolicy();
 
 app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 

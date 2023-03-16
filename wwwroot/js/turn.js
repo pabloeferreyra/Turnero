@@ -16,17 +16,6 @@ $(document).ready(function () {
         disableDays: [0],
     });
 
-    new DateTime(document.getElementById('DateTurnCreate'), {
-        format: 'DD/MM/YYYY',
-        i18n: {
-            previous: 'Anterior',
-            next: 'Siguiente',
-            months: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
-            weekdays: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sab']
-        },
-        disableDays: [0],
-        minDate: getYesterdayDate()
-    });
 
     dt = $('#turns').dataTable({
         "processing": true,
@@ -86,7 +75,7 @@ $(document).ready(function () {
                 "data": null,
                 "render": function (data) {
                     if (data['accessed'] == false && data['isMedic'] == false) {
-                        return '<a href="/Turns/Edit/' + data['id']+'" class="btn btn-secondary">Editar</a>' +
+                        return '<button onclick="Edit(\'' + data['id'] +'\');" class="btn btn-secondary">Editar</button>' +
                             '<span id="confirmaccessedSpan_' + data['id'] +'" style="display:none">' +
                             '<button onclick="Delete(\'' + data['id'] +'\');" class="btn btn-danger">Si</button>' +
                             '<a href="#" class="btn btn-primary"onclick="ConfirmDelete(\'' + data['id'] +'\', false)">No</a>'+
@@ -165,6 +154,7 @@ $(document).ready(function () {
         oTable.columns(6).search($('#DateTurn').val().trim());
         oTable.draw();
     });
+
 });
 
 function reset() {
@@ -261,28 +251,40 @@ $("#btnCrearTurno").on('click', function (event) {
     Create();
 });
 
+$("#btnEditarTurno").on('click', function (event) {
+    event.preventDefault();
+    EditTurn();
+});
+
 $("#createTurn").on('click', function (event) {
-    $("#CreateEdit").modal('toggle');
-})
+    CreateView();
+    $("#Create").modal('toggle');
+});
+
+function CreateView() {
+    $.ajax({
+        type: "GET",
+        url: "/Turns/Create",
+        success: function (data) {
+            $("#CreateFormContent").html(data);
+        }
+    })
+}
 
 function Create() {
-    var date = $("#DateTurnCreate").val().substring(6, 10) + "-" + $("#DateTurnCreate").val().substring(3, 5) + "-" + $("#DateTurnCreate").val().substring(0, 2) + "T00:00:00";
-    let formData = {
-        Name: $("#clientName").val(),
-        Dni: $("#dniClient").val(),
-        MedicId: $("#medicIdCreate :selected").val(),
-        TimeId: $("#timeTurnCreate :selected").val(),
-        DateTurn: date,
-        SocialWork: $("#socialWorkCreate").val(),
-        Reason: $("#reasonCreate").val()
-    };
+    var form = $('#__AjaxAntiForgeryForm');
+    var token = $('input[name="__RequestVerificationToken"]', form).val();
+    let formData = $("#CreateForm").serialize();
+    console.log(formData);
     $.ajax({
         type: "POST",
         url: "/Turns/Create",
-        contentType: "application/json",
-        data: JSON.stringify(formData),
+        data: {
+            __RequestVerificationToken: token,
+            formData
+        },
         success: function () {
-            $("#CreateEdit").modal('toggle');
+            $("#Create").modal('toggle');
             reset();
             Swal.fire({
                 position: 'top-end',
@@ -295,22 +297,43 @@ function Create() {
     });
 }
 
-//function Edit(id) {
-//    $.ajax({
-//        type: "GET",
-//        url: "/Turns/Edit",
-//        data: {
-//            id: id
-//        }
-//        window.location
-//    })
-//}
-
-function AddNumber() {
-    $('#pNumber').val(parseInt($('#pNumber').val()) + 1);
+function EditTurn() {
+    var form = $('#__AjaxAntiForgeryForm');
+    var token = $('input[name="__RequestVerificationToken"]', form).val();
+    let formData = $("#EditForm").serialize();
+    console.log(formData);
+    $.ajax({
+        type: "POST",
+        url: "/Turns/Edit",
+        data: {
+            __RequestVerificationToken: token,
+            formData
+        },
+        success: function () {
+            $("#Edit").modal('toggle');
+            reset();
+            Swal.fire({
+                position: 'top-end',
+                icon: 'success',
+                title: 'Turno editado correctamente.',
+                showConfirmButton: false,
+                timer: 600
+            });
+        },
+    });
 }
 
-function RemNumber() {
-    $('#pNumber').val(parseInt($('#pNumber').val()) - 1);
+function Edit(id) {
+    $.ajax({
+        type: "GET",
+        url: "/Turns/Edit",
+        data: {
+            id: id
+        },
+        success: function (data) {
+            $("#EditFormContent").html(data);
+            $("#Edit").modal('toggle');
+        }
+    })
 }
 
