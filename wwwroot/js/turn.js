@@ -1,10 +1,6 @@
 ﻿var dt;
 $(document).ready(function () {
 
-    function getYesterdayDate() {
-        return new Date(new Date().getTime() - 24 * 60 * 60 * 1000);
-    }
-
     new DateTime(document.getElementById('DateTurn'), {
         format: 'DD/MM/YYYY',
         i18n: {
@@ -246,10 +242,7 @@ function ConfirmDelete(uniqueId, isAccessedClicked) {
     }
 }
 
-$("#btnCrearTurno").on('click', function (event) {
-    event.preventDefault();
-    Create();
-});
+
 
 $("#btnEditarTurno").on('click', function (event) {
     event.preventDefault();
@@ -271,31 +264,7 @@ function CreateView() {
     })
 }
 
-function Create() {
-    var form = $('#__AjaxAntiForgeryForm');
-    var token = $('input[name="__RequestVerificationToken"]', form).val();
-    let formData = $("#CreateForm").serialize();
-    console.log(formData);
-    $.ajax({
-        type: "POST",
-        url: "/Turns/Create",
-        data: {
-            __RequestVerificationToken: token,
-            formData
-        },
-        success: function () {
-            $("#Create").modal('toggle');
-            reset();
-            Swal.fire({
-                position: 'top-end',
-                icon: 'success',
-                title: 'Turno creado correctamente.',
-                showConfirmButton: false,
-                timer: 600
-            });
-        },
-    });
-}
+
 
 function EditTurn() {
     var form = $('#__AjaxAntiForgeryForm');

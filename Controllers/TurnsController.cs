@@ -17,6 +17,8 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Linq.Dynamic.Core;
 using Microsoft.EntityFrameworkCore;
 using Turnero.Utilities;
+using Microsoft.AspNetCore.SignalR;
+using Turnero.Hubs;
 
 namespace Turnero.Controllers;
 
@@ -30,7 +32,7 @@ public class TurnsController : Controller {
     public IGetTimeTurnsServices _getTimeTurns;
     public IExportService _exportService;
     private readonly IMapper mapper;
-
+    private readonly IHubContext<TurnsTableHub> _hubContext;
     public TurnsController(UserManager<IdentityUser> userManager,
                            ILogger<TurnsController> logger,
                            IInsertTurnsServices insertTurns,
@@ -38,7 +40,8 @@ public class TurnsController : Controller {
                            IUpdateTurnsServices updateTurns,
                            IGetMedicsServices getMedics,
                            IGetTimeTurnsServices getTimeTurns,
-                           IExportService exportService, IMapper mapper) {
+                           IExportService exportService, IMapper mapper,
+                           IHubContext<TurnsTableHub> hubContext) {
         _userManager = userManager;
         _logger = logger;
         _insertTurns = insertTurns;
@@ -48,6 +51,7 @@ public class TurnsController : Controller {
         _getTimeTurns = getTimeTurns;
         _exportService = exportService;
         this.mapper = mapper;
+        _hubContext = hubContext;
     }
 
     [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
@@ -156,7 +160,7 @@ public class TurnsController : Controller {
 
     [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
     [HttpPost]
-    [ValidateAntiForgeryToken]
+    //[ValidateAntiForgeryToken]
     public async Task<StatusCodeResult> Create(TurnDTO turn) {
         if (!ModelState.IsValid) return this.BadRequest();
         try
@@ -165,6 +169,9 @@ public class TurnsController : Controller {
             var t = new Turn();
             t = mapper.Map(turn, t);
             await this._insertTurns.CreateTurnAsync(t);
+            var medic = await this._getMedics.GetMedicById(turn.MedicId);
+            await _hubContext.Clients.User(medic.UserGuid).SendAsync("UpdateTableDirected", "La tabla se ha actualizado"); ;
+
             return Ok();
         }
         catch
@@ -199,6 +206,9 @@ public class TurnsController : Controller {
         if (ModelState.IsValid) {
             this._updateTurns.Accessed(turn);
         }
+        var users = await this._userManager.GetUsersInRoleAsync(RolesConstants.Ingreso);
+        foreach(var u in  users) { await _hubContext.Clients.User(u.Id).SendAsync("UpdateTableDirected", "La tabla se ha actualizado"); }
+        
         return Ok();
     }
 
@@ -220,13 +230,13 @@ public class TurnsController : Controller {
         var medics = await _getMedics.GetMedicsDto();
         var time = await _getTimeTurns.GetTimeTurns();
         ViewBag.Medics = new SelectList(medics, "Id", "Name", turn.MedicId);
-        ViewBag.Time = new SelectList(time, "Id", "Time", turn.TimeId);
+        ViewBag.TimeEdit = new SelectList(time, "Id", "Time", turn.TimeId);
         return PartialView("_Edit", turn);
     }
 
     [Authorize(Roles = RolesConstants.Ingreso)]
     [HttpPut]
-    public IActionResult Edit(Turn turn)
+    public async Task<IActionResult> EditAsync(Turn turn)
     {
         if (!_getTurns.Exists(turn.Id))
         {
@@ -236,6 +246,8 @@ public class TurnsController : Controller {
         if (ModelState.IsValid)
         {
             _updateTurns.Update(turn);
+            var users = await this._userManager.GetUsersInRoleAsync(RolesConstants.Ingreso);
+            foreach (var u in users) { await _hubContext.Clients.User(u.Id).SendAsync("UpdateTableDirected", "La tabla se ha actualizado"); }
             return Ok();
         }
         return Conflict();
@@ -247,6 +259,7 @@ public class TurnsController : Controller {
     {
         var turn = await _getTurns.GetTurn(id);
         _updateTurns.Delete(turn);
+        await _hubContext.Clients.All.SendAsync("UpdateTable", "La tabla se ha actualizado");
         return Ok();
     }
     
