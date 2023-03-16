@@ -99,4 +99,34 @@ $("#timeTurnCreate").blur(function () {
         $("#btnCrearTurno").prop('disabled', false);
     }
 });
+
+$("#btnCrearTurno").on('click', function (event) {
+    event.preventDefault();
+    Create();
+});
+
+function Create() {
+    var form = $('#__AjaxAntiForgeryForm');
+    var token = $('input[name="__RequestVerificationToken"]', form).val();
+    let formData = $("#CreateForm").serialize();
+    console.log(formData);
+    $.ajax({
+        type: "POST",
+        url: "/Turns/Create",
+        header: token,
+        contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+        data: formData,
+        success: function () {
+            $("#Create").modal('toggle');
+            reset();
+            Swal.fire({
+                position: 'top-end',
+                icon: 'success',
+                title: 'Turno creado correctamente.',
+                showConfirmButton: false,
+                timer: 600
+            });
+        },
+    });
+}
     //-----------------------------------------------------  turnos  -----------------------------------------------------//

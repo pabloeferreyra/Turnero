@@ -13,6 +13,7 @@ using Turnero.Services.Interfaces;
 using Turnero.Services.Repositories;
 using Turnero.Services;
 using System.IO;
+using Turnero.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,6 +42,7 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.AccessDeniedPath = "/Identity/Account/AccessDenied";
     options.SlidingExpiration = true;
 });
+
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromHours(24);
@@ -70,29 +72,25 @@ builder.Services.AddRazorPages();
 builder.Services.AddScoped<IInsertTurnsServices, InsertTurnsServices>();
 builder.Services.AddScoped<IUpdateTurnsServices, UpdateTurnsServices>();
 builder.Services.AddScoped<IGetTurnsServices, GetTurnsServices>();
-
 builder.Services.AddScoped<IInsertMedicServices, InsertMedicServices>();
 builder.Services.AddScoped<IUpdateMedicServices, UpdateMedicServices>();
 builder.Services.AddScoped<IInsertMedicServices, InsertMedicServices>();
 builder.Services.AddScoped<IGetMedicsServices, GetMedicsServices>();
-
 builder.Services.AddScoped<IInsertTimeTurnServices, InsertTimeTurnServices>();
 builder.Services.AddScoped<IDeleteTimeTurnServices, DeleteTimeTurnServices>();
 builder.Services.AddScoped<IGetTimeTurnsServices, GetTimeTurnsServices>();
-
 builder.Services.AddScoped<IExportService, ExportService>();
-
-builder.Services.AddScoped<ILoggerServices, LoggerServices>();
-
+builder.Services.AddSingleton<ILoggerServices, LoggerServices>();
 builder.Services.AddScoped<ITimeTurnRepository, TimeTurnRepository>();
 builder.Services.AddScoped<IMedicRepository, MedicRepository>();
 builder.Services.AddScoped<ITurnRepository, TurnsRepository>();
-
 builder.Services.AddScoped<IExportRepository, ExportRepository>();
 
 builder.Services.AddAutoMapper(typeof(Program));
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
+builder.Services.AddSignalR().AddJsonProtocol();
 
 builder.Host.UseWindowsService();
 
@@ -122,12 +120,16 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.MapHub<TurnsTableHub>("/TurnsTableHub");
+
 app.UseAuthentication();
+
 app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
 app.MapRazorPages();
 
 app.UseCookiePolicy();
