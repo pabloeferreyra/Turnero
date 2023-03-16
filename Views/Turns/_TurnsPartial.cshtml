@@ -1,5 +1,4 @@
 ﻿@using Turnero.Models;
-@model List<TurnDTO>
 @using Microsoft.AspNetCore.Identity
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
@@ -7,28 +6,28 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.FirstOrDefault().Name)
+                Nombre
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.FirstOrDefault().Dni)
+                Dni
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.FirstOrDefault().SocialWork)
+                Obra Social
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.FirstOrDefault().Reason)
+                Motivo
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.FirstOrDefault().MedicName)
+                Médico
             </th>
             <th>
                 Medic Id
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.FirstOrDefault().Date)
+                Fecha
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.FirstOrDefault().Time)
+                Hora
             </th>
             <th>Acción</th>
             

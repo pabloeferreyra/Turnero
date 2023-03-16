@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
@@ -51,8 +52,11 @@ public class TurnsController : Controller {
 
     [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
     public async Task<IActionResult> Index() {
+
         var medics = await _getMedics.GetMedicsDto();
+        var time = await _getTimeTurns.GetTimeTurns();
         ViewBag.Medics = new SelectList(medics, "Id", "Name");
+        ViewBag.Time = new SelectList(time, "Id", "Time");
         return View(nameof(Index));
     }
 
@@ -137,31 +141,42 @@ public class TurnsController : Controller {
         return View(turn);
     }
 
-    [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
-    public async Task<IActionResult> Create() {
-        ViewBag.DateTurn = DateTime.Today;
-        ViewBag.Medics = await _getMedics.GetMedics();
-        ViewBag.Time = await _getTimeTurns.GetTimeTurns();
-        return View();
+
+    [Authorize(Roles = "Ingreso, Medico")]
+    [HttpGet]
+    public async Task<IActionResult> Create()
+    {
+        var medics = await _getMedics.GetMedicsDto();
+        var time = await _getTimeTurns.GetTimeTurns();
+        ViewBag.Medics = new SelectList(medics, "Id", "Name");
+        ViewBag.Time = new SelectList(time, "Id", "Time");
+        return PartialView("_Create");
     }
+
 
     [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(Turn turn) {
-        if (ModelState.IsValid) {
-            bool resInsert = await this._insertTurns.CreateTurnAsync(turn);
-            if (resInsert)
-                return RedirectToAction(nameof(Index));
-            else
-                return RedirectToAction(nameof(Index));
+    public async Task<StatusCodeResult> Create(TurnDTO turn) {
+        if (!ModelState.IsValid) return this.BadRequest();
+        try
+        {
+            turn.Reason = turn.Reason.TrimEnd('\"');
+            var t = new Turn();
+            t = mapper.Map(turn, t);
+            await this._insertTurns.CreateTurnAsync(t);
+            return Ok();
         }
-        return RedirectToAction(nameof(Index));
+        catch
+        {
+            return Conflict();
+        }
+         
+        
     }
 
     [Authorize(Roles = RolesConstants.Medico)]
     [HttpPost]
-    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Accessed(Guid? id) {
         Turn turn;
         if (id != null) {
@@ -193,71 +208,46 @@ public class TurnsController : Controller {
     {
         if (id == null)
         {
-            return View("NotFound");
+            return null;
         }
 
-        var turn = await _getTurns.GetTurn((Guid)id);
-        List<Medic> medics = await _getMedics.GetMedics();
-        List<TimeTurnViewModel> time = await _getTimeTurns.GetTimeTurns();
-        ViewBag.MedicId = turn.Medic;
-        ViewBag.TimeId = turn.Time;
-        ViewBag.Medics = medics;
-        ViewBag.Time = time;
+        var turn = await _getTurns.GetTurnDTO((Guid)id);
         if (turn == null)
         {
             ViewBag.ErrorMessage = $"Turn with Id = {id} cannot be found";
-            return View("NotFound");
+            return null;
         }
-        return View(turn);
+        var medics = await _getMedics.GetMedicsDto();
+        var time = await _getTimeTurns.GetTimeTurns();
+        ViewBag.Medics = new SelectList(medics, "Id", "Name", turn.MedicId);
+        ViewBag.Time = new SelectList(time, "Id", "Time", turn.TimeId);
+        return PartialView("_Edit", turn);
     }
 
     [Authorize(Roles = RolesConstants.Ingreso)]
-    [HttpPost]
-    [ValidateAntiForgeryToken]
+    [HttpPut]
     public IActionResult Edit(Turn turn)
     {
         if (!_getTurns.Exists(turn.Id))
         {
             ViewBag.ErrorMessage = $"Turn with Id = {turn.Id} cannot be found";
-            return View("NotFound");
+            return NotFound();
         }
         if (ModelState.IsValid)
         {
             _updateTurns.Update(turn);
-            return RedirectToAction(nameof(Index));
+            return Ok();
         }
-        return View(turn);
+        return Conflict();
     }
 
     [Authorize(Roles = RolesConstants.Admin + ", " + RolesConstants.Ingreso)]
     [HttpDelete, ActionName("Delete")]
-    [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(Guid id)
     {
         var turn = await _getTurns.GetTurn(id);
         _updateTurns.Delete(turn);
-        return PartialView("_TurnsPartial", await this.TurnListAsync(null, null));
-    }
-
-    [Authorize(Roles = RolesConstants.Ingreso+ ", "+RolesConstants.Medico)]
-    public async Task<IActionResult> Export()
-    {
-        List<Medic> medics = await _getMedics.GetMedics();
-        ViewBag.Medics = medics;
-        return View();
-    }
-
-    [HttpPost, ActionName("Export")]
-    public async Task<IActionResult> ExportExcelAsync(MedicTime medicTime)
-    {
-        DateTime date = DateTime.Today;
-        var filename = "turns";
-        var medicName = await _getMedics.GetMedicById(medicTime.MedicId);
-        var reportname = medicName.Name+"_" + date.Year + "-" + date.Month + "-" + date.Day + ".xlsx";
-        var stream = await _exportService.ExportExcelAsync(date, medicTime.MedicId, filename);
-        var contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-        
-        return File(stream, contentType, reportname);
+        return Ok();
     }
     
     [Authorize(Roles = RolesConstants.Admin +", "+ RolesConstants.Ingreso)]

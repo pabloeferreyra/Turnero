@@ -96,6 +96,7 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Host.UseWindowsService();
 
+
 var app = builder.Build();
 
 IWebHostEnvironment env = app.Environment;
@@ -128,5 +129,9 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
+
+app.UseCookiePolicy();
+
+app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 
 app.Run();
