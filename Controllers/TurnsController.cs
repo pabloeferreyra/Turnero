@@ -169,8 +169,8 @@ public class TurnsController : Controller {
             var t = new Turn();
             t = mapper.Map(turn, t);
             await this._insertTurns.CreateTurnAsync(t);
-
-            await _hubContext.Clients.All.SendAsync("UpdateTable", "La tabla se ha actualizado");
+            var medic = await this._getMedics.GetMedicById(turn.MedicId);
+            await _hubContext.Clients.User(medic.UserGuid).SendAsync("UpdateTableDirected", "La tabla se ha actualizado"); ;
 
             return Ok();
         }
@@ -206,7 +206,9 @@ public class TurnsController : Controller {
         if (ModelState.IsValid) {
             this._updateTurns.Accessed(turn);
         }
-        await _hubContext.Clients.All.SendAsync("UpdateTable", "La tabla se ha actualizado");
+        var users = await this._userManager.GetUsersInRoleAsync(RolesConstants.Ingreso);
+        foreach(var u in  users) { await _hubContext.Clients.User(u.Id).SendAsync("UpdateTableDirected", "La tabla se ha actualizado"); }
+        
         return Ok();
     }
 
@@ -228,7 +230,7 @@ public class TurnsController : Controller {
         var medics = await _getMedics.GetMedicsDto();
         var time = await _getTimeTurns.GetTimeTurns();
         ViewBag.Medics = new SelectList(medics, "Id", "Name", turn.MedicId);
-        ViewBag.Time = new SelectList(time, "Id", "Time", turn.TimeId);
+        ViewBag.TimeEdit = new SelectList(time, "Id", "Time", turn.TimeId);
         return PartialView("_Edit", turn);
     }
 
@@ -244,7 +246,8 @@ public class TurnsController : Controller {
         if (ModelState.IsValid)
         {
             _updateTurns.Update(turn);
-            await _hubContext.Clients.All.SendAsync("UpdateTable", "La tabla se ha actualizado");
+            var users = await this._userManager.GetUsersInRoleAsync(RolesConstants.Ingreso);
+            foreach (var u in users) { await _hubContext.Clients.User(u.Id).SendAsync("UpdateTableDirected", "La tabla se ha actualizado"); }
             return Ok();
         }
         return Conflict();

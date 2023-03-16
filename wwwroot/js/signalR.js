@@ -5,7 +5,12 @@ const connection = new signalR.HubConnectionBuilder()
     .configureLogging(signalR.LogLevel.Information)
     .build();
 
-connection.on("UpdateTable", function (user, message) {
+connection.on("UpdateTableDirected", function (user, message) {
+    console.log(user + " " + message);
+    reset();
+})
+
+connection.on("UpdateTable", function (message) {
     console.log(message);
     reset();
 });
