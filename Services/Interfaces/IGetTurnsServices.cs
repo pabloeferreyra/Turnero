@@ -14,6 +14,8 @@ public interface IGetTurnsServices
 
     public Task<Turn> GetTurn(Guid id);
 
+    public Task<TurnDTO> GetTurnDTO(Guid id);
+
     public bool Exists(Guid id);
 
     public bool CheckTurn(Guid medicId, DateTime date, Guid timeTurn);

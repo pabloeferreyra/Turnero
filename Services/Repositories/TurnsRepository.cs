@@ -34,6 +34,11 @@ public class TurnsRepository : RepositoryBase<Turn>, ITurnRepository
             .Include(t => t.Time).SingleOrDefaultAsync();
     }
 
+    public async Task<TurnDTO> GetDTOById(Guid id)
+    {
+        return await this.FindByCondition(m => m.Id == id).ProjectTo<TurnDTO>(this.mapper.ConfigurationProvider).FirstOrDefaultAsync();
+    }
+
     public IQueryable<TurnDTO> GetListDto() 
     {
         return this.FindAll().ProjectTo<TurnDTO>(this.mapper.ConfigurationProvider);
@@ -112,10 +117,8 @@ public class TurnsRepository : RepositoryBase<Turn>, ITurnRepository
 
     public async Task CreateTurn(Turn turn)
     {
-                turn.MedicId = turn.Medic.Id;
-                turn.TimeId = turn.Time.Id;
-                turn.Medic = null;
-                turn.Time = null;
+        turn.Medic = null;
+        turn.Time = null;
         await this.CreateAsync(turn);
     }
 }

@@ -1,13 +1,13 @@
 ﻿@using Turnero.Models;
-@model List<TurnDTO>;
+@model TurnDTO;
+
 @using Microsoft.AspNetCore.Identity;
-@using (Html.BeginForm(null, null, FormMethod.Post, new { id = "__AjaxAntiForgeryForm" }))
-{
-    @Html.AntiForgeryToken()
-}
+@using Turnero.Utilities;
+
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
 @{
+
     ViewData["Title"] = "Turnos - Turnero";
     if (ViewBag.Date == null)
         ViewBag.Date = String.Format("{0:dd/MM/yyyy}", DateTime.Now);
@@ -19,10 +19,18 @@
         <div class="col-lg-2 col-md-2 col-sm-12">
             <input id="DateTurn" name="dateTurn" type="text" class="form-control" value="@ViewBag.Date" data-date-format="dd/MM/yyyy" />
         </div>
-        <div class="col-lg-4 col-md-5 col-sm-12">
+        <div class="col-lg-2 col-md-5 col-sm-12">
+        @if(User.IsInRole(RolesConstants.Ingreso))
+        {
             <select id="Medics" class="form-control" asp-items="@ViewBag.Medics">
                 <option value="" selected>== Seleccione un profesional ==</option>
-            </select>
+                </select>
+            }
+            else if (User.IsInRole(RolesConstants.Medico)) {
+                <select id="Medics" class="form-control" asp-items="@ViewBag.Medics" disabled>
+                    <option value="" selected>@User.Identity.Name</option>
+                </select>
+            }
         </div>
         <div class="col-lg-2 col-md-2 col-sm-12">
             <button class="form-control btn btn-primary" id="btnSearch">Buscar</button>
@@ -30,7 +38,7 @@
         @{
             if (SignInManager.IsSignedIn(User)) {
                 <div class="col-lg-2 col-md-3 col-sm-12">
-                    <a class="form-control btn btn-secondary" asp-action="Create">Nuevo Turno</a>
+                    <button type="button" id="createTurn" class="form-control btn btn-secondary">Nuevo Turno</button>
                 </div>
             }
         }
@@ -40,12 +48,49 @@
             
         <div id="control" class="col"></div>
     </div>
+
+    <!-- Modal -->
+    <div class="modal modal-lg fade" id="Create" role="dialog">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title text-primary text-center">Nuevo Turno</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div id="CreateFormContent"></div>
+            </div>
+
+        </div>
+    </div>
+    
+     <div class="modal modal-lg fade" id="Edit" role="dialog">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title text-primary text-center">Editar Turno para @Html.DisplayFor(model => model.Name)</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div id="EditFormContent">
+                </div>
+            </div>
+
+        </div>
+    </div>
+
 </div>
 <div class="back container-fluid" id="TurnsPartial">
 
-            <partial name="_TurnsPartial" model="@Model" />
+            <partial name="_TurnsPartial" />
     
 </div>
+
+
+
 @section scripts{
     <script src="~/js/turn.js"></script>
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
