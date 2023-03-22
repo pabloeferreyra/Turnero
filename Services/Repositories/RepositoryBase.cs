@@ -52,9 +52,9 @@ public abstract class RepositoryBase<T> : IRepositoryBase<T> where T : class
         this._context.Set<T>().Update(entity);
         await this._context.SaveChangesAsync();
     }
-    public async Task DeleteAsync(T entity)
+    public void DeleteAsync(T entity)
     {
         this._context.Set<T>().Remove(entity);
-        await this._context.SaveChangesAsync();
+        this._context.SaveChanges();
     }
 }

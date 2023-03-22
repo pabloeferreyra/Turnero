@@ -254,7 +254,7 @@ public class TurnsController : Controller {
     }
 
     [Authorize(Roles = RolesConstants.Admin + ", " + RolesConstants.Ingreso)]
-    [HttpPost, ActionName("Delete")]
+    [HttpDelete, ActionName("Delete")]
     public async Task<IActionResult> DeleteConfirmed(Guid id)
     {
         var turn = await _getTurns.GetTurn(id);

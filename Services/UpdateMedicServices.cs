@@ -31,11 +31,11 @@ public class UpdateMedicServices : IUpdateMedicServices
         }
     }
 
-    public async Task Delete(Medic medic)
+    public void Delete(Medic medic)
     {
         try
         {
-            await _medicRepository.DeleteMedic(medic);
+            _medicRepository.DeleteMedic(medic);
         }
         catch (DbUpdateConcurrencyException ex)
         {
