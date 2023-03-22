@@ -97,13 +97,13 @@ public class TurnsRepository : RepositoryBase<Turn>, ITurnRepository
         return this.FindByCondition(e => e.MedicId == medicId && e.DateTurn.Date == date && e.TimeId == timeTurn).Any();
     }
 
-    public async Task DeleteTurn(Turn turn)
+    public void DeleteTurn(Turn turn)
     {
         turn.MedicId = turn.Medic.Id;
         turn.TimeId = turn.Time.Id;
         turn.Medic = null;
         turn.Time = null;
-        await this.DeleteAsync(turn);
+        this.DeleteAsync(turn);
     }
 
     public async Task UpdateTurn(Turn turn)

@@ -142,7 +142,7 @@ public class MedicsController : Controller
         if (MedicExists(id))
         {
             var medic = await _getMedicsServices.GetMedicById(id);
-            await _updateMedicServices.Delete(medic);
+            _updateMedicServices.Delete(medic);
         }
         return RedirectToAction(nameof(Index));
     }

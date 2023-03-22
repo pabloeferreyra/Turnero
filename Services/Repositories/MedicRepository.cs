@@ -48,9 +48,9 @@ public class MedicRepository : RepositoryBase<Medic>, IMedicRepository
         await this.CreateAsync(medic);
     }
 
-    public async Task DeleteMedic (Medic medic)
+    public void DeleteMedic (Medic medic)
     {
-        await this.DeleteAsync(medic);
+        this.DeleteAsync(medic);
     }
 
     public async Task UpdateMedic(Medic medic)
