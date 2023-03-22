@@ -15,5 +15,5 @@ public interface IRepositoryBase<T>
 
     Task CreateAsync(T entity);
     Task UpdateAsync(T entity);
-    Task DeleteAsync(T entity);
+    void DeleteAsync(T entity);
 }

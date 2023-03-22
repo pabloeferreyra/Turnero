@@ -54,11 +54,11 @@ public class UpdateTurnsServices : IUpdateTurnsServices
         }
     }
 
-    public async void Delete(Turn turn)
+    public void Delete(Turn turn)
     {
         try
         {
-            await _turnRepository.DeleteTurn(turn);
+            _turnRepository.DeleteTurn(turn);
             _ = Task.Run(() =>
             {
                 _logger.Debug($"Turno {turn.Id} Eliminado");

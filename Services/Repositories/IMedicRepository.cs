@@ -13,6 +13,6 @@ public interface IMedicRepository
     Task<Medic> GetByUserId(string id);
     bool Exists(Guid id);
     Task NewMedic(Medic medic);
-    Task DeleteMedic(Medic medic);
+    void DeleteMedic(Medic medic);
     Task UpdateMedic(Medic medic);
 }

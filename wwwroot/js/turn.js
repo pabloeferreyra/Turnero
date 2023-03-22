@@ -208,7 +208,7 @@ function Delete(id) {
     var form = $('#__AjaxAntiForgeryForm');
     var token = $('input[name="__RequestVerificationToken"]', form).val();
     $.ajax({
-        type: "POST",
+        type: "DELETE",
         url: "/Turns/Delete",
         data: {
             __RequestVerificationToken: token,

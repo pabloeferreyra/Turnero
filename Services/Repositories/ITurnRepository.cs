@@ -15,7 +15,7 @@ public interface ITurnRepository
     bool TurnExists(Guid id);
     bool CheckTurn(Guid medicId, DateTime date, Guid timeTurn);
     void Access(Turn turn);
-    Task DeleteTurn(Turn turn);
+    void DeleteTurn(Turn turn);
     Task UpdateTurn(Turn turn);
     Task CreateTurn(Turn turn);
 }
