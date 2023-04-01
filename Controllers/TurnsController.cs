@@ -236,7 +236,7 @@ public class TurnsController : Controller {
 
     [Authorize(Roles = RolesConstants.Ingreso)]
     [HttpPut]
-    public async Task<IActionResult> EditAsync(Turn turn)
+    public async Task<IActionResult> Edit(TurnDTO turn)
     {
         if (!_getTurns.Exists(turn.Id))
         {
@@ -245,7 +245,9 @@ public class TurnsController : Controller {
         }
         if (ModelState.IsValid)
         {
-            _updateTurns.Update(turn);
+            var t = new Turn();
+            t = mapper.Map(turn, t);
+            _updateTurns.Update(t);
             var users = await this._userManager.GetUsersInRoleAsync(RolesConstants.Ingreso);
             foreach (var u in users) { await _hubContext.Clients.User(u.Id).SendAsync("UpdateTableDirected", "La tabla se ha actualizado"); }
             return Ok();
