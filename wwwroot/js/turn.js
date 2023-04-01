@@ -242,13 +242,6 @@ function ConfirmDelete(uniqueId, isAccessedClicked) {
     }
 }
 
-
-
-$("#btnEditarTurno").on('click', function (event) {
-    event.preventDefault();
-    EditTurn();
-});
-
 $("#createTurn").on('click', function (event) {
     CreateView();
     $("#Create").modal('toggle');
@@ -262,34 +255,6 @@ function CreateView() {
             $("#CreateFormContent").html(data);
         }
     })
-}
-
-
-
-function EditTurn() {
-    var form = $('#__AjaxAntiForgeryForm');
-    var token = $('input[name="__RequestVerificationToken"]', form).val();
-    let formData = $("#EditForm").serialize();
-    console.log(formData);
-    $.ajax({
-        type: "POST",
-        url: "/Turns/Edit",
-        data: {
-            __RequestVerificationToken: token,
-            formData
-        },
-        success: function () {
-            $("#Edit").modal('toggle');
-            reset();
-            Swal.fire({
-                position: 'top-end',
-                icon: 'success',
-                title: 'Turno editado correctamente.',
-                showConfirmButton: false,
-                timer: 600
-            });
-        },
-    });
 }
 
 function Edit(id) {
