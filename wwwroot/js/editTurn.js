@@ -110,7 +110,6 @@ function EditTurn() {
     var form = $('#__AjaxAntiForgeryForm');
     var token = $('input[name="__RequestVerificationToken"]', form).val();
     let formData = $("#EditForm").serialize();
-    console.log(formData);
     $.ajax({
         type: "PUT",
         url: "/Turns/Edit",

@@ -102,9 +102,9 @@ public class TurnsRepository : RepositoryBase<Turn>, ITurnRepository
         this.DeleteAsync(turn);
     }
 
-    public async Task UpdateTurn(Turn turn)
+    public void UpdateTurn(Turn turn)
     {
-        await this.UpdateAsync(turn);
+        this.Update(turn);
     }
 
     public async Task CreateTurn(Turn turn)
