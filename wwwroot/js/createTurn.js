@@ -109,7 +109,6 @@ function Create() {
     var form = $('#__AjaxAntiForgeryForm');
     var token = $('input[name="__RequestVerificationToken"]', form).val();
     let formData = $("#CreateForm").serialize();
-    console.log(formData);
     $.ajax({
         type: "POST",
         url: "/Turns/Create",

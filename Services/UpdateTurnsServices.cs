@@ -37,11 +37,11 @@ public class UpdateTurnsServices : IUpdateTurnsServices
         }
     }
 
-    public async void Update(Turn turn)
+    public void Update(Turn turn)
     {
         try
         {
-            await _turnRepository.UpdateTurn(turn);
+            _turnRepository.UpdateTurn(turn);
             _ = Task.Run(() =>
               {
                   _logger.Debug($"Turno {turn.Id} Actualizado");
