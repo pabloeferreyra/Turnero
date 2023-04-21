@@ -6,12 +6,10 @@ const connection = new signalR.HubConnectionBuilder()
     .build();
 
 connection.on("UpdateTableDirected", function (user, message) {
-    console.log(user + " " + message);
     reset();
 })
 
 connection.on("UpdateTable", function (message) {
-    console.log(message);
     reset();
 });
 
