@@ -39,7 +39,7 @@
                     aria-label="Toggle navigation">
                         <span class="navbar-toggler-icon"></span>
                     </button>
-                
+
                     <div class="navbar-collapse collapse" id="navbarNavAltMarkup" style="">
                         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                             @if ((User.IsInRole(RolesConstants.Ingreso) || User.IsInRole(RolesConstants.Medico)))
@@ -50,21 +50,19 @@
                             }
                             else if (User.IsInRole(RolesConstants.Admin))
                             {
-                                <li class="nav-item">
-                                    <a class="nav-link dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">Manage</a>
-                                </li>
-                                <li class="nav-item">
-                                    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                                        <a asp-action="ListUsers" asp-controller="Administration" class="dropdown-item">Users</a>
-                                        <a asp-action="ListRoles" asp-controller="Administration" class="dropdown-item">Roles</a>
-                                        <a asp-action="Index" asp-controller="Medics" class="dropdown-item">Medicos</a>
-                                        <a asp-action="Index" asp-controller="TimeTurn" class="dropdown-item">Horarios</a>
-                                    </div>
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Manage</a>
+                                    <ul class="dropdown-menu">
+                                        <li><a asp-action="ListUsers" asp-controller="Administration" class="dropdown-item">Users</a></li>
+                                        <li><a asp-action="ListRoles" asp-controller="Administration" class="dropdown-item">Roles</a></li>
+                                        <li><a asp-action="Index" asp-controller="Medics" class="dropdown-item">Medicos</a></li>
+                                        <li><a asp-action="Index" asp-controller="TimeTurn" class="dropdown-item">Horarios</a></li>
+                                    </ul>
                                 </li>
                             }
                         </ul>
                         <partial name="_LoginPartial" />
-                        
+
                     </div>
                 </div>
             </nav>
