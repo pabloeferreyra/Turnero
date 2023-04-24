@@ -17,7 +17,7 @@ using Turnero.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var connectionString = builder.Configuration.GetConnectionString("SQLite");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(connectionString)).AddDefaultIdentity<IdentityUser>(options =>
 {
