@@ -41,16 +41,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Migrations\**" />
     <Compile Remove="packages\**" />
     <Compile Remove="Turnero.Models\**" />
-    <Content Remove="Migrations\**" />
     <Content Remove="packages\**" />
     <Content Remove="Turnero.Models\**" />
-    <EmbeddedResource Remove="Migrations\**" />
     <EmbeddedResource Remove="packages\**" />
     <EmbeddedResource Remove="Turnero.Models\**" />
-    <None Remove="Migrations\**" />
     <None Remove="packages\**" />
     <None Remove="Turnero.Models\**" />
   </ItemGroup>
@@ -61,7 +57,7 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
-    <PackageReference Include="EPPlus" Version="6.2.1" />
+    <PackageReference Include="EPPlus" Version="6.2.2" />
     <PackageReference Include="jQuery" Version="3.6.4" />
     <PackageReference Include="jQuery.Validation" Version="1.19.5" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="7.0.5" />
