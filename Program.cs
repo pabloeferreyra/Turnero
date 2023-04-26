@@ -14,12 +14,32 @@ using Turnero.Services.Repositories;
 using Turnero.Services;
 using System.IO;
 using Turnero.Hubs;
+using System.Runtime.InteropServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString = builder.Configuration.GetConnectionString("SQLite");
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(connectionString)).AddDefaultIdentity<IdentityUser>(options =>
+#region Path
+string secretsPath;
+if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+{
+    secretsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Microsoft", "UserSecrets", builder.Configuration["secretsFolder"], "secrets.json");
+}
+else
+{
+    secretsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Microsoft", "UserSecrets", builder.Configuration["secretsFolder"], "secrets.json");
+}
+
+#endregion
+
+#region secrets
+builder.Configuration.AddJsonFile(secretsPath, optional: true);
+
+builder.Configuration.AddUserSecrets<Program>();
+#endregion
+
+var connectionString = builder.Configuration["ConnectionStrings:DefaultConnection"];
+ builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(connectionString)).AddDefaultIdentity<IdentityUser>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
     options.Password.RequireDigit = true;
