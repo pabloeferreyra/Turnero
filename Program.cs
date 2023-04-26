@@ -37,9 +37,9 @@ builder.Configuration.AddJsonFile(secretsPath, optional: true);
 builder.Configuration.AddUserSecrets<Program>();
 #endregion
 
-var connectionString = builder.Configuration["ConnectionStrings:DefaultConnection"];
+var connectionString = builder.Configuration["ConnectionStrings:SQLite"];
  builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString)).AddDefaultIdentity<IdentityUser>(options =>
+    options.UseSqlite(connectionString)).AddDefaultIdentity<IdentityUser>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
     options.Password.RequireDigit = true;
