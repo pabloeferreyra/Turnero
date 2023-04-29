@@ -112,7 +112,7 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddSignalR().AddJsonProtocol();
 
-builder.Host.UseWindowsService();
+builder.WebHost.UseKestrel();
 
 
 var app = builder.Build();
