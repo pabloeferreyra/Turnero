@@ -19,10 +19,7 @@ using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.WebHost.ConfigureKestrel((context, options) =>
-{
-    options.ListenAnyIP(5002);
-});
+builder.WebHost.UseUrls("http://localhost:5002/Demo");
 
 #region Path
 string secretsPath;
