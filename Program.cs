@@ -19,9 +19,9 @@ using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.WebHost.UseKestrel(options =>
+builder.WebHost.ConfigureKestrel((context, options) =>
 {
-    options.Listen(IPAddress.Parse("127.0.0.1"), 5002); 
+    options.Listen(IPAddress.Parse(context.Configuration["Kestrel:Endpoints:Http:Url"]), 5002);
 });
 
 #region Path
