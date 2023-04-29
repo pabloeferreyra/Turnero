@@ -15,10 +15,14 @@ using Turnero.Services;
 using System.IO;
 using Turnero.Hubs;
 using System.Runtime.InteropServices;
+using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.WebHost.UseKestrel();
+builder.WebHost.UseKestrel(options =>
+{
+    options.Listen(IPAddress.Any, 5002); 
+});
 
 #region Path
 string secretsPath;
