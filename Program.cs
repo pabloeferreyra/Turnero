@@ -21,7 +21,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.WebHost.ConfigureKestrel((context, options) =>
 {
-    options.Listen(IPAddress.Any, 5002);
+    options.ListenAnyIP(5002);
 });
 
 #region Path
