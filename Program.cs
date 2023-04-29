@@ -18,6 +18,8 @@ using System.Runtime.InteropServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.WebHost.UseKestrel();
+
 #region Path
 string secretsPath;
 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -112,7 +114,7 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddSignalR().AddJsonProtocol();
 
-builder.WebHost.UseKestrel();
+builder.Host.UseWindowsService();
 
 
 var app = builder.Build();
