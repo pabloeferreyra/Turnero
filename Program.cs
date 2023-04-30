@@ -19,7 +19,10 @@ using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.WebHost.UseUrls("http://localhost:5002/Demo");
+builder.WebHost.ConfigureKestrel((context, options) =>
+{
+    options.ListenAnyIP(5002);
+});
 
 #region Path
 string secretsPath;
@@ -148,6 +151,8 @@ app.MapHub<TurnsTableHub>("/TurnsTableHub");
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.UsePathBase("/Demo");
 
 app.MapControllerRoute(
     name: "default",
