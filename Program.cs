@@ -33,18 +33,18 @@ if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 else
 {
     secretsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".microsoft", "usersecrets", builder.Configuration["secretsFolder"], "secrets.json");
-    Console.WriteLine(secretsPath);
 }
 
 #endregion
 
 #region secrets
-builder.Configuration.AddJsonFile(secretsPath, optional: true);
+builder.Configuration.AddJsonFile(secretsPath, optional: false);
 
 builder.Configuration.AddUserSecrets<Program>();
 #endregion
 
 var connectionString = builder.Configuration["ConnectionStrings:SQLite"];
+Console.WriteLine(connectionString);
  builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(connectionString)).AddDefaultIdentity<IdentityUser>(options =>
 {
