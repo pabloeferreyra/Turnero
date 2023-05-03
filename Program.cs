@@ -33,6 +33,7 @@ if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 else
 {
     secretsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Microsoft", "UserSecrets", builder.Configuration["secretsFolder"], "secrets.json");
+    Console.WriteLine(secretsPath);
 }
 
 #endregion
