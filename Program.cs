@@ -44,6 +44,7 @@ builder.Configuration.AddUserSecrets<Program>();
 #endregion
 
 var connectionString = builder.Configuration["ConnectionStrings:SQLite"];
+Console.WriteLine(connectionString);
  builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(connectionString)).AddDefaultIdentity<IdentityUser>(options =>
 {
