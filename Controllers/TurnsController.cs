@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.SignalR;
 using Turnero.Hubs;
 using System.Net.Http;
 using Microsoft.Extensions.Configuration;
+using Turnero.Services.Repositories;
 
 namespace Turnero.Controllers;
 
@@ -283,7 +284,7 @@ public class TurnsController : Controller {
 
     [Authorize(Roles = RolesConstants.Medico)]
     [HttpPost]
-    public async Task<IActionResult> CallAsync([FromBody]Caller model)
+    public async Task<IActionResult> Call([FromBody]Caller model)
     {
         var json = JsonSerializer.Serialize(model);
         var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");

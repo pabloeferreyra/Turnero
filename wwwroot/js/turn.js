@@ -87,7 +87,10 @@ $(document).ready(function () {
                                 '</span>' +
                             '<span id="accessedSpan_'+data['id']+'">' +
                             '<a href="#" class="btn btn-primary" onclick="ConfirmAccess(\''+data['id']+'\', true)">Ingreso</a>'+
-                                '</span> ';
+                            '</span> ';
+                            '<span id="Caller_' + data['id'] + '">' +
+                                '<a href="#" class="btn btn-primary" onclick="Call(\'' + data['name'] + ','+ data[medicName] +'\')">Llamar</a>' +
+                            '</span> ';
                     }
 
                     return '';
@@ -179,6 +182,38 @@ function Accessed(id) {
         data: {
             __RequestVerificationToken: token,
             id: id
+        },
+        success: function (result) {
+            if (result.trim().length == 0) {
+                Swal.fire({
+                    position: 'top-end',
+                    icon: 'info',
+                    title: 'no quedan turnos!',
+                    showConfirmButton: false,
+                    timer: 1200
+                });
+            }
+            Swal.fire({
+                position: 'top-end',
+                icon: 'success',
+                title: 'Paciente accedio correctamente',
+                showConfirmButton: false,
+                timer: 1200
+            });
+            return reset();
+        },
+        error: function (req, status, error) {
+        }
+    });
+}
+
+function Call(name, medicName) {
+    $.ajax({
+        type: "POST",
+        url: "/Turns/Call",
+        data: {
+            name: name,
+            MedicCaller: medicName
         },
         success: function (result) {
             if (result.trim().length == 0) {
