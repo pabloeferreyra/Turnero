@@ -216,23 +216,13 @@ function Call(name, medicName) {
             MedicCaller: medicName
         },
         success: function (result) {
-            if (result.trim().length == 0) {
-                Swal.fire({
-                    position: 'top-end',
-                    icon: 'info',
-                    title: 'no quedan turnos!',
-                    showConfirmButton: false,
-                    timer: 1200
-                });
-            }
             Swal.fire({
                 position: 'top-end',
                 icon: 'success',
-                title: 'Paciente accedio correctamente',
+                title: 'Llamando paciente',
                 showConfirmButton: false,
                 timer: 1200
             });
-            return reset();
         },
         error: function (req, status, error) {
         }
