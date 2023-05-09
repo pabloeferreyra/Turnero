@@ -19,6 +19,8 @@ using Microsoft.EntityFrameworkCore;
 using Turnero.Utilities;
 using Microsoft.AspNetCore.SignalR;
 using Turnero.Hubs;
+using System.Net.Http;
+using Microsoft.Extensions.Configuration;
 
 namespace Turnero.Controllers;
 
@@ -33,6 +35,8 @@ public class TurnsController : Controller {
     public IExportService _exportService;
     private readonly IMapper mapper;
     private readonly IHubContext<TurnsTableHub> _hubContext;
+    private readonly IConfiguration _config;
+    private readonly IHttpClientFactory _httpClientFactory;
     public TurnsController(UserManager<IdentityUser> userManager,
                            ILogger<TurnsController> logger,
                            IInsertTurnsServices insertTurns,
@@ -41,7 +45,10 @@ public class TurnsController : Controller {
                            IGetMedicsServices getMedics,
                            IGetTimeTurnsServices getTimeTurns,
                            IExportService exportService, IMapper mapper,
-                           IHubContext<TurnsTableHub> hubContext) {
+                           IHubContext<TurnsTableHub> hubContext,
+                           IConfiguration config, 
+                           IHttpClientFactory httpClientFactory)
+    {
         _userManager = userManager;
         _logger = logger;
         _insertTurns = insertTurns;
@@ -52,6 +59,8 @@ public class TurnsController : Controller {
         _exportService = exportService;
         this.mapper = mapper;
         _hubContext = hubContext;
+        _config = config;
+        _httpClientFactory = httpClientFactory;
     }
 
     [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
@@ -270,5 +279,29 @@ public class TurnsController : Controller {
     public bool CheckTurn(Guid medicId, DateTime date, Guid timeTurn)
     {
         return _getTurns.CheckTurn(medicId, date, timeTurn);
+    }
+
+    [Authorize(Roles = RolesConstants.Medico)]
+    [HttpPost]
+    public async Task<IActionResult> CallAsync([FromBody]Caller model)
+    {
+        var json = JsonSerializer.Serialize(model);
+        var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+        using var client = _httpClientFactory.CreateClient();
+        var caller = _config["caller"];
+        var request = new HttpRequestMessage(HttpMethod.Post, string.Format("{0}CallNew", caller))
+        {
+            Content = content
+        };
+
+        var response = await client.SendAsync(request);
+        if (!response.IsSuccessStatusCode)
+        {
+            // Si la respuesta no es exitosa, puedes manejar el error aquí.
+            return StatusCode((int)response.StatusCode);
+        }
+
+        // Si la respuesta es exitosa, puedes hacer algo con los datos de la respuesta.
+        return Ok();
     }
 }
