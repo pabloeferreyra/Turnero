@@ -38,17 +38,17 @@ jobs:
             service turneroDemo stop
 
             # Copiar Turnero.db al directorio raíz
-            cp ${{ secrets.TURNERO_PATH }}Turnero.db ${{ secrets.ROOT_PATH }}Turnero.db
-            rm -rf ${{ secrets.TURNERO_PATH }}*
+            cp /root/TurneroAppDemo/Turnero.db $/root/Turnero.db
+            rm -rf /root/TurneroAppDemo/*
 
             # Crear directorio Turnero
-            mkdir ${{ secrets.TURNERO_PATH }}
+            mkdir /root/TurneroAppDemo/
 
             # Copiar archivos al directorio Turnero
-            scp -r ./publish/* ${{ secrets.TURNERO_PATH }}
+            scp -r ./publish/* /root/TurneroAppDemo/
 
             # Copiar Turnero.db de vuelta al directorio Turnero
-            cp ${{ secrets.ROOT_PATH }}Turnero.db ${{ secrets.TURNERO_PATH }}Turnero.db
+            cp /root/Turnero.db /root/TurneroAppDemo/Turnero.db
 
             # Reiniciar servicio
             systemctl daemon-reload
