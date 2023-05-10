@@ -28,7 +28,7 @@ jobs:
       - name: Deploy to server
         uses: webfactory/ssh-agent@v0.5.3
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           ssh-command: |
             # Detiene servicio
             ssh -p ${{ secrets.PORT }} ${{ secrets.USER_NAME }}@${{ secrets.SERVER }} 'service turneroDemo stop'
