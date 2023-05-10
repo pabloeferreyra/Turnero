@@ -24,18 +24,26 @@ jobs:
           dotnet-version: 7.0.x
       - name: Build and publish
         run: |
-          dotnet publish -c Release -o ./publish
+          dotnet publish -c Release --nologo -r linux-x64 --self-contained -o ./publish
       - name: Deploy to server
         uses: webfactory/ssh-agent@v0.5.3
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
           ssh-command: |
+            # Detiene servicio
+            ssh -p ${{ secrets.PORT }} ${{ secrets.USER_NAME }}@${{ secrets.SERVER }} 'service turneroDemo stop'
+            
             # Copiar Turnero.db al directorio raíz
             ssh -p ${{ secrets.PORT }} ${{ secrets.USER_NAME }}@${{ secrets.SERVER }} 'cp ${{ secrets.TURNERO_PATH }}Turnero.db ${{ secrets.ROOT_PATH }}Turnero.db'
-
+            ssh -p ${{ secrets.PORT }} ${{ secrets.USER_NAME }}@${{ secrets.SERVER }} 'rm -rf {{ secrets.TURNERO_PATH }}*'
+            
             # Copiar archivos al directorio Turnero
+            ssh -p ${{ secrets.PORT }} ${{ secrets.USER_NAME }}@${{ secrets.SERVER }} 'mkdir {{ secrets.TURNERO_PATH }}'
             scp -r -P ${{ secrets.PORT }} ./publish/* ${{ secrets.USER_NAME }}@${{ secrets.SERVER }}:${{ secrets.TURNERO_PATH }}
 
             # Copiar Turnero.db de vuelta al directorio Turnero
             ssh -p ${{ secrets.PORT }} ${{ secrets.USER_NAME }}@${{ secrets.SERVER }} 'cp ${{ secrets.ROOT_PATH }}Turnero.db ${{ secrets.TURNERO_PATH }}Turnero.db'
-
+            
+            # Reinicia Servicio
+            ssh -p ${{ secrets.PORT }} ${{ secrets.USER_NAME }}@${{ secrets.SERVER }} 'systemctl daemon-reload'
+            ssh -p ${{ secrets.PORT }} ${{ secrets.USER_NAME }}@${{ secrets.SERVER }} 'service turneroDemo start'
