@@ -1,0 +1,27 @@
+name: .NET Core
+
+on:
+  push:
+    branches: 
+    - demo
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Install dependencies and build
+        run: |
+          cd /
+          dotnet restore
+          dotnet build --configuration Release
+      - name: Publish
+        run: dotnet publish --configuration Release --output ./publish
