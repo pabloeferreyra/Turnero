@@ -32,6 +32,7 @@ jobs:
           host: ${{ secrets.SERVER }}
           username: ${{ secrets.USER_NAME }}
           port: ${{ secrets.PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             # Detener servicio
             service turneroDemo stop
