@@ -25,3 +25,21 @@ jobs:
       - name: Build and publish
         run: |
           dotnet publish -c Release -o ./publish
+      - name: Deploy to server
+        uses: appleboy/ssh-action@master
+        env:
+          HOST: ${{ secrets.SERVER }}
+          USERNAME: ${{ secrets.USER_NAME }}
+          PORT: ${{ secrets.PORT }}
+          TURNERO_PATH: ${{ secrets.TURNERO_PATH }}
+          ROOT_PATH: ${{ secrets.ROOT_PATH }}
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            ssh -p ${{ secrets.PORT }} $USERNAME@$HOST 'cp ${{ env.TURNERO_PATH }}Turnero.db ${{ env.ROOT_PATH }}Turnero.db'
+            debug: "Copying Turnero.db to root directory..."
+            scp -r -P ${{ secrets.PORT }} ./publish/* $USERNAME@$HOST:${{ env.TURNERO_PATH }}
+            debug: "Copying files to Turnero directory..."
+            ssh -p ${{ secrets.PORT }} $USERNAME@$HOST 'cp ${{ env.ROOT_PATH }}Turnero.db ${{ env.TURNERO_PATH }}Turnero.db'
+            debug: "Copying Turnero.db back to Turnero directory..."
+            
