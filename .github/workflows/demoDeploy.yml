@@ -26,30 +26,27 @@ jobs:
         run: |
           dotnet publish -c Release --nologo -r linux-x64 --self-contained -o ./publish
           
+      - name: Install sshpass
+        run: sudo apt-get install -y sshpass
+
       - name: Deploy to server
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SERVER }}
-          username: ${{ secrets.USER_NAME }}
-          port: ${{ secrets.PORT }}
-          password: ${{ secrets.SSH_PASSWORD }}
-          script: |
-            # Detener servicio
-            sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -p ${{ secrets.PORT }} ${{ secrets.USER_NAME }}@${{ secrets.SERVER }} 'service turneroDemo stop'
+        run: |
+          # Detener servicio
+          sshpass -p ${{ secrets.SSH_PASSWORD }} ssh -p ${{ secrets.PORT }} ${{ secrets.USER_NAME }}@${{ secrets.SERVER }} 'service turneroDemo stop'
 
-            # Copiar Turnero.db al directorio raíz
-            sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -p ${{ secrets.PORT }} ${{ secrets.USER_NAME }}@${{ secrets.SERVER }} 'cp ${{ secrets.TURNERO_PATH }}Turnero.db ${{ secrets.ROOT_PATH }}Turnero.db'
-            sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -p ${{ secrets.PORT }} ${{ secrets.USER_NAME }}@${{ secrets.SERVER }} 'rm -rf ${{ secrets.TURNERO_PATH }}*'
+          # Copiar Turnero.db al directorio raíz
+          sshpass -p ${{ secrets.SSH_PASSWORD }} ssh -p ${{ secrets.PORT }} ${{ secrets.USER_NAME }}@${{ secrets.SERVER }} 'cp ${{ secrets.TURNERO_PATH }}Turnero.db ${{ secrets.ROOT_PATH }}Turnero.db'
+          sshpass -p ${{ secrets.SSH_PASSWORD }} ssh -p ${{ secrets.PORT }} ${{ secrets.USER_NAME }}@${{ secrets.SERVER }} 'rm -rf ${{ secrets.TURNERO_PATH }}*'
 
-            # Crear directorio Turnero
-            sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -p ${{ secrets.PORT }} ${{ secrets.USER_NAME }}@${{ secrets.SERVER }} 'mkdir ${{ secrets.TURNERO_PATH }}'
+          # Crear directorio Turnero
+          sshpass -p ${{ secrets.SSH_PASSWORD }} ssh -p ${{ secrets.PORT }} ${{ secrets.USER_NAME }}@${{ secrets.SERVER }} 'mkdir ${{ secrets.TURNERO_PATH }}'
 
-            # Copiar archivos al directorio Turnero
-            scp -r -P ${{ secrets.PORT }} ./publish/* ${{ secrets.USER_NAME }}@${{ secrets.SERVER }}:${{ secrets.TURNERO_PATH }}
+          # Copiar archivos al directorio Turnero
+          scp -r -P ${{ secrets.PORT }} ./publish/* ${{ secrets.USER_NAME }}@${{ secrets.SERVER }}:${{ secrets.TURNERO_PATH }}
 
-            # Copiar Turnero.db de vuelta al directorio Turnero
-            sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -p ${{ secrets.PORT }} ${{ secrets.USER_NAME }}@${{ secrets.SERVER }} 'cp ${{ secrets.ROOT_PATH }}Turnero.db ${{ secrets.TURNERO_PATH }}Turnero.db'
+          # Copiar Turnero.db de vuelta al directorio Turnero
+          sshpass -p ${{ secrets.SSH_PASSWORD }} ssh -p ${{ secrets.PORT }} ${{ secrets.USER_NAME }}@${{ secrets.SERVER }} 'cp ${{ secrets.ROOT_PATH }}Turnero.db ${{ secrets.TURNERO_PATH }}Turnero.db'
 
-            # Reiniciar servicio
-            sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -p ${{ secrets.PORT }} ${{ secrets.USER_NAME }}@${{ secrets.SERVER }} 'systemctl daemon-reload'
-            sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -p ${{ secrets.PORT }} ${{ secrets.USER_NAME }}@${{ secrets.SERVER }} 'service turneroDemo start'
+          # Reiniciar servicio
+          sshpass -p ${{ secrets.SSH_PASSWORD }} ssh -p ${{ secrets.PORT }} ${{ secrets.USER_NAME }}@${{ secrets.SERVER }} 'systemctl daemon-reload'
+          sshpass -p ${{ secrets.SSH_PASSWORD }} ssh -p ${{ secrets.PORT }} ${{ secrets.USER_NAME }}@${{ secrets.SERVER }} 'service turneroDemo start'
