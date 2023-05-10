@@ -29,6 +29,10 @@ jobs:
       - name: Deploy to server
         uses: appleboy/ssh-action@master
         with:
+          host: ${{ secrets.SERVER }}
+          username: ${{ secrets.USER_NAME }}
+          port: ${{ secrets.PORT }}
+          password: ${{ secrets.SSH_PASSWORD }}
           script: |
             # Detener servicio
             sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -p ${{ secrets.PORT }} ${{ secrets.USER_NAME }}@${{ secrets.SERVER }} 'service turneroDemo stop'
