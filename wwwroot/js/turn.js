@@ -87,9 +87,9 @@ $(document).ready(function () {
                                 '</span>' +
                             '<span id="accessedSpan_'+data['id']+'">' +
                             '<a href="#" class="btn btn-primary" onclick="ConfirmAccess(\''+data['id']+'\', true)">Ingreso</a>'+
-                            '</span> ';
+                            '</span> ' +
                             '<span id="Caller_' + data['id'] + '">' +
-                                '<a href="#" class="btn btn-primary" onclick="Call(\'' + data['name'] + ','+ data[medicName] +'\')">Llamar</a>' +
+                            '<a href="#" class="btn btn-primary" onclick="Call(\'' + data['name'] + '\'\,\''+ data['medicName'] +'\')">Llamar</a>' +
                             '</span> ';
                     }
 
@@ -212,7 +212,7 @@ function Call(name, medicName) {
         type: "POST",
         url: "/Turns/Call",
         data: {
-            name: name,
+            Patient: name,
             MedicCaller: medicName
         },
         success: function (result) {

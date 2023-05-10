@@ -118,6 +118,7 @@ builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddSignalR().AddJsonProtocol();
+builder.Services.AddHttpClient();
 
 builder.Host.UseWindowsService();
 

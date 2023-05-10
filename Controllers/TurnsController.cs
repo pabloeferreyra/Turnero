@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
@@ -12,16 +11,13 @@ using Turnero.Models;
 using Turnero.Services.Interfaces;
 using System.Linq;
 using AutoMapper;
-using System.Globalization;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Linq.Dynamic.Core;
-using Microsoft.EntityFrameworkCore;
 using Turnero.Utilities;
 using Microsoft.AspNetCore.SignalR;
 using Turnero.Hubs;
 using System.Net.Http;
 using Microsoft.Extensions.Configuration;
-using Turnero.Services.Repositories;
 
 namespace Turnero.Controllers;
 
@@ -284,13 +280,13 @@ public class TurnsController : Controller {
 
     [Authorize(Roles = RolesConstants.Medico)]
     [HttpPost]
-    public async Task<IActionResult> Call([FromBody]Caller model)
+    public async Task<IActionResult> Call(Caller model)
     {
         var json = JsonSerializer.Serialize(model);
         var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
         using var client = _httpClientFactory.CreateClient();
         var caller = _config["caller"];
-        var request = new HttpRequestMessage(HttpMethod.Post, string.Format("{0}CallNew", caller))
+        var request = new HttpRequestMessage(HttpMethod.Post, string.Format("{0}Home/CallNew", caller))
         {
             Content = content
         };
