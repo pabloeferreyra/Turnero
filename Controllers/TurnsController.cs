@@ -29,7 +29,6 @@ public class TurnsController : Controller {
     public IUpdateTurnsServices _updateTurns;
     public IGetMedicsServices _getMedics;
     public IGetTimeTurnsServices _getTimeTurns;
-    public IExportService _exportService;
     private readonly IMapper mapper;
     private readonly IHubContext<TurnsTableHub> _hubContext;
     private readonly IConfiguration _config;
@@ -41,7 +40,7 @@ public class TurnsController : Controller {
                            IUpdateTurnsServices updateTurns,
                            IGetMedicsServices getMedics,
                            IGetTimeTurnsServices getTimeTurns,
-                           IExportService exportService, IMapper mapper,
+                           IMapper mapper,
                            IHubContext<TurnsTableHub> hubContext,
                            IConfiguration config, 
                            IHttpClientFactory httpClientFactory)
@@ -53,7 +52,6 @@ public class TurnsController : Controller {
         _updateTurns = updateTurns;
         _getMedics = getMedics;
         _getTimeTurns = getTimeTurns;
-        _exportService = exportService;
         this.mapper = mapper;
         _hubContext = hubContext;
         _config = config;
