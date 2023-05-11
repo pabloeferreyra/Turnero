@@ -27,7 +27,7 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
           
       - name: Adding Known Hosts
-        run: ssh-keyscan -p ${{ secrets.SSH_PORT}} -H ${{ secrets.SSH_HOST }}  >> ~/.ssh/known_hosts
+        run: ssh-keyscan -p ${{ secrets.PORT}} -H ${{ secrets.SERVER }}  >> ~/.ssh/known_hosts
 
       - name: Deploy to server
         uses: appleboy/ssh-action@master
