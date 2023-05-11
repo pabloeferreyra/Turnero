@@ -20,14 +20,14 @@ var builder = WebApplication.CreateBuilder(args);
 
 #region Path
 string secretsPath;
-if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-{
-    secretsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Microsoft", "UserSecrets", builder.Configuration["secretsFolder"], "secrets.json");
-}
-else
-{
-    secretsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Microsoft", "UserSecrets", builder.Configuration["secretsFolder"], "secrets.json");
-}
+if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) 
+ { 
+     secretsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Microsoft", "UserSecrets", builder.Configuration["secretsFolder"], "secrets.json"); 
+ } 
+ else 
+ { 
+     secretsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".microsoft", "usersecrets", builder.Configuration["secretsFolder"], "secrets.json"); 
+ }
 
 #endregion
 
