@@ -63,7 +63,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |            
             # Reiniciar servicio
-            unzip -o TurneroDemo.zip
+            unzip -o /root/TurneroAppDemo/TurneroDemo.zip
             cp /root/Turnero.db /root/TurneroAppDemo/Turnero.db
             systemctl daemon-reload
             service turneroDemo start
