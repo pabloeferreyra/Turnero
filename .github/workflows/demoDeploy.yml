@@ -25,11 +25,8 @@ jobs:
         uses: webfactory/ssh-agent@v0.5.3
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          
-      - name: Adding Known Hosts
-        run: ssh-keyscan -p ${{ secrets.PORT}} -H ${{ secrets.SERVER }}  >> ~/.ssh/known_hosts
 
-      - name: Deploy to server
+      - name: Stop Server
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SERVER }}
@@ -39,13 +36,34 @@ jobs:
           script: |
             # Detener servicio
             service turneroDemo stop
-            
-            # Copiar archivos al directorio Turnero
-            scp -r -P ${{ secrets.PORT }} ./publish/. ${{ secrets.USER_NAME }}@${{ secrets.SERVER }}:/root/TurneroAppDemo/
-
-            # Copiar Turnero.db de vuelta al directorio Turnero
-            cp /root/Turnero.db /root/TurneroAppDemo/Turnero.db
-
+    
+      - name: SCP Deployment
+        uses: srueda99/scp-action@v12
+        with:
+          # Port for SCP
+          port: ${{ secrets.PORT }}
+          # IP Address or DNS of your target host
+          host: ${{ secrets.SERVER }}
+          # Source route folder
+          origin: ./publish/*
+          # Destination route folder
+          destination: /root/TurneroAppDemo/
+          # User for remote connection
+          username: ${{ secrets.USER_NAME }}
+          # Password for the user
+          password: ${{ secrets.SSH_PASSWORD }}
+          # Private SSH key
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          
+      - name: Restart Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER }}
+          username: ${{ secrets.USER_NAME }}
+          port: ${{ secrets.PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |            
             # Reiniciar servicio
             systemctl daemon-reload
             service turneroDemo start
+      
