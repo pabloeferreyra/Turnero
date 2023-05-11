@@ -1,0 +1,71 @@
+name: Deploy Demo
+
+on:
+  push:
+    branches: 
+    - demo
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps: 
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 7.0.x
+      - name: Build and publish
+        run: |
+          dotnet publish -c Release --nologo -r linux-x64 --self-contained -o ./TurneroAppDemo
+          
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      
+      - name: Create ZIP
+        uses: montudor/action-zip@v1
+        with:
+          args: zip -qq -r TurneroDemo.zip TurneroAppDemo
+
+      - name: Stop Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER }}
+          username: ${{ secrets.USER_NAME }}
+          port: ${{ secrets.PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            # Detener servicio
+            service turneroDemo stop
+            cp /root/TurneroAppDemo/Turnero.db /root/Turnero.db
+            rm -rf /root/TurneroAppDemo/
+    
+      - name: copy file via ssh
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.SERVER }}
+          username: ${{ secrets.USER_NAME }}
+          port: ${{ secrets.PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: TurneroDemo.zip
+          target: /root
+          
+      - name: Restart Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER }}
+          username: ${{ secrets.USER_NAME }}
+          port: ${{ secrets.PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |            
+            # Reiniciar servicio
+            unzip -o /root/TurneroDemo.zip
+            cp /root/Turnero.db /root/TurneroAppDemo/Turnero.db
+            systemctl daemon-reload
+            service turneroDemo start
+            
+      
