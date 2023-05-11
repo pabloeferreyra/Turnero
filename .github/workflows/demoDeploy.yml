@@ -36,14 +36,7 @@ jobs:
           script: |
             # Detener servicio
             service turneroDemo stop
-
-            # Copiar Turnero.db al directorio raíz
-            cp /root/TurneroAppDemo/Turnero.db $/root/Turnero.db
-            rm -rf /root/TurneroAppDemo/
-
-            # Crear directorio Turnero
-            mkdir /root/TurneroAppDemo/
-
+            
             # Copiar archivos al directorio Turnero
             scp -r ./publish/* /root/TurneroAppDemo/
 
