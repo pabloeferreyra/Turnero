@@ -27,7 +27,7 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       
       - name: Create ZIP
-        run: cd ./publish && zip -r ../TurneroDemo.zip
+        run: cd ./publish && zip -r ./TurneroDemo.zip
 
       - name: Stop Server
         uses: appleboy/ssh-action@master
@@ -61,6 +61,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |            
             # Reiniciar servicio
+            unzip -o TurneroDemo.zip
             cp /root/Turnero.db /root/TurneroAppDemo/Turnero.db
             systemctl daemon-reload
             service turneroDemo start
