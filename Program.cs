@@ -19,10 +19,14 @@ using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.WebHost.ConfigureKestrel((context, options) =>
+if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
 {
-    options.ListenAnyIP(5002);
-});
+    builder.WebHost.ConfigureKestrel((context, options) =>
+    {
+        var config = builder.Configuration.GetSection("Kestrel");
+        options.Configure(config);
+    });
+}
 
 #region Path
 string secretsPath;
