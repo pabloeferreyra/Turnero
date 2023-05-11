@@ -19,7 +19,7 @@ jobs:
           dotnet-version: 7.0.x
       - name: Build and publish
         run: |
-          dotnet publish -c Release --nologo -r linux-x64 --self-contained -o ./publish
+          dotnet publish -c Release --nologo -r linux-x64 --self-contained -o ./TurneroAppDemo
           
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.5.3
@@ -29,7 +29,7 @@ jobs:
       - name: Create ZIP
         uses: montudor/action-zip@v1
         with:
-          args: zip -qq -r TurneroDemo.zip publish
+          args: zip -qq -r TurneroDemo.zip TurneroAppDemo
 
       - name: Stop Server
         uses: appleboy/ssh-action@master
@@ -42,7 +42,7 @@ jobs:
             # Detener servicio
             service turneroDemo stop
             cp /root/TurneroAppDemo/Turnero.db /root/Turnero.db
-            rm -rf /root/TurneroAppDemo/*
+            rm -rf /root/TurneroAppDemo/
     
       - name: copy file via ssh
         uses: appleboy/scp-action@v0.1.4
@@ -52,7 +52,7 @@ jobs:
           port: ${{ secrets.PORT }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: TurneroDemo.zip
-          target: /root/TurneroAppDemo
+          target: /root
           
       - name: Restart Server
         uses: appleboy/ssh-action@master
@@ -63,7 +63,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |            
             # Reiniciar servicio
-            unzip -o /root/TurneroAppDemo/TurneroDemo.zip
+            unzip -o /root/TurneroDemo.zip
             cp /root/Turnero.db /root/TurneroAppDemo/Turnero.db
             systemctl daemon-reload
             service turneroDemo start
