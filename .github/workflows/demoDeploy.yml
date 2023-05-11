@@ -25,6 +25,9 @@ jobs:
         uses: webfactory/ssh-agent@v0.5.3
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      
+      - name: Create ZIP
+        run: cd ./publish && zip -r ../TurneroDemo.zip
 
       - name: Stop Server
         uses: appleboy/ssh-action@master
@@ -36,24 +39,18 @@ jobs:
           script: |
             # Detener servicio
             service turneroDemo stop
+            cp /root/TurneroAppDemo/Turnero.db /root/Turnero.db
+            rm -rf /root/TurneroAppDemo/*
     
-      - name: SCP Deployment
-        uses: srueda99/scp-action@v12
+      - name: copy file via ssh
+        uses: appleboy/scp-action@v0.1.4
         with:
-          # Port for SCP
-          port: ${{ secrets.PORT }}
-          # IP Address or DNS of your target host
           host: ${{ secrets.SERVER }}
-          # Source route folder
-          origin: ./publish/*
-          # Destination route folder
-          destination: /root/TurneroAppDemo/
-          # User for remote connection
           username: ${{ secrets.USER_NAME }}
-          # Password for the user
-          password: ${{ secrets.SSH_PASSWORD }}
-          # Private SSH key
+          port: ${{ secrets.PORT }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: TurneroDemo.zip
+          target: /root/TurneroAppDemo
           
       - name: Restart Server
         uses: appleboy/ssh-action@master
@@ -64,6 +61,8 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |            
             # Reiniciar servicio
+            cp /root/Turnero.db /root/TurneroAppDemo/Turnero.db
             systemctl daemon-reload
             service turneroDemo start
+            
       
