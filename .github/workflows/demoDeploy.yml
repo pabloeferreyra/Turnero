@@ -41,7 +41,6 @@ jobs:
           script: |
             # Detener servicio
             service turneroDemo stop
-            cp /root/TurneroAppDemo/Turnero.db /root/Turnero.db
     
       - name: copy file via ssh
         uses: appleboy/scp-action@v0.1.4
@@ -63,7 +62,6 @@ jobs:
           script: |            
             # Reiniciar servicio
             unzip -o /root/TurneroDemo.zip
-            cp /root/Turnero.db /root/TurneroAppDemo/Turnero.db
             systemctl daemon-reload
             service turneroDemo start
             
