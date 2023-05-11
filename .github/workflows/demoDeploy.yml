@@ -41,7 +41,7 @@ jobs:
             service turneroDemo stop
             
             # Copiar archivos al directorio Turnero
-            scp -r ./publish/* /root/TurneroAppDemo/
+            scp -r -P ${{ secrets.PORT }} ./publish/. ${{ secrets.USER_NAME }}@${{ secrets.SERVER }}:/root/TurneroAppDemo/
 
             # Copiar Turnero.db de vuelta al directorio Turnero
             cp /root/Turnero.db /root/TurneroAppDemo/Turnero.db
