@@ -42,7 +42,6 @@ jobs:
             # Detener servicio
             service turneroDemo stop
             cp /root/TurneroAppDemo/Turnero.db /root/Turnero.db
-            rm -rf /root/TurneroAppDemo/
     
       - name: copy file via ssh
         uses: appleboy/scp-action@v0.1.4
