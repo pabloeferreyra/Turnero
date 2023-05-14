@@ -15,6 +15,9 @@ using Turnero.Services;
 using System.IO;
 using Turnero.Hubs;
 using System.Runtime.InteropServices;
+using Microsoft.Extensions.Caching.Memory;
+using System.Collections.Generic;
+using Turnero.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -99,12 +102,10 @@ builder.Services.AddScoped<IGetMedicsServices, GetMedicsServices>();
 builder.Services.AddScoped<IInsertTimeTurnServices, InsertTimeTurnServices>();
 builder.Services.AddScoped<IDeleteTimeTurnServices, DeleteTimeTurnServices>();
 builder.Services.AddScoped<IGetTimeTurnsServices, GetTimeTurnsServices>();
-builder.Services.AddScoped<IExportService, ExportService>();
 builder.Services.AddSingleton<ILoggerServices, LoggerServices>();
 builder.Services.AddScoped<ITimeTurnRepository, TimeTurnRepository>();
 builder.Services.AddScoped<IMedicRepository, MedicRepository>();
 builder.Services.AddScoped<ITurnRepository, TurnsRepository>();
-builder.Services.AddScoped<IExportRepository, ExportRepository>();
 
 builder.Services.AddAutoMapper(typeof(Program));
 
@@ -113,6 +114,18 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddSignalR().AddJsonProtocol();
 
 builder.Host.UseWindowsService();
+
+builder.Services.AddMemoryCache();
+
+builder.Services.Configure<MemoryCacheOptions>(options =>
+{
+    options.ExpirationScanFrequency = TimeSpan.FromDays(7);
+});
+
+IMemoryCache cache = builder.Services.BuildServiceProvider()
+                                     .GetRequiredService<IMemoryCache>();
+var timeTurns = new List<TimeTurnViewModel>();
+cache.Set("timeTurns", timeTurns);
 
 
 var app = builder.Build();
