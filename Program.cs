@@ -125,7 +125,9 @@ builder.Services.Configure<MemoryCacheOptions>(options =>
 IMemoryCache cache = builder.Services.BuildServiceProvider()
                                      .GetRequiredService<IMemoryCache>();
 var timeTurns = new List<TimeTurnViewModel>();
+var medics = new List <MedicDto>();
 cache.Set("timeTurns", timeTurns);
+cache.Set("medics", medics);
 
 
 var app = builder.Build();
@@ -147,6 +149,12 @@ else
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
+app.Use(async (context, next) =>
+{
+    context.Response.Headers["Cache-Control"] = "public, max-age=3600"; // Permite cachear la respuesta durante 1 hora (3600 segundos)
+    await next();
+});
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
