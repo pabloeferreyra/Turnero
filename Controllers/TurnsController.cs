@@ -59,15 +59,32 @@ public class TurnsController : Controller {
     [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
     public async Task<IActionResult> Index() {
 
-        var medics = await _getMedics.GetMedicsDto();
-        List<TimeTurnViewModel> time = _cache.Get<List<TimeTurnViewModel>>("timeTurns");
-        if(time == null)
+        List<MedicDto> medics = null;
+        List<TimeTurnViewModel> time = null;
+
+        Task medicsTask = Task.Run(() =>
         {
-            time = await _getTimeTurns.GetTimeTurns();
-            _cache.Set("timeTurns", time);
-        }
-        ViewBag.Medics = new SelectList(medics, "Id", "Name");
-        ViewBag.Time = new SelectList(time, "Id", "Time");
+            medics = _cache.Get<List<MedicDto>>("medics");
+            if (medics == null)
+            {
+                medics = _getMedics.GetMedicsDto().Result;
+                _cache.Set("medics", medics);
+            }
+            ViewBag.Medics = new SelectList(medics, "Id", "Name");
+        });
+
+        Task timeTask = Task.Run(() =>
+        {
+            time = _cache.Get<List<TimeTurnViewModel>>("timeTurns");
+            if (time == null)
+            {
+                time = _getTimeTurns.GetTimeTurns().Result;
+                _cache.Set("timeTurns", time);
+            }
+            ViewBag.Time = new SelectList(time, "Id", "Time");
+        });
+
+        await Task.WhenAll(medicsTask, timeTask);
         return View(nameof(Index));
     }
 
