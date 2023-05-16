@@ -44,10 +44,7 @@ public class TurnsController : Controller {
                            IGetTimeTurnsServices getTimeTurns,
                            IMapper mapper,
                            IHubContext<TurnsTableHub> hubContext,
-                           IConfiguration config, 
-                           IHttpClientFactory httpClientFactory,
-                           IMemoryCache cache)
-    {
+                           IMemoryCache cache) {
         _userManager = userManager;
         _logger = logger;
         _insertTurns = insertTurns;

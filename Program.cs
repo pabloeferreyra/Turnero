@@ -33,6 +33,7 @@ if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
 
 #region Path
 string secretsPath;
+
 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 {
     secretsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Microsoft", "UserSecrets", builder.Configuration["secretsFolder"], "secrets.json");
