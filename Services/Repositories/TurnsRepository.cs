@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,8 +15,7 @@ public class TurnsRepository : RepositoryBase<Turn>, ITurnRepository
 {
     private readonly IMapper mapper;
 
-    public TurnsRepository(ApplicationDbContext context, IMapper mapper) : base(context, mapper)
-    {
+    public TurnsRepository(ApplicationDbContext context, IMapper mapper, IMemoryCache cache) : base(context, mapper, cache) {
         this.mapper = mapper;
     }
 

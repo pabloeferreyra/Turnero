@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,11 +15,13 @@ public abstract class RepositoryBase<T> : IRepositoryBase<T> where T : class
 {
     protected ApplicationDbContext _context;
     private readonly IMapper mapper;
+    public IMemoryCache _cache;
 
-    public RepositoryBase(ApplicationDbContext context, IMapper mapper)
+    public RepositoryBase(ApplicationDbContext context, IMapper mapper, IMemoryCache cache)
     {
         this._context = context;
         this.mapper = mapper;
+        this._cache = cache;
     }
 
     public IQueryable<T> FindAll() => this._context.Set<T>().AsNoTracking();
@@ -56,5 +59,16 @@ public abstract class RepositoryBase<T> : IRepositoryBase<T> where T : class
     {
         this._context.Set<T>().Remove(entity);
         this._context.SaveChanges();
+    }
+
+    public  async Task<List<T>> GetCachedData<T>(string cacheKey, Func<Task<List<T>>> getDataFunc)
+    {
+        var data = _cache.Get<List<T>>(cacheKey);
+        if (data == null)
+        {
+            data = await getDataFunc();
+            _cache.Set(cacheKey, data);
+        }
+        return data;
     }
 }
