@@ -83,7 +83,7 @@ $("#Dni").blur(function () {
 });
 
 $("#timeTurnCreate").blur(function () {
-    if ($("#timeTurnCreate :selected").text() <= time && ($("#DateTurnCreate").val() == currentDate)) {
+    if (($("#timeTurnCreate :selected").text() <= time && ($("#DateTurnCreate").val() == currentDate)) || ($("#timeTurnCreate :selected").val() == '')) {
         $("#timeValidation").text('Requerido.');
         Swal.fire({
             position: 'top-end',

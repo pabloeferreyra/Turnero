@@ -20,8 +20,8 @@
             <input id="DateTurn" name="dateTurn" type="text" class="form-control" value="@ViewBag.Date" data-date-format="dd/MM/yyyy" />
         </div>
         <div class="col-lg-2 col-md-5 col-sm-12">
-        @if(User.IsInRole(RolesConstants.Ingreso))
-        {
+            @if(User.IsInRole(RolesConstants.Ingreso))
+            {
             <select id="Medics" class="form-control" asp-items="@ViewBag.Medics">
                 <option value="" selected>== Seleccione un profesional ==</option>
                 </select>
