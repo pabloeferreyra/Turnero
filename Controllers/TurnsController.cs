@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
@@ -12,13 +11,13 @@ using Turnero.Models;
 using Turnero.Services.Interfaces;
 using System.Linq;
 using AutoMapper;
-using System.Globalization;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Linq.Dynamic.Core;
-using Microsoft.EntityFrameworkCore;
 using Turnero.Utilities;
 using Microsoft.AspNetCore.SignalR;
 using Turnero.Hubs;
+using System.Net.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Turnero.Controllers;
@@ -33,6 +32,8 @@ public class TurnsController : Controller {
     public IGetTimeTurnsServices _getTimeTurns;
     private readonly IMapper mapper;
     private readonly IHubContext<TurnsTableHub> _hubContext;
+    private readonly IConfiguration _config;
+    private readonly IHttpClientFactory _httpClientFactory;
     public IMemoryCache _cache;
     public TurnsController(UserManager<IdentityUser> userManager,
                            ILogger<TurnsController> logger,
@@ -53,6 +54,8 @@ public class TurnsController : Controller {
         _getTimeTurns = getTimeTurns;
         this.mapper = mapper;
         _hubContext = hubContext;
+        _config = config;
+        _httpClientFactory = httpClientFactory;
         _cache = cache;
     }
 
@@ -294,5 +297,29 @@ public class TurnsController : Controller {
     public bool CheckTurn(Guid medicId, DateTime date, Guid timeTurn)
     {
         return _getTurns.CheckTurn(medicId, date, timeTurn);
+    }
+
+    [Authorize(Roles = RolesConstants.Medico)]
+    [HttpPost]
+    public async Task<IActionResult> Call(Caller model)
+    {
+        var json = JsonSerializer.Serialize(model);
+        var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+        using var client = _httpClientFactory.CreateClient();
+        var caller = _config["caller"];
+        var request = new HttpRequestMessage(HttpMethod.Post, string.Format("{0}Home/CallNew", caller))
+        {
+            Content = content
+        };
+
+        var response = await client.SendAsync(request);
+        if (!response.IsSuccessStatusCode)
+        {
+            // Si la respuesta no es exitosa, puedes manejar el error aquí.
+            return StatusCode((int)response.StatusCode);
+        }
+
+        // Si la respuesta es exitosa, puedes hacer algo con los datos de la respuesta.
+        return Ok();
     }
 }

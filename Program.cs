@@ -15,34 +15,46 @@ using Turnero.Services;
 using System.IO;
 using Turnero.Hubs;
 using System.Runtime.InteropServices;
+using System.Net;
 using Microsoft.Extensions.Caching.Memory;
 using System.Collections.Generic;
 using Turnero.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+{
+    builder.WebHost.ConfigureKestrel((context, options) =>
+    {
+        var config = builder.Configuration.GetSection("Kestrel");
+        options.Configure(config);
+    });
+}
+
 #region Path
 string secretsPath;
-if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) 
- { 
-     secretsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Microsoft", "UserSecrets", builder.Configuration["secretsFolder"], "secrets.json"); 
- } 
- else 
- { 
-     secretsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".microsoft", "usersecrets", builder.Configuration["secretsFolder"], "secrets.json"); 
- }
+
+if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+{
+    secretsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Microsoft", "UserSecrets", builder.Configuration["secretsFolder"], "secrets.json");
+}
+else
+{
+    secretsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".microsoft", "usersecrets", builder.Configuration["secretsFolder"], "secrets.json");
+}
 
 #endregion
 
 #region secrets
-builder.Configuration.AddJsonFile(secretsPath, optional: true);
+builder.Configuration.AddJsonFile(secretsPath, optional: false);
 
 builder.Configuration.AddUserSecrets<Program>();
 #endregion
 
-var connectionString = builder.Configuration["ConnectionStrings:DefaultConnection"];
+var connectionString = builder.Configuration["ConnectionStrings:SQLite"];
+Console.WriteLine(connectionString);
  builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString)).AddDefaultIdentity<IdentityUser>(options =>
+    options.UseSqlite(connectionString)).AddDefaultIdentity<IdentityUser>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
     options.Password.RequireDigit = true;
@@ -112,6 +124,7 @@ builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddSignalR().AddJsonProtocol();
+builder.Services.AddHttpClient();
 
 builder.Host.UseWindowsService();
 
@@ -166,6 +179,8 @@ app.MapHub<TurnsTableHub>("/TurnsTableHub");
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.UsePathBase("/Demo");
 
 app.MapControllerRoute(
     name: "default",
