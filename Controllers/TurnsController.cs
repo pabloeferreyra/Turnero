@@ -43,6 +43,8 @@ public class TurnsController : Controller {
                            IGetMedicsServices getMedics,
                            IGetTimeTurnsServices getTimeTurns,
                            IMapper mapper,
+                           IHttpClientFactory httpClientFactory,
+                           IConfiguration config,
                            IHubContext<TurnsTableHub> hubContext,
                            IMemoryCache cache) {
         _userManager = userManager;
