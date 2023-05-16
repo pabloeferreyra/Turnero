@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.SignalR;
 using Turnero.Hubs;
 using System.Net.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Turnero.Controllers;
 
@@ -33,6 +34,7 @@ public class TurnsController : Controller {
     private readonly IHubContext<TurnsTableHub> _hubContext;
     private readonly IConfiguration _config;
     private readonly IHttpClientFactory _httpClientFactory;
+    public IMemoryCache _cache;
     public TurnsController(UserManager<IdentityUser> userManager,
                            ILogger<TurnsController> logger,
                            IInsertTurnsServices insertTurns,
@@ -43,7 +45,8 @@ public class TurnsController : Controller {
                            IMapper mapper,
                            IHubContext<TurnsTableHub> hubContext,
                            IConfiguration config, 
-                           IHttpClientFactory httpClientFactory)
+                           IHttpClientFactory httpClientFactory,
+                           IMemoryCache cache)
     {
         _userManager = userManager;
         _logger = logger;
@@ -56,15 +59,38 @@ public class TurnsController : Controller {
         _hubContext = hubContext;
         _config = config;
         _httpClientFactory = httpClientFactory;
+        _cache = cache;
     }
 
     [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
     public async Task<IActionResult> Index() {
 
-        var medics = await _getMedics.GetMedicsDto();
-        var time = await _getTimeTurns.GetTimeTurns();
-        ViewBag.Medics = new SelectList(medics, "Id", "Name");
-        ViewBag.Time = new SelectList(time, "Id", "Time");
+        List<MedicDto> medics = null;
+        List<TimeTurnViewModel> time = null;
+
+        Task medicsTask = Task.Run(() =>
+        {
+            medics = _cache.Get<List<MedicDto>>("medics");
+            if (medics == null)
+            {
+                medics = _getMedics.GetMedicsDto().Result;
+                _cache.Set("medics", medics);
+            }
+            ViewBag.Medics = new SelectList(medics, "Id", "Name");
+        });
+
+        Task timeTask = Task.Run(() =>
+        {
+            time = _cache.Get<List<TimeTurnViewModel>>("timeTurns");
+            if (time == null)
+            {
+                time = _getTimeTurns.GetTimeTurns().Result;
+                _cache.Set("timeTurns", time);
+            }
+            ViewBag.Time = new SelectList(time, "Id", "Time");
+        });
+
+        await Task.WhenAll(medicsTask, timeTask);
         return View(nameof(Index));
     }
 

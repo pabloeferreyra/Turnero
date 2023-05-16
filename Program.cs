@@ -16,6 +16,9 @@ using System.IO;
 using Turnero.Hubs;
 using System.Runtime.InteropServices;
 using System.Net;
+using Microsoft.Extensions.Caching.Memory;
+using System.Collections.Generic;
+using Turnero.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -124,6 +127,20 @@ builder.Services.AddHttpClient();
 
 builder.Host.UseWindowsService();
 
+builder.Services.AddMemoryCache();
+
+builder.Services.Configure<MemoryCacheOptions>(options =>
+{
+    options.ExpirationScanFrequency = TimeSpan.FromDays(7);
+});
+
+IMemoryCache cache = builder.Services.BuildServiceProvider()
+                                     .GetRequiredService<IMemoryCache>();
+var timeTurns = new List<TimeTurnViewModel>();
+var medics = new List <MedicDto>();
+cache.Set("timeTurns", timeTurns);
+cache.Set("medics", medics);
+
 
 var app = builder.Build();
 
@@ -144,6 +161,12 @@ else
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
+app.Use(async (context, next) =>
+{
+    context.Response.Headers["Cache-Control"] = "public, max-age=3600"; // Permite cachear la respuesta durante 1 hora (3600 segundos)
+    await next();
+});
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
