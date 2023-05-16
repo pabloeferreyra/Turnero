@@ -15,4 +15,6 @@ public interface ITimeTurnRepository
     Task CreateTT(TimeTurnViewModel timeTurn);
 
     void DeleteTT(TimeTurnViewModel timeTurn);
+    
+    Task<List<TimeTurnViewModel>> GetCachedTimes();
 }

@@ -102,4 +102,17 @@ public class GetMedicsServices : IGetMedicsServices
             return false;
         }
     }
+
+    public async Task<List<MedicDto>> GetCachedMedics()
+    {
+        try
+        {
+            return await _medicRepository.GetCachedMedics();
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex.Message, ex);
+            return null;
+        }
+    }
 }

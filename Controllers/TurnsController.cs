@@ -20,6 +20,7 @@ using Turnero.Utilities;
 using Microsoft.AspNetCore.SignalR;
 using Turnero.Hubs;
 using Microsoft.Extensions.Caching.Memory;
+using System.Collections;
 
 namespace Turnero.Controllers;
 
@@ -60,31 +61,18 @@ public class TurnsController : Controller {
     public async Task<IActionResult> Index() {
 
         List<MedicDto> medics = null;
-        List<TimeTurnViewModel> time = null;
 
-        Task medicsTask = Task.Run(() =>
+        medics = _cache.Get<List<MedicDto>>("medics");
+        if (medics == null)
         {
-            medics = _cache.Get<List<MedicDto>>("medics");
-            if (medics == null)
+            Task medicsTask = Task.Run(() =>
             {
-                medics = _getMedics.GetMedicsDto().Result;
-                _cache.Set("medics", medics);
-            }
-            ViewBag.Medics = new SelectList(medics, "Id", "Name");
-        });
+                medics = _getMedics.GetCachedMedics().Result;
+            });
+            await medicsTask;
+        }
+        ViewBag.Medics = new SelectList(medics, "Id", "Name");
 
-        Task timeTask = Task.Run(() =>
-        {
-            time = _cache.Get<List<TimeTurnViewModel>>("timeTurns");
-            if (time == null)
-            {
-                time = _getTimeTurns.GetTimeTurns().Result;
-                _cache.Set("timeTurns", time);
-            }
-            ViewBag.Time = new SelectList(time, "Id", "Time");
-        });
-
-        await Task.WhenAll(medicsTask, timeTask);
         return View(nameof(Index));
     }
 
@@ -174,10 +162,32 @@ public class TurnsController : Controller {
     [HttpGet]
     public async Task<IActionResult> Create()
     {
-        var medics = await _getMedics.GetMedicsDto();
-        var time = await _getTimeTurns.GetTimeTurns();
+        List<MedicDto> medics = null;
+        List<TimeTurnViewModel> time = null;
+
+        medics = _cache.Get<List<MedicDto>>("medics");
+        time = _cache.Get<List<TimeTurnViewModel>>("timeTurns");
+        if (medics == null)
+        {
+            Task medicsTask = Task.Run(() =>
+            {
+                medics = _getMedics.GetCachedMedics().Result;
+            });
+            await medicsTask;
+        }
+        if (time == null)
+        {
+
+            Task timeTask = Task.Run(() =>
+            {
+                time = _getTimeTurns.GetCachedTimes().Result;
+            });
+
+            await timeTask;
+        }
         ViewBag.Medics = new SelectList(medics, "Id", "Name");
         ViewBag.Time = new SelectList(time, "Id", "Time");
+
         return PartialView("_Create");
     }
 
@@ -251,10 +261,31 @@ public class TurnsController : Controller {
             ViewBag.ErrorMessage = $"Turn with Id = {id} cannot be found";
             return null;
         }
-        var medics = await _getMedics.GetMedicsDto();
-        var time = await _getTimeTurns.GetTimeTurns();
+        
+        List<MedicDto> medics = null;
+        List<TimeTurnViewModel> time = null;
+        medics = _cache.Get<List<MedicDto>>("medics");
+        time = _cache.Get<List<TimeTurnViewModel>>("timeTurns");
+        if (medics == null)
+        {
+            Task medicsTask = Task.Run(() =>
+            {
+                medics = _getMedics.GetCachedMedics().Result;
+            });
+            await medicsTask;
+        }
+        if (time == null)
+        {
+            Task timeTask = Task.Run(() =>
+            {
+                time = _getTimeTurns.GetCachedTimes().Result;
+            });
+            await timeTask;
+        }
+
         ViewBag.Medics = new SelectList(medics, "Id", "Name", turn.MedicId);
         ViewBag.TimeEdit = new SelectList(time, "Id", "Time", turn.TimeId);
+        
         return PartialView("_Edit", turn);
     }
 
