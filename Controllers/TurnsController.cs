@@ -106,7 +106,7 @@ public class TurnsController : Controller {
             turns = turns.OrderBy(sortColumn + " " + sortColumnDirection);
         }
 
-        var data = await turns.ToListAsync();
+        var data = turns.ToList();
 
         if (!string.IsNullOrEmpty(medic))
         {
