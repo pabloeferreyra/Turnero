@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.SignalR;
 using Turnero.Hubs;
 using Microsoft.Extensions.Caching.Memory;
 using System.Collections;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Turnero.Controllers;
 
@@ -63,7 +64,7 @@ public class TurnsController : Controller {
         List<MedicDto> medics = null;
 
         medics = _cache.Get<List<MedicDto>>("medics");
-        if (medics == null)
+        if (medics.IsNullOrEmpty())
         {
             Task medicsTask = Task.Run(() =>
             {
@@ -176,7 +177,7 @@ public class TurnsController : Controller {
 
         medics = _cache.Get<List<MedicDto>>("medics");
         time = _cache.Get<List<TimeTurnViewModel>>("timeTurns");
-        if (medics == null)
+        if (medics.IsNullOrEmpty())
         {
             Task medicsTask = Task.Run(() =>
             {
@@ -184,7 +185,7 @@ public class TurnsController : Controller {
             });
             await medicsTask;
         }
-        if (time == null)
+        if (time.IsNullOrEmpty())
         {
 
             Task timeTask = Task.Run(() =>
@@ -275,7 +276,7 @@ public class TurnsController : Controller {
         List<TimeTurnViewModel> time = null;
         medics = _cache.Get<List<MedicDto>>("medics");
         time = _cache.Get<List<TimeTurnViewModel>>("timeTurns");
-        if (medics == null)
+        if (medics.IsNullOrEmpty())
         {
             Task medicsTask = Task.Run(() =>
             {
@@ -283,7 +284,7 @@ public class TurnsController : Controller {
             });
             await medicsTask;
         }
-        if (time == null)
+        if (time.IsNullOrEmpty())
         {
             Task timeTask = Task.Run(() =>
             {

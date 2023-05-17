@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using Turnero.Models;
 using Turnero.Services.Interfaces;
 
@@ -40,12 +41,12 @@ public class HomeController : Controller
         var medicId = await CheckMedic();
         _cache.Set("isMedic", medicId);
 
-        if (_cache.Get<List<MedicDto>>("medics") == null)
+        if (_cache.Get<List<MedicDto>>("medics").IsNullOrEmpty())
         {
             await _getMedics.GetCachedMedics();
         }
 
-        if (_cache.Get<List<TimeTurnViewModel>>("timeTurns") == null)
+        if (_cache.Get<List<TimeTurnViewModel>>("timeTurns").IsNullOrEmpty())
         {
             await _getTimeTurns.GetCachedTimes();
         }
