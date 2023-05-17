@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.SignalR;
 using Turnero.Hubs;
 using Microsoft.Extensions.Caching.Memory;
 using System.Collections;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Turnero.Controllers;
 
@@ -63,7 +64,7 @@ public class TurnsController : Controller {
         List<MedicDto> medics = null;
 
         medics = _cache.Get<List<MedicDto>>("medics");
-        if (medics == null)
+        if (medics.IsNullOrEmpty())
         {
             Task medicsTask = Task.Run(() =>
             {
@@ -80,7 +81,8 @@ public class TurnsController : Controller {
     [HttpPost]
     public async Task<IActionResult> InitializeTurns()
     {
-        string isMedic = _cache.Get<string>("isMedic");
+
+        string isMedic = await CheckMedic();
         var turns = this._getTurns.GetTurnsDto();
         var draw = Request.Form["draw"].FirstOrDefault();
         var start = Request.Form["start"].FirstOrDefault();
@@ -136,6 +138,13 @@ public class TurnsController : Controller {
         return await Task.FromResult<IActionResult>(Ok(json));
     }
 
+    private async Task<string> CheckMedic()
+    {
+        var user = this.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+        var isMedic = await _getMedics.GetMedicByUserId(user);
+        return isMedic?.Id.ToString();
+    }
+
     public async Task<List<Turn>> TurnListAsync(DateTime? dateTurn, Guid? medicId) {
         var user = this.User.FindFirst(ClaimTypes.NameIdentifier).Value;
         var medic = await _getMedics.GetMedicByUserId(user);
@@ -176,7 +185,7 @@ public class TurnsController : Controller {
 
         medics = _cache.Get<List<MedicDto>>("medics");
         time = _cache.Get<List<TimeTurnViewModel>>("timeTurns");
-        if (medics == null)
+        if (medics.IsNullOrEmpty())
         {
             Task medicsTask = Task.Run(() =>
             {
@@ -184,7 +193,7 @@ public class TurnsController : Controller {
             });
             await medicsTask;
         }
-        if (time == null)
+        if (time.IsNullOrEmpty())
         {
 
             Task timeTask = Task.Run(() =>
@@ -275,7 +284,7 @@ public class TurnsController : Controller {
         List<TimeTurnViewModel> time = null;
         medics = _cache.Get<List<MedicDto>>("medics");
         time = _cache.Get<List<TimeTurnViewModel>>("timeTurns");
-        if (medics == null)
+        if (medics.IsNullOrEmpty())
         {
             Task medicsTask = Task.Run(() =>
             {
@@ -283,7 +292,7 @@ public class TurnsController : Controller {
             });
             await medicsTask;
         }
-        if (time == null)
+        if (time.IsNullOrEmpty())
         {
             Task timeTask = Task.Run(() =>
             {
