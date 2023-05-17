@@ -17,5 +17,5 @@ public interface IRepositoryBase<T>
     Task CreateAsync(T entity);
     Task UpdateAsync(T entity);
     void DeleteAsync(T entity);
-    Task<List<T>> GetCachedData<T>(string cacheKey, Func<Task<List<T>>> getDataFunc);
+    Task<List<TResult>> GetCachedData<TResult>(string cacheKey, Func<Task<List<TResult>>> getDataFunc);
 }
