@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -35,6 +36,10 @@ public class HomeController : Controller
 
     public async Task<IActionResult> Index()
     {
+
+        var medicId = await CheckMedic();
+        _cache.Set("isMedic", medicId);
+
         if (_cache.Get<List<MedicDto>>("medics") == null)
         {
             await _getMedics.GetCachedMedics();
@@ -47,11 +52,18 @@ public class HomeController : Controller
 
         var turnsAsync = await _getTurns.GetTurns(DateTime.Today, null);
         List<int> turns = new()
-    {
-        turnsAsync.Where(t => t.Accessed).Count(),
-        turnsAsync.Where(t => !t.Accessed).Count()
-    };
+        {
+            turnsAsync.Where(t => t.Accessed).Count(),
+            turnsAsync.Where(t => !t.Accessed).Count()
+        };
 
         return View(turns);
+    }
+
+    private async Task<string> CheckMedic()
+    {
+        var user = this.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+        var isMedic = await _getMedics.GetMedicByUserId(user);
+        return isMedic?.Id.ToString();
     }
 }
