@@ -86,7 +86,8 @@ public class TurnsController : Controller {
     [HttpPost]
     public async Task<IActionResult> InitializeTurns()
     {
-        string isMedic = _cache.Get<string>("isMedic");
+
+        string isMedic = await CheckMedic();
         var turns = this._getTurns.GetTurnsDto();
         var draw = Request.Form["draw"].FirstOrDefault();
         var start = Request.Form["start"].FirstOrDefault();
@@ -140,6 +141,13 @@ public class TurnsController : Controller {
         var json = new { draw, recordsFiltered = recordsTotal, recordsTotal, data };
 
         return await Task.FromResult<IActionResult>(Ok(json));
+    }
+
+    private async Task<string> CheckMedic()
+    {
+        var user = this.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+        var isMedic = await _getMedics.GetMedicByUserId(user);
+        return isMedic?.Id.ToString();
     }
 
     public async Task<List<Turn>> TurnListAsync(DateTime? dateTurn, Guid? medicId) {

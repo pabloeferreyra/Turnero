@@ -37,10 +37,6 @@ public class HomeController : Controller
 
     public async Task<IActionResult> Index()
     {
-
-        var medicId = await CheckMedic();
-        _cache.Set("isMedic", medicId);
-
         if (_cache.Get<List<MedicDto>>("medics").IsNullOrEmpty())
         {
             await _getMedics.GetCachedMedics();
@@ -59,12 +55,5 @@ public class HomeController : Controller
         };
 
         return View(turns);
-    }
-
-    private async Task<string> CheckMedic()
-    {
-        var user = this.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-        var isMedic = await _getMedics.GetMedicByUserId(user);
-        return isMedic?.Id.ToString();
     }
 }
