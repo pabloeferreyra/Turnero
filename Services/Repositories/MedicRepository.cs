@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +15,7 @@ public class MedicRepository : RepositoryBase<Medic>, IMedicRepository
 {
     public IMapper mapper { get; }
 
-    public MedicRepository(ApplicationDbContext context, IMapper mapper) : base(context, mapper)
+    public MedicRepository(ApplicationDbContext context, IMapper mapper, IMemoryCache cache) : base(context, mapper, cache)
     {
         this.mapper = mapper;
     }
@@ -56,5 +57,10 @@ public class MedicRepository : RepositoryBase<Medic>, IMedicRepository
     public async Task UpdateMedic(Medic medic)
     {
         await this.UpdateAsync(medic);
+    }
+
+    public async Task<List<MedicDto>> GetCachedMedics()
+    {
+        return await GetCachedData("medics", GetListDto);
     }
 }

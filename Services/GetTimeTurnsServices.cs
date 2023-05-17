@@ -83,4 +83,17 @@ public class GetTimeTurnsServices : IGetTimeTurnsServices
             return false;
         }
     }
+
+    public async Task<List<TimeTurnViewModel>> GetCachedTimes()
+    {
+        try
+        {
+            return await _timeTurnRepository.GetCachedTimes();
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex.Message, ex);
+            return null;
+        }
+    }
 }

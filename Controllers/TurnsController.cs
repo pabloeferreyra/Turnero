@@ -19,6 +19,7 @@ using Turnero.Hubs;
 using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Caching.Memory;
+using System.Collections;
 
 namespace Turnero.Controllers;
 
@@ -65,38 +66,25 @@ public class TurnsController : Controller {
     public async Task<IActionResult> Index() {
 
         List<MedicDto> medics = null;
-        List<TimeTurnViewModel> time = null;
 
-        Task medicsTask = Task.Run(() =>
+        medics = _cache.Get<List<MedicDto>>("medics");
+        if (medics == null)
         {
-            medics = _cache.Get<List<MedicDto>>("medics");
-            if (medics == null)
+            Task medicsTask = Task.Run(() =>
             {
-                medics = _getMedics.GetMedicsDto().Result;
-                _cache.Set("medics", medics);
-            }
-            ViewBag.Medics = new SelectList(medics, "Id", "Name");
-        });
+                medics = _getMedics.GetCachedMedics().Result;
+            });
+            await medicsTask;
+        }
+        ViewBag.Medics = new SelectList(medics, "Id", "Name");
 
-        Task timeTask = Task.Run(() =>
-        {
-            time = _cache.Get<List<TimeTurnViewModel>>("timeTurns");
-            if (time == null)
-            {
-                time = _getTimeTurns.GetTimeTurns().Result;
-                _cache.Set("timeTurns", time);
-            }
-            ViewBag.Time = new SelectList(time, "Id", "Time");
-        });
-
-        await Task.WhenAll(medicsTask, timeTask);
         return View(nameof(Index));
     }
 
     [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
     [HttpPost]
-    public async Task<IActionResult> InitializeTurns() {
-
+    public async Task<IActionResult> InitializeTurns()
+    {
         var user = this.User.FindFirst(ClaimTypes.NameIdentifier).Value;
         var isMedic = await _getMedics.GetMedicByUserId(user);
 
@@ -105,39 +93,50 @@ public class TurnsController : Controller {
         var start = Request.Form["start"].FirstOrDefault();
         var length = Request.Form["length"].FirstOrDefault();
         var searchValue = Request.Form["search[value]"].FirstOrDefault();
-        int pageSize = length != null ? Convert.ToInt32(length) : 0;
-        int skip = start != null ? Convert.ToInt32(start) : 0;
+        int pageSize = length != null ? int.Parse(length) : 0;
+        int skip = start != null ? int.Parse(start) : 0;
         var medic = isMedic == null ? Request.Form["Columns[5][search][value]"].FirstOrDefault() : isMedic.Id.ToString();
         var dateTurn = Request.Form["Columns[6][search][value]"].FirstOrDefault();
         var sortColumn = Request.Form["columns[" + Request.Form["order[0][column]"].FirstOrDefault() + "][name]"].FirstOrDefault();
         var sortColumnDirection = Request.Form["order[0][dir]"].FirstOrDefault();
         var defa = DateTime.Today.ToString("dd/MM/yyyy");
-        if (!(string.IsNullOrEmpty(sortColumn) && string.IsNullOrEmpty(sortColumnDirection))) {
+
+        if (!(string.IsNullOrEmpty(sortColumn) && string.IsNullOrEmpty(sortColumnDirection)))
+        {
             turns = turns.OrderBy(sortColumn + " " + sortColumnDirection);
         }
-        var data = turns.ToList();
-        if (!string.IsNullOrEmpty(medic)) {
+
+        var data = await turns.ToListAsync();
+
+        if (!string.IsNullOrEmpty(medic))
+        {
             data = data.Where(a => a.MedicId == Guid.Parse(medic)).ToList();
         }
-        if (!string.IsNullOrEmpty(dateTurn)) {
+
+        if (!string.IsNullOrEmpty(dateTurn))
+        {
             data = data.Where(a => a.Date == dateTurn).ToList();
         }
-        else {
+        else
+        {
             data = data.Where(a => a.Date == defa).ToList();
         }
-        int recordsTotal = data.Count();
-        if (skip != 0) {
+
+        int recordsTotal = data.Count;
+
+        if (skip != 0)
+        {
             data = data.Skip(skip).Take(pageSize).ToList();
         }
-        else if (pageSize != -1) {
+        else if (pageSize != -1)
+        {
             data = data.Take(pageSize).ToList();
         }
 
-
-
-        foreach (var t in data) {
+        Parallel.ForEach(data, t =>
+        {
             t.IsMedic = isMedic != null;
-        }
+        });
 
         var json = new { draw, recordsFiltered = recordsTotal, recordsTotal, data };
 
@@ -179,10 +178,32 @@ public class TurnsController : Controller {
     [HttpGet]
     public async Task<IActionResult> Create()
     {
-        var medics = await _getMedics.GetMedicsDto();
-        var time = await _getTimeTurns.GetTimeTurns();
+        List<MedicDto> medics = null;
+        List<TimeTurnViewModel> time = null;
+
+        medics = _cache.Get<List<MedicDto>>("medics");
+        time = _cache.Get<List<TimeTurnViewModel>>("timeTurns");
+        if (medics == null)
+        {
+            Task medicsTask = Task.Run(() =>
+            {
+                medics = _getMedics.GetCachedMedics().Result;
+            });
+            await medicsTask;
+        }
+        if (time == null)
+        {
+
+            Task timeTask = Task.Run(() =>
+            {
+                time = _getTimeTurns.GetCachedTimes().Result;
+            });
+
+            await timeTask;
+        }
         ViewBag.Medics = new SelectList(medics, "Id", "Name");
         ViewBag.Time = new SelectList(time, "Id", "Time");
+
         return PartialView("_Create");
     }
 
@@ -256,10 +277,31 @@ public class TurnsController : Controller {
             ViewBag.ErrorMessage = $"Turn with Id = {id} cannot be found";
             return null;
         }
-        var medics = await _getMedics.GetMedicsDto();
-        var time = await _getTimeTurns.GetTimeTurns();
+        
+        List<MedicDto> medics = null;
+        List<TimeTurnViewModel> time = null;
+        medics = _cache.Get<List<MedicDto>>("medics");
+        time = _cache.Get<List<TimeTurnViewModel>>("timeTurns");
+        if (medics == null)
+        {
+            Task medicsTask = Task.Run(() =>
+            {
+                medics = _getMedics.GetCachedMedics().Result;
+            });
+            await medicsTask;
+        }
+        if (time == null)
+        {
+            Task timeTask = Task.Run(() =>
+            {
+                time = _getTimeTurns.GetCachedTimes().Result;
+            });
+            await timeTask;
+        }
+
         ViewBag.Medics = new SelectList(medics, "Id", "Name", turn.MedicId);
         ViewBag.TimeEdit = new SelectList(time, "Id", "Time", turn.TimeId);
+        
         return PartialView("_Edit", turn);
     }
 

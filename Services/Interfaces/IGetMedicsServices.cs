@@ -12,4 +12,5 @@ public interface IGetMedicsServices
     Task<Medic> GetMedicById(Guid id);
     Task<Medic> GetMedicByUserId(string id);
     bool ExistMedic(Guid id);
+    Task<List<MedicDto>> GetCachedMedics();
 }
