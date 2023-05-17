@@ -85,9 +85,7 @@ public class TurnsController : Controller {
     [HttpPost]
     public async Task<IActionResult> InitializeTurns()
     {
-        var user = this.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-        var isMedic = await _getMedics.GetMedicByUserId(user);
-
+        string isMedic = _cache.Get<string>("isMedic");
         var turns = this._getTurns.GetTurnsDto();
         var draw = Request.Form["draw"].FirstOrDefault();
         var start = Request.Form["start"].FirstOrDefault();
@@ -95,7 +93,7 @@ public class TurnsController : Controller {
         var searchValue = Request.Form["search[value]"].FirstOrDefault();
         int pageSize = length != null ? int.Parse(length) : 0;
         int skip = start != null ? int.Parse(start) : 0;
-        var medic = isMedic == null ? Request.Form["Columns[5][search][value]"].FirstOrDefault() : isMedic.Id.ToString();
+        var medic = isMedic ?? Request.Form["Columns[5][search][value]"].FirstOrDefault();
         var dateTurn = Request.Form["Columns[6][search][value]"].FirstOrDefault();
         var sortColumn = Request.Form["columns[" + Request.Form["order[0][column]"].FirstOrDefault() + "][name]"].FirstOrDefault();
         var sortColumnDirection = Request.Form["order[0][dir]"].FirstOrDefault();
