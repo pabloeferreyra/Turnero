@@ -131,10 +131,10 @@ public class TurnsController : Controller {
             data = data.Take(pageSize).ToList();
         }
 
-        Parallel.ForEach(data, t =>
+        foreach (var t in data)
         {
             t.IsMedic = isMedic != null;
-        });
+        }
 
         var json = new { draw, recordsFiltered = recordsTotal, recordsTotal, data };
 
