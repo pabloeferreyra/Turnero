@@ -35,26 +35,22 @@ public class HomeController : Controller
 
     public async Task<IActionResult> Index()
     {
-        List<int> turns = new() { 0, 0};
-
         if (_cache.Get<List<MedicDto>>("medics") == null)
         {
-            Task medicsTask = Task.Run(() =>
-            {
-                _getMedics.GetCachedMedics();
-            });
-            
-            await medicsTask;
+            await _getMedics.GetCachedMedics();
         }
+
         if (_cache.Get<List<TimeTurnViewModel>>("timeTurns") == null)
         {
-            Task timeTask = Task.Run(() =>
-            {
-                _getTimeTurns.GetCachedTimes();
-            });
-
-            await timeTask;
+            await _getTimeTurns.GetCachedTimes();
         }
+
+        var turnsAsync = await _getTurns.GetTurns(DateTime.Today, null);
+        List<int> turns = new()
+    {
+        turnsAsync.Where(t => t.Accessed).Count(),
+        turnsAsync.Where(t => !t.Accessed).Count()
+    };
 
         return View(turns);
     }
