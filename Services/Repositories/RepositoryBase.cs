@@ -2,6 +2,7 @@
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -61,10 +62,10 @@ public abstract class RepositoryBase<T> : IRepositoryBase<T> where T : class
         this._context.SaveChanges();
     }
 
-    public  async Task<List<T>> GetCachedData<T>(string cacheKey, Func<Task<List<T>>> getDataFunc)
+    public async Task<List<TResult>> GetCachedData<TResult>(string cacheKey, Func<Task<List<TResult>>> getDataFunc)
     {
-        var data = _cache.Get<List<T>>(cacheKey);
-        if (data == null)
+        var data = _cache.Get<List<TResult>>(cacheKey);
+        if (data.IsNullOrEmpty())
         {
             data = await getDataFunc();
             _cache.Set(cacheKey, data);

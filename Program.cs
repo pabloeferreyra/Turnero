@@ -132,19 +132,13 @@ builder.Services.AddHttpClient();
 
 builder.Host.UseWindowsService();
 
-builder.Services.AddMemoryCache();
+var cache = new MemoryCache(new MemoryCacheOptions());
+builder.Services.AddSingleton<IMemoryCache>(cache);
 
 builder.Services.Configure<MemoryCacheOptions>(options =>
 {
     options.ExpirationScanFrequency = TimeSpan.FromDays(7);
 });
-
-IMemoryCache cache = builder.Services.BuildServiceProvider()
-                                     .GetRequiredService<IMemoryCache>();
-var timeTurns = new List<TimeTurnViewModel>();
-var medics = new List <MedicDto>();
-cache.Set("timeTurns", timeTurns);
-cache.Set("medics", medics);
 
 builder.Services.AddResponseCompression(options =>
 {
@@ -163,8 +157,18 @@ builder.Services.Configure<GzipCompressionProviderOptions>(options =>
     options.Level = CompressionLevel.Fastest;
 });
 
-
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var serviceProvider = scope.ServiceProvider;
+    
+    var timeTurnsRepository = serviceProvider.GetRequiredService<ITimeTurnRepository>();
+    var medicsRepository = serviceProvider.GetRequiredService<IMedicRepository>();
+
+    await timeTurnsRepository.GetCachedTimes();
+    await medicsRepository.GetCachedMedics();
+}
 
 IWebHostEnvironment env = app.Environment;
 
