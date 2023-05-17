@@ -78,8 +78,8 @@ public class TurnsController : Controller {
 
     [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
     [HttpPost]
-    public async Task<IActionResult> InitializeTurns() {
-
+    public async Task<IActionResult> InitializeTurns()
+    {
         var user = this.User.FindFirst(ClaimTypes.NameIdentifier).Value;
         var isMedic = await _getMedics.GetMedicByUserId(user);
 
@@ -88,39 +88,50 @@ public class TurnsController : Controller {
         var start = Request.Form["start"].FirstOrDefault();
         var length = Request.Form["length"].FirstOrDefault();
         var searchValue = Request.Form["search[value]"].FirstOrDefault();
-        int pageSize = length != null ? Convert.ToInt32(length) : 0;
-        int skip = start != null ? Convert.ToInt32(start) : 0;
+        int pageSize = length != null ? int.Parse(length) : 0;
+        int skip = start != null ? int.Parse(start) : 0;
         var medic = isMedic == null ? Request.Form["Columns[5][search][value]"].FirstOrDefault() : isMedic.Id.ToString();
         var dateTurn = Request.Form["Columns[6][search][value]"].FirstOrDefault();
         var sortColumn = Request.Form["columns[" + Request.Form["order[0][column]"].FirstOrDefault() + "][name]"].FirstOrDefault();
         var sortColumnDirection = Request.Form["order[0][dir]"].FirstOrDefault();
         var defa = DateTime.Today.ToString("dd/MM/yyyy");
-        if (!(string.IsNullOrEmpty(sortColumn) && string.IsNullOrEmpty(sortColumnDirection))) {
+
+        if (!(string.IsNullOrEmpty(sortColumn) && string.IsNullOrEmpty(sortColumnDirection)))
+        {
             turns = turns.OrderBy(sortColumn + " " + sortColumnDirection);
         }
-        var data = turns.ToList();
-        if (!string.IsNullOrEmpty(medic)) {
+
+        var data = await turns.ToListAsync();
+
+        if (!string.IsNullOrEmpty(medic))
+        {
             data = data.Where(a => a.MedicId == Guid.Parse(medic)).ToList();
         }
-        if (!string.IsNullOrEmpty(dateTurn)) {
+
+        if (!string.IsNullOrEmpty(dateTurn))
+        {
             data = data.Where(a => a.Date == dateTurn).ToList();
         }
-        else {
+        else
+        {
             data = data.Where(a => a.Date == defa).ToList();
         }
-        int recordsTotal = data.Count();
-        if (skip != 0) {
+
+        int recordsTotal = data.Count;
+
+        if (skip != 0)
+        {
             data = data.Skip(skip).Take(pageSize).ToList();
         }
-        else if (pageSize != -1) {
+        else if (pageSize != -1)
+        {
             data = data.Take(pageSize).ToList();
         }
 
-
-
-        foreach (var t in data) {
+        Parallel.ForEach(data, t =>
+        {
             t.IsMedic = isMedic != null;
-        }
+        });
 
         var json = new { draw, recordsFiltered = recordsTotal, recordsTotal, data };
 
