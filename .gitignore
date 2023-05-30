@@ -341,3 +341,4 @@ healthchecksdb
 *.db
 appsettings.json
 appsettings.Development.json
+/Turnero.sln
