@@ -1,4 +1,4 @@
-/// <reference path="../js/signalr/dist/browser/signalr.min.js" />
+/// <reference path="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js" />
 /// <reference path="../js/turn.js" />
 const connection = new signalR.HubConnectionBuilder()
     .withUrl("/TurnsTableHub")
