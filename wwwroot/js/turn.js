@@ -3,17 +3,18 @@ $(document).ready(function () {
 
     new DateTime(document.getElementById('DateTurn'), {
         format: 'DD/MM/YYYY',
-        i18n: {
-            previous: 'Anterior',
-            next: 'Siguiente',
-            months: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
-            weekdays: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sab']
-        }, 
+        locale: 'es-ES',
         disableDays: [0],
     });
 
 
     dt = $('#turns').dataTable({
+        "language": {
+            url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json',
+            "buttons": {
+                "collection": "Exportar"
+            }
+        },
         "processing": true,
         "serverSide": true,
         "bFilter": true,
@@ -27,27 +28,6 @@ $(document).ready(function () {
         "autoWidth": true,
         "order": [[7, 'asc']],
         "dom": '<"row"<"col-md-6 col-sm-12"B>><"row table-responsive"rt><"row"<"col-md-6 col-sm-12"i><"col-md-6 ms-auto"p>>',
-        "language": {
-            "lengthMenu": "Mostrando _MENU_ filas por página",
-            "zeroRecords": "No se encontro registro",
-            "info": "Mostrando página _PAGE_ de _PAGES_",
-            "infoEmpty": "No se encontraron resultados",
-            "infoFiltered": "(Filtrado de _MAX_ total )",
-            "search": "Buscar:",
-            "paginate": {
-                "first": "Primera",
-                "last": "Última",
-                "next": "Siguiente",
-                "previous": "Anterior"
-            },
-            "buttons": {
-                "pageLength": {
-                    _: "Mostrando %d filas",
-                    '-1': "Todas las filas"
-                },
-                "collection": "Exportar"
-            }
-        },
         "ajax": {
             "url": "/Turns/InitializeTurns",
             "type": "Post",
