@@ -19,5 +19,5 @@ public class ApplicationDbContext : IdentityDbContext
     }
     public DbSet<Turn> Turns { get; set; }
     public DbSet<Medic> Medics { get; set; }
-    public DbSet<TimeTurnViewModel> TimeTurns { get; set; }
+    public DbSet<TimeTurn> TimeTurns { get; set; }
 }

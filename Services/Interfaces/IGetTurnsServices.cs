@@ -10,7 +10,7 @@ public interface IGetTurnsServices
 {
 
     public IQueryable<TurnDTO> GetTurnsDto();
-    public Task<List<Turn>> GetTurns(DateTime? dateTurn, Guid? medicId);
+    public List<Turn> GetTurns(DateTime? dateTurn, Guid? medicId);
 
     public Task<Turn> GetTurn(Guid id);
 

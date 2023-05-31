@@ -20,7 +20,7 @@ public class GetTimeTurnsServices : IGetTimeTurnsServices
         _timeTurnRepository = timeTurnRepository;
     }
 
-    public async Task<List<TimeTurnViewModel>> GetTimeTurns()
+    public async Task<List<TimeTurn>> GetTimeTurns()
     {
         try
         {
@@ -37,7 +37,7 @@ public class GetTimeTurnsServices : IGetTimeTurnsServices
         }
     }
 
-    public IQueryable<TimeTurnViewModel> GetTimeTurnsQ()
+    public IQueryable<TimeTurn> GetTimeTurnsQ()
     {
         try
         {
@@ -54,7 +54,7 @@ public class GetTimeTurnsServices : IGetTimeTurnsServices
         }
     }
 
-    public async Task<TimeTurnViewModel> GetTimeTurn(Guid id)
+    public async Task<TimeTurn> GetTimeTurn(Guid id)
     {
         try
         {
@@ -84,7 +84,7 @@ public class GetTimeTurnsServices : IGetTimeTurnsServices
         }
     }
 
-    public async Task<List<TimeTurnViewModel>> GetCachedTimes()
+    public async Task<List<TimeTurn>> GetCachedTimes()
     {
         try
         {

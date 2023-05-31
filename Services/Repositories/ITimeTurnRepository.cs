@@ -8,13 +8,13 @@ namespace Turnero.Services.Repositories;
 
 public interface ITimeTurnRepository
 {
-    Task<List<TimeTurnViewModel>> GetList();
-    IQueryable<TimeTurnViewModel> GetQueryable();
-    Task<TimeTurnViewModel> GetbyId(Guid id);
+    Task<List<TimeTurn>> GetList();
+    IQueryable<TimeTurn> GetQueryable();
+    Task<TimeTurn> GetbyId(Guid id);
     bool Exists(Guid id);
-    Task CreateTT(TimeTurnViewModel timeTurn);
+    Task CreateTT(TimeTurn timeTurn);
 
-    void DeleteTT(TimeTurnViewModel timeTurn);
+    void DeleteTT(TimeTurn timeTurn);
     
-    Task<List<TimeTurnViewModel>> GetCachedTimes();
+    Task<List<TimeTurn>> GetCachedTimes();
 }
