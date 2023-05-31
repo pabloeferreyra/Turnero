@@ -17,7 +17,7 @@ public class GetTurnsServices : IGetTurnsServices
         _logger = logger;
         _turnRepository = turnRepository;
     }
-    public async Task<List<Turn>> GetTurns(DateTime? dateTurn, Guid? medicId)
+    public List<Turn> GetTurns(DateTime? dateTurn, Guid? medicId)
     {
         try
         {
@@ -25,7 +25,7 @@ public class GetTurnsServices : IGetTurnsServices
                 _logger.Info($"{dateTurn} Turnos llegaron correctamente");
                 return Task.CompletedTask;
             });
-            return await _turnRepository.GetList(dateTurn, medicId);
+            return _turnRepository.GetList(dateTurn, medicId);
         }
         catch (Exception ex)
         {

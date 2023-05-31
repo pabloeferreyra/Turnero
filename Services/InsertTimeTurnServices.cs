@@ -20,7 +20,7 @@ public class InsertTimeTurnServices : IInsertTimeTurnServices
         _timeTurnRepository = timeTurnRepository;
     }
 
-    public async Task Create(TimeTurnViewModel timeTurnViewModel)
+    public async Task Create(TimeTurn timeTurnViewModel)
     {
         try
         {

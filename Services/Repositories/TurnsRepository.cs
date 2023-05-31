@@ -4,7 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Turnero.Data;
 using Turnero.Models;
@@ -41,42 +44,40 @@ public class TurnsRepository : RepositoryBase<Turn>, ITurnRepository
 
     public IQueryable<TurnDTO> GetListDto() 
     {
+        var turns = this.CallStoredProcedure("GetAllTurns");
+        var dto = this.mapper.Map<List<Turn>, List<TurnDTO>>(turns);
         return this.FindAll().ProjectTo<TurnDTO>(this.mapper.ConfigurationProvider);
     }
 
-    public async Task<List<Turn>> GetList(DateTime? date, Guid? id)
+    public List<Turn> GetList(DateTime? date, Guid? id)
     {
-        if(id != null)
+        object[] param;
+        var formattedDate = new StringBuilder();
+        if (date != null)
         {
-            if(date != null)
-            {
-                return await this.FindByCondition(m => m.MedicId == id && m.DateTurn.Date == date.Value.Date)
-                    .Include(m => m.Medic).Include(t => t.Time)
-                    .OrderBy(t => t.Time.Time)
-                    .ToListAsync();
-            }
-            else
-            {
-                return await this.FindByCondition(m => m.MedicId == id && m.DateTurn == DateTime.Today)
-                    .Include(m => m.Medic).Include(t => t.Time)
-                    .OrderBy(t => t.Time.Time).ToListAsync();
-            }
+            var dat = $"N'{date.Value.ToString("yyyyMMdd", CultureInfo.InvariantCulture)}'";
+            formattedDate.Append(dat);
         }
         else
         {
-            if (date != null)
-            {
-                return await this.FindByCondition(m => m.DateTurn == date)
-                    .Include(m => m.Medic).Include(t => t.Time)
-                    .OrderBy(t => t.Time.Time).ToListAsync();
-            }
-            else
-            {
-                return await this.FindByCondition(m => m.DateTurn == DateTime.Today)
-                    .Include(m => m.Medic).Include(t => t.Time)
-                    .OrderBy(t => t.Time.Time).ToListAsync();
-            }
+            var dat = $"N'{DateTime.Today.ToString("yyyyMMdd", CultureInfo.InvariantCulture)}'";
+            formattedDate.Append(dat);
         }
+        if (id != null)
+        {
+            param = new object[2];
+            param[0] = formattedDate.ToString();
+            param[1] = id != null ? id : null;
+        }
+        else
+        {
+            param = new object[]
+            {
+                formattedDate.ToString()
+            };
+        }
+
+        return this.CallStoredProcedure("GetTurns", param);
     }
 
     public async Task<List<Turn>> ForExport(DateTime date, Guid id)

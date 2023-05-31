@@ -25,7 +25,7 @@ public class Turn
     public DateTime DateTurn { get; set; }
 
     [Display(Name = "Hora")]
-    public TimeTurnViewModel Time { get; set; }
+    public TimeTurn Time { get; set; }
     public Guid TimeId { get; set; }
     
     [Display(Name = "Obra Social")]

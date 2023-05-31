@@ -1,14 +1,17 @@
 ﻿using AutoMapper;
-using AutoMapper.QueryableExtensions;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Text;
 using System.Threading.Tasks;
 using Turnero.Data;
+using Dapper;
 
 namespace Turnero.Services.Repositories;
 
@@ -71,5 +74,42 @@ public abstract class RepositoryBase<T> : IRepositoryBase<T> where T : class
             _cache.Set(cacheKey, data);
         }
         return data;
+    }
+
+    public List<T> CallStoredProcedure(string procedureName, params object[] parameters)
+    {
+        var sqlParameters = new List<SqlParameter>();
+        var sqlParametersString = new StringBuilder();
+
+        for (int i = 0; i < parameters.Length; i++)
+        {
+            var parameterName = $"@p{i}";
+            var sqlParameter = new SqlParameter(parameterName, parameters[i]);
+            sqlParameters.Add(sqlParameter);
+            sqlParametersString.Append(parameterName);
+            sqlParametersString.Append(" = ");
+            sqlParametersString.Append(parameters[i]);
+
+            if (i != parameters.Length - 1)
+            {
+                sqlParametersString.Append(", ");
+            }
+        }
+
+        var sql = $"EXEC {procedureName} {sqlParametersString}";
+
+        return this._context.Set<T>()
+            .FromSqlRaw(sql)
+            .ToList();
+    }
+
+    public IQueryable<T> CallStoredProcedureDTO(string connectionString, string procedureName)
+    {
+        using (var connection = new SqlConnection(connectionString))
+        {
+            connection.Open();
+            var results = connection.Query<T>(procedureName, commandType: CommandType.StoredProcedure);
+            return results.AsQueryable();
+        }
     }
 }
