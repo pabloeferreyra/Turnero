@@ -42,12 +42,12 @@ public class HomeController : Controller
             await _getMedics.GetCachedMedics();
         }
 
-        if (_cache.Get<List<TimeTurnViewModel>>("timeTurns").IsNullOrEmpty())
+        if (_cache.Get<List<TimeTurn>>("timeTurns").IsNullOrEmpty())
         {
             await _getTimeTurns.GetCachedTimes();
         }
 
-        var turnsAsync = await _getTurns.GetTurns(DateTime.Today, null);
+        var turnsAsync = _getTurns.GetTurns(DateTime.Today, null);
         List<int> turns = new()
         {
             turnsAsync.Where(t => t.Accessed).Count(),

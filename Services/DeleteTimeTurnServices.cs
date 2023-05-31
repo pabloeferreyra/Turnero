@@ -16,7 +16,7 @@ public class DeleteTimeTurnServices : IDeleteTimeTurnServices
         _timeTurnRepository = timeTurnRepository;
     }
 
-    public void Delete(TimeTurnViewModel timeTurn)
+    public void Delete(TimeTurn timeTurn)
     {
         try
         {

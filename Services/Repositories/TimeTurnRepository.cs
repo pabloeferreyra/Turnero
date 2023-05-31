@@ -10,23 +10,23 @@ using Turnero.Models;
 
 namespace Turnero.Services.Repositories;
 
-public class TimeTurnRepository : RepositoryBase<TimeTurnViewModel>, ITimeTurnRepository
+public class TimeTurnRepository : RepositoryBase<TimeTurn>, ITimeTurnRepository
 {
     public TimeTurnRepository(ApplicationDbContext context, IMapper mapper, IMemoryCache cache) : base(context, mapper, cache)
     {
 
     }
 
-    public async Task<List<TimeTurnViewModel>> GetList() {
+    public async Task<List<TimeTurn>> GetList() {
         return await FindAll().OrderBy(t => t.Time).ToListAsync();
     }
 
-    public IQueryable<TimeTurnViewModel> GetQueryable()
+    public IQueryable<TimeTurn> GetQueryable()
     {
         return FindAll().OrderBy(t => t.Time);
     }
 
-    public async Task<TimeTurnViewModel> GetbyId(Guid id)
+    public async Task<TimeTurn> GetbyId(Guid id)
     {
         return await FindByCondition(t => t.Id == id).FirstOrDefaultAsync();
     }
@@ -36,17 +36,17 @@ public class TimeTurnRepository : RepositoryBase<TimeTurnViewModel>, ITimeTurnRe
         return FindByCondition(t => t.Id == id).Any();
     }
 
-    public async Task CreateTT(TimeTurnViewModel timeTurn)
+    public async Task CreateTT(TimeTurn timeTurn)
     {
         await CreateAsync(timeTurn);
     }
 
-    public void DeleteTT(TimeTurnViewModel timeTurn)
+    public void DeleteTT(TimeTurn timeTurn)
     {
         Delete(timeTurn);
     }
 
-    public async Task<List<TimeTurnViewModel>> GetCachedTimes()
+    public async Task<List<TimeTurn>> GetCachedTimes()
     {
         return await GetCachedData("timeTurns", GetList);
     }

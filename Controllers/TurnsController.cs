@@ -22,6 +22,7 @@ using Turnero.Hubs;
 using Microsoft.Extensions.Caching.Memory;
 using System.Collections;
 using Microsoft.IdentityModel.Tokens;
+using Turnero.Services;
 
 namespace Turnero.Controllers;
 
@@ -30,6 +31,7 @@ public class TurnsController : Controller {
     public IInsertTurnsServices _insertTurns;
     public ILogger<TurnsController> _logger;
     public IGetTurnsServices _getTurns;
+    public IGetTurnDTOServices _getTurnDTO;
     public IUpdateTurnsServices _updateTurns;
     public IGetMedicsServices _getMedics;
     public IGetTimeTurnsServices _getTimeTurns;
@@ -40,6 +42,7 @@ public class TurnsController : Controller {
                            ILogger<TurnsController> logger,
                            IInsertTurnsServices insertTurns,
                            IGetTurnsServices getTurns,
+                           IGetTurnDTOServices getTurnDTO,
                            IUpdateTurnsServices updateTurns,
                            IGetMedicsServices getMedics,
                            IGetTimeTurnsServices getTimeTurns,
@@ -56,6 +59,7 @@ public class TurnsController : Controller {
         this.mapper = mapper;
         _hubContext = hubContext;
         _cache = cache;
+        _getTurnDTO = getTurnDTO;
     }
 
     [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
@@ -83,7 +87,7 @@ public class TurnsController : Controller {
     {
 
         string isMedic = await CheckMedic();
-        var turns = this._getTurns.GetTurnsDto();
+        var turns = this._getTurnDTO.GetTurnsDto();
         var draw = Request.Form["draw"].FirstOrDefault();
         var start = Request.Form["start"].FirstOrDefault();
         var length = Request.Form["length"].FirstOrDefault();
@@ -101,7 +105,7 @@ public class TurnsController : Controller {
             turns = turns.OrderBy(sortColumn + " " + sortColumnDirection);
         }
 
-        var data = await turns.ToListAsync();
+        var data = turns.ToList();
 
         if (!string.IsNullOrEmpty(medic))
         {
@@ -152,11 +156,11 @@ public class TurnsController : Controller {
         ViewBag.IsMedic = medic != null;
         if (ViewBag.IsMedic) {
             ViewBag.MedicId = medic.Id;
-            return await this._getTurns.GetTurns(dateTurn, medic.Id);
+            return this._getTurns.GetTurns(dateTurn, medic.Id);
         }
         else {
             ViewBag.MedicId = null;
-            return await this._getTurns.GetTurns(dateTurn, medicId);
+            return this._getTurns.GetTurns(dateTurn, medicId);
         }
     }
 
@@ -181,10 +185,10 @@ public class TurnsController : Controller {
     public async Task<IActionResult> Create()
     {
         List<MedicDto> medics = null;
-        List<TimeTurnViewModel> time = null;
+        List<TimeTurn> time = null;
 
         medics = _cache.Get<List<MedicDto>>("medics");
-        time = _cache.Get<List<TimeTurnViewModel>>("timeTurns");
+        time = _cache.Get<List<TimeTurn>>("timeTurns");
         if (medics.IsNullOrEmpty())
         {
             Task medicsTask = Task.Run(() =>
@@ -281,9 +285,9 @@ public class TurnsController : Controller {
         }
         
         List<MedicDto> medics = null;
-        List<TimeTurnViewModel> time = null;
+        List<TimeTurn> time = null;
         medics = _cache.Get<List<MedicDto>>("medics");
-        time = _cache.Get<List<TimeTurnViewModel>>("timeTurns");
+        time = _cache.Get<List<TimeTurn>>("timeTurns");
         if (medics.IsNullOrEmpty())
         {
             Task medicsTask = Task.Run(() =>

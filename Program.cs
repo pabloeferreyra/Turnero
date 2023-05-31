@@ -22,6 +22,7 @@ using Microsoft.AspNetCore.ResponseCompression;
 using System.IO.Compression;
 using System.Linq;
 using Microsoft.Net.Http.Headers;
+using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -107,9 +108,12 @@ builder.Services.AddScoped<IInsertTimeTurnServices, InsertTimeTurnServices>();
 builder.Services.AddScoped<IDeleteTimeTurnServices, DeleteTimeTurnServices>();
 builder.Services.AddScoped<IGetTimeTurnsServices, GetTimeTurnsServices>();
 builder.Services.AddSingleton<ILoggerServices, LoggerServices>();
+builder.Services.AddScoped<IGetTurnDTOServices, GetTurnDTOServices>();
+
 builder.Services.AddScoped<ITimeTurnRepository, TimeTurnRepository>();
 builder.Services.AddScoped<IMedicRepository, MedicRepository>();
 builder.Services.AddScoped<ITurnRepository, TurnsRepository>();
+builder.Services.AddScoped<ITurnDTORepository, TurnDTORepository>();
 
 builder.Services.AddAutoMapper(typeof(Program));
 
