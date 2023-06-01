@@ -8,11 +8,13 @@
     <IsTransformWebConfigDisabled>true</IsTransformWebConfigDisabled>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Version>1.0.6</Version>
+	  <VersionPrefix>1.0.6-beta</VersionPrefix>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+	<GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
     <IsPackable>true</IsPackable>
     <Nullable>disable</Nullable>
-    <SignAssembly>False</SignAssembly>
+    <SignAssembly>false</SignAssembly>
 	<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
 	<GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
   </PropertyGroup>
@@ -62,6 +64,10 @@
   <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
     <PackageReference Include="Dapper" Version="2.0.123" />
+    <PackageReference Include="GitVersion.MsBuild" Version="5.12.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="7.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="7.0.5" />
@@ -74,4 +80,7 @@
     <PackageReference Include="System.Linq.Dynamic.Core" Version="1.3.2" />
   </ItemGroup>
 
+    <Target Name="GitVersion" BeforeTargets="CoreCompile">
+	    <Exec Command="dotnet gitversion /output buildserver /nofetch" ConsoleToMSBuild="true" />
+    </Target>
 </Project>

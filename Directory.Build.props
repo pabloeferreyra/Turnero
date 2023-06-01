@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <Version>$(Version)</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Update="AssemblyInfo.cs" />
+  </ItemGroup>
+</Project>

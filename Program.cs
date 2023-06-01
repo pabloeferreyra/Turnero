@@ -23,6 +23,8 @@ using System.IO.Compression;
 using System.Linq;
 using Microsoft.Net.Http.Headers;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -217,5 +219,8 @@ app.UseStaticFiles(new StaticFileOptions
             "public,max-age=" + durationInSeconds;
     }
 });
+
+Console.WriteLine($"Versión del ensamblado: {Assembly.GetEntryAssembly()?.GetName().Version}");
+Console.WriteLine($"Versión del archivo: {FileVersionInfo.GetVersionInfo(Assembly.GetEntryAssembly()?.Location).FileVersion}");
 
 app.Run();
