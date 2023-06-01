@@ -12,7 +12,17 @@ jobs:
     steps: 
       - name: Checkout code
         uses: actions/checkout@v2
+      
+      - name: 'Install GitVersion and generate version'
+        with:
+          script: |
+            # Instalar GitVersion
+            dotnet tool install --global GitVersion.Tool
 
+            # Ejecutar GitVersion
+            dotnet gitversion /output json > version.json
+            cat version.json
+          
       - name: Setup .NET
         uses: actions/setup-dotnet@v1
         with:
