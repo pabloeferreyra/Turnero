@@ -21,7 +21,6 @@ jobs:
       run: |
         dotnet tool install --global GitVersion.Tool
         dotnet gitversion /output json > version.json
-        cat version.json
         dotnet build --no-restore
     - name: Test
       run: dotnet test --no-build --verbosity normal
