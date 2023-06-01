@@ -1,4 +1,4 @@
- <Project Sdk="Microsoft.NET.Sdk.Web">
+﻿ <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
@@ -7,9 +7,10 @@
     <CopyRefAssembliesToPublishDirectory>false</CopyRefAssembliesToPublishDirectory>
     <IsTransformWebConfigDisabled>true</IsTransformWebConfigDisabled>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <Version>1.0.6</Version>
-    <AssemblyVersion>1.0.6.0</AssemblyVersion>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Version>2.0.6</Version>
+    <AssemblyVersion>2.0.6.*</AssemblyVersion>
+	<Deterministic>False</Deterministic>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <IsPackable>true</IsPackable>
     <Nullable>disable</Nullable>
     <SignAssembly>False</SignAssembly>
@@ -21,6 +22,10 @@
 		<PublishReadyToRun>true</PublishReadyToRun>
 		<PublishTrimmed>false</PublishTrimmed>
 		<GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+		<Title>Turnero</Title>
+		<Company>PF Software</Company>
+		<Copyright>2023 - PF Software</Copyright>
+		<PackageProjectUrl>turnero.dev.ar</PackageProjectUrl>
 	</PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
