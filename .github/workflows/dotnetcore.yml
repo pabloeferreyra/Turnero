@@ -1,8 +1,6 @@
 name: .NET Core
 
 on:
-  push:
-    branches: [ master, develop, API ]
   pull_request:
     branches: [ master, develop, API ]
 
@@ -20,6 +18,10 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build --no-restore
+      run: |
+        dotnet tool install --global GitVersion.Tool
+        dotnet gitversion /output json > version.json
+        cat version.json
+        dotnet build --no-restore
     - name: Test
       run: dotnet test --no-build --verbosity normal
