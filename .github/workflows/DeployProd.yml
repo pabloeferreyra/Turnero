@@ -12,13 +12,16 @@ jobs:
     steps: 
       - name: Checkout code
         uses: actions/checkout@v2
-
+      
       - name: Setup .NET
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 7.0.x
       - name: Build and publish
         run: |
+          dotnet tool install --global GitVersion.Tool
+          dotnet gitversion /output json > version.json
+          cat version.json
           dotnet publish -c Release --nologo -r linux-x64 --self-contained -o ./TurneroApp
           
       - name: Setup SSH
