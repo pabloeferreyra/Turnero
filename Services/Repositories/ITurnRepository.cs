@@ -8,7 +8,6 @@ namespace Turnero.Services.Repositories;
 
 public interface ITurnRepository
 {
-    IQueryable<TurnDTO> GetListDto();
     List<Turn> GetList(DateTime? date, Guid? id);
     Task<Turn> GetById(Guid id);
     Task<TurnDTO> GetDTOById(Guid id);

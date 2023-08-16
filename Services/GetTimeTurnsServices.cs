@@ -26,7 +26,7 @@ public class GetTimeTurnsServices : IGetTimeTurnsServices
         {
             //_ = Task.Run(async () =>
             //{
-                _logger.Debug("Tiempos obtenidos");
+            _logger.Debug("Tiempos obtenidos");
             //});
             return await _timeTurnRepository.GetList();
         }
@@ -43,7 +43,7 @@ public class GetTimeTurnsServices : IGetTimeTurnsServices
         {
             //_ = Task.Run(async () =>
             //{
-                _logger.Debug("Tiempos obtenidos");
+            _logger.Debug("Tiempos obtenidos");
             //});
             return _timeTurnRepository.GetQueryable();
         }
@@ -60,11 +60,11 @@ public class GetTimeTurnsServices : IGetTimeTurnsServices
         {
             //_ = Task.Run(async () =>
             //{
-                _logger.Info($"Tiempo {id} obtenido");
+            _logger.Info($"Tiempo {id} obtenido");
             //});
             return await _timeTurnRepository.GetbyId(id);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             _logger.Error(ex.Message, ex);
             return null;

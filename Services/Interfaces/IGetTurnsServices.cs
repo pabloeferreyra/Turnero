@@ -8,8 +8,6 @@ namespace Turnero.Services.Interfaces;
 
 public interface IGetTurnsServices
 {
-
-    public IQueryable<TurnDTO> GetTurnsDto();
     public List<Turn> GetTurns(DateTime? dateTurn, Guid? medicId);
 
     public Task<Turn> GetTurn(Guid id);

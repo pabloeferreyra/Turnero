@@ -22,7 +22,7 @@ public class UpdateTurnsServices : IUpdateTurnsServices
     {
         try
         {
-            if(turn.DateTurn <= DateTime.Today)
+            if (turn.DateTurn <= DateTime.Today)
             {
                 _turnRepository.Access(turn);
                 _ = Task.Run(() =>
@@ -46,7 +46,7 @@ public class UpdateTurnsServices : IUpdateTurnsServices
               {
                   _logger.Debug($"Turno {turn.Id} Actualizado");
               });
-            
+
         }
         catch (DbUpdateConcurrencyException ex)
         {

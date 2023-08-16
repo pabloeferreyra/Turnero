@@ -16,9 +16,9 @@ public class LoggerServices : ILoggerServices
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
-            File.WriteAllText(@"/root/TurneroLogs/infoLog.txt", DateTime.Now +": "+ info);
+            File.WriteAllText(@"/root/TurneroLogs/infoLog.txt", DateTime.Now + ": " + info);
         }
-        else if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             File.WriteAllText(@"D:\infoLog.txt", DateTime.Now + ": " + info);
         }
