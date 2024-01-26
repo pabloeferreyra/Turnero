@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore.Storage;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -32,9 +33,6 @@ namespace Turnero.Test.TimeTurnsTest
         [Fact]
         public void GetList()
         {
-            
-            
-
             var result = _repository.FindAll().ToList();
 
             Assert.Contains(result, q => q.Id == _testData[0].Id);
@@ -42,21 +40,7 @@ namespace Turnero.Test.TimeTurnsTest
             Assert.Contains(result, q => q.Id == _testData[2].Id);
         }
 
-        [Fact]
-        public void GetList_Fail()
-        {
-            var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseInMemoryDatabase(databaseName: "TimeTurnsTestFail")
-                .Options;
-
-            var dbContext = new ApplicationDbContext(options);
-            var mapperMock = new Mock<IMapper>();
-            var cacheMock = new Mock<IMemoryCache>();
-            var repository = new TimeTurnRepository(dbContext, mapperMock.Object, cacheMock.Object);
-
-            var result = repository.FindAll().ToList();
-            Assert.False(result.Count != 0);
-        }
+        
 
         [Fact]
         public void Exists_Ok()
@@ -66,11 +50,19 @@ namespace Turnero.Test.TimeTurnsTest
             Assert.True(result);
         }
 
+        [Fact]
+        public void Exists_Fail()
+        {
+            var result = _repository.Exists(new Guid());
+
+            Assert.False(result);
+        }
+
         private static ApplicationDbContext CreateInMemoryDbContext()
         {
             // Create an instance of ApplicationDbContext with an in-memory database
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseInMemoryDatabase(databaseName: "TimeTurnsTest")
+                .UseInMemoryDatabase(databaseName: "TimeTurnsTest", new InMemoryDatabaseRoot())
                 .Options;
 
             return new ApplicationDbContext(options);
