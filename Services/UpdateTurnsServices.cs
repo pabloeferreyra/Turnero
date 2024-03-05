@@ -25,15 +25,15 @@ public class UpdateTurnsServices : IUpdateTurnsServices
             if(turn.DateTurn <= DateTime.Today)
             {
                 _turnRepository.Access(turn);
-                _ = Task.Run(() =>
-                {
-                    _logger.Debug($"Turno {turn.Id} ingresado");
-                });
+                //_ = Task.Run(() =>
+                //{
+                    //_logger.Debug($"Turno {turn.Id} ingresado");
+                //});
             }
         }
         catch (Exception ex)
         {
-            _logger.Error(ex.Message, ex);
+            //_logger.Error(ex.Message, ex);
         }
     }
 
@@ -42,15 +42,15 @@ public class UpdateTurnsServices : IUpdateTurnsServices
         try
         {
             _turnRepository.UpdateTurn(turn);
-            _ = Task.Run(() =>
-              {
-                  _logger.Debug($"Turno {turn.Id} Actualizado");
-              });
+            //_ = Task.Run(() =>
+            //  {
+            //      _logger.Debug($"Turno {turn.Id} Actualizado");
+            //  });
             
         }
         catch (DbUpdateConcurrencyException ex)
         {
-            _logger.Error(ex.Message, ex);
+            //_logger.Error(ex.Message, ex);
         }
     }
 
@@ -59,14 +59,14 @@ public class UpdateTurnsServices : IUpdateTurnsServices
         try
         {
             _turnRepository.DeleteTurn(turn);
-            _ = Task.Run(() =>
-            {
-                _logger.Debug($"Turno {turn.Id} Eliminado");
-            });
+            //_ = Task.Run(() =>
+            //{
+            //    _logger.Debug($"Turno {turn.Id} Eliminado");
+            //});
         }
         catch (DbUpdateConcurrencyException ex)
         {
-            _logger.Error(ex.Message, ex);
+            //_logger.Error(ex.Message, ex);
         }
     }
 }
