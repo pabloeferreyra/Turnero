@@ -46,7 +46,7 @@ builder.Configuration.AddUserSecrets<Program>();
 #endregion
 
 var connectionString = builder.Configuration["ConnectionStrings:DefaultConnection"];
- builder.Services.AddDbContext<ApplicationDbContext>(options =>
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString)).AddDefaultIdentity<IdentityUser>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
