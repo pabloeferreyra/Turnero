@@ -30,7 +30,7 @@ namespace Turnero.Services
             }
             catch (Exception ex)
             {
-                _logger.Error(ex.Message, ex);
+                //_logger.Error(ex.Message, ex);
                 return null;
             }
         }
