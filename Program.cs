@@ -179,7 +179,7 @@ else
 
 app.Use(async (context, next) =>
 {
-    context.Response.Headers["Cache-Control"] = "public, max-age=3600"; // Permite cachear la respuesta durante 1 hora (3600 segundos)
+    context.Response.Headers["Cache-Control"] = "public, max-age=300"; // Permite cachear la respuesta durante 1 hora (3600 segundos)
     await next();
 });
 

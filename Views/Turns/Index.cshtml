@@ -17,17 +17,17 @@
 <div class="back container-fluid">
     <div class="form-group row">
         <div class="col-lg-2 col-md-2 col-sm-12">
-            <input id="DateTurn" name="dateTurn" type="text" class="form-control" value="@ViewBag.Date" data-date-format="dd/MM/yyyy" />
+            <input id="DateTurn" name="dateTurn" type="text" class="form-control" placeholder="Fecha" value="@ViewBag.Date" data-date-format="dd/MM/yyyy" />
         </div>
         <div class="col-lg-2 col-md-5 col-sm-12">
             @if(User.IsInRole(RolesConstants.Ingreso))
             {
-            <select id="Medics" class="form-control" asp-items="@ViewBag.Medics">
+            <select id="Medics" title="Medico" class="form-control" asp-items="@ViewBag.Medics">
                 <option value="" selected>== Seleccione un profesional ==</option>
                 </select>
             }
             else if (User.IsInRole(RolesConstants.Medico)) {
-                <select id="Medics" class="form-control" asp-items="@ViewBag.Medics" disabled>
+                <select id="Medics" title="Medico" class="form-control" asp-items="@ViewBag.Medics" disabled>
                     <option value="" selected>@User.Identity.Name</option>
                 </select>
             }

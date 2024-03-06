@@ -26,13 +26,13 @@ public class GetTimeTurnsServices : IGetTimeTurnsServices
         {
             //_ = Task.Run(async () =>
             //{
-            _logger.Debug("Tiempos obtenidos");
+            //    _logger.Debug("Tiempos obtenidos");
             //});
             return await _timeTurnRepository.GetList();
         }
         catch (Exception ex)
         {
-            _logger.Error(ex.Message, ex);
+            //_logger.Error(ex.Message, ex);
             return null;
         }
     }
@@ -43,13 +43,13 @@ public class GetTimeTurnsServices : IGetTimeTurnsServices
         {
             //_ = Task.Run(async () =>
             //{
-            _logger.Debug("Tiempos obtenidos");
+            //    _logger.Debug("Tiempos obtenidos");
             //});
             return _timeTurnRepository.GetQueryable();
         }
         catch (Exception ex)
         {
-            _logger.Error(ex.Message, ex);
+            //_logger.Error(ex.Message, ex);
             return null;
         }
     }
@@ -60,13 +60,13 @@ public class GetTimeTurnsServices : IGetTimeTurnsServices
         {
             //_ = Task.Run(async () =>
             //{
-            _logger.Info($"Tiempo {id} obtenido");
+            //    _logger.Info($"Tiempo {id} obtenido");
             //});
             return await _timeTurnRepository.GetbyId(id);
         }
         catch (Exception ex)
         {
-            _logger.Error(ex.Message, ex);
+            //_logger.Error(ex.Message, ex);
             return null;
         }
     }
@@ -79,7 +79,7 @@ public class GetTimeTurnsServices : IGetTimeTurnsServices
         }
         catch (Exception ex)
         {
-            _logger.Error(ex.Message, ex);
+            //_logger.Error(ex.Message, ex);
             return false;
         }
     }
@@ -92,7 +92,7 @@ public class GetTimeTurnsServices : IGetTimeTurnsServices
         }
         catch (Exception ex)
         {
-            _logger.Error(ex.Message, ex);
+            //_logger.Error(ex.Message, ex);
             return null;
         }
     }

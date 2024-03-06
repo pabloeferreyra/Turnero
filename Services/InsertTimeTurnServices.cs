@@ -24,13 +24,13 @@ public class InsertTimeTurnServices : IInsertTimeTurnServices
         {
             //_ = Task.Run(async () =>
             //{
-            _logger.Debug($"Horario {timeTurnViewModel.Id} creado");
+                //_logger.Debug($"Horario {timeTurnViewModel.Id} creado");
             //});
             await _timeTurnRepository.CreateTT(timeTurnViewModel);
         }
         catch (Exception ex)
         {
-            _logger.Error(ex.Message, ex);
+            //_logger.Error(ex.Message, ex);
         }
     }
 }

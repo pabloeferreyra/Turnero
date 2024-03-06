@@ -20,15 +20,15 @@ public class InsertTurnsServices : IInsertTurnsServices
         try
         {
             await _turnRepository.CreateTurn(turn);
-            _ = Task.Run(() =>
-            {
-                _logger.Debug("Turno agregado correctamente");
-            });
+            //_ = Task.Run(() =>
+            //{
+            //    _logger.Debug("Turno agregado correctamente");
+            //});
             return true;
         }
         catch (Exception ex)
         {
-            _logger.Error(ex.Message, ex);
+            //_logger.Error(ex.Message, ex);
             return false;
         }
     }

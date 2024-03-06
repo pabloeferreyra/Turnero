@@ -24,15 +24,14 @@ public class GetMedicsServices : IGetMedicsServices
         {
             //_ = Task.Run(async () =>
             //{
-            _logger.Debug("Medicos traidos correctamente");
+            //_logger.Debug("Medicos traidos correctamente");
             //});
             var med = await _medicRepository.GetListDto();
 
             return med;
         }
-        catch (Exception ex)
-        {
-            _logger.Error(ex.Message, ex);
+        catch (Exception ex) {
+            //_logger.Error(ex.Message, ex);
             return new List<MedicDto>();
         }
     }
@@ -43,7 +42,7 @@ public class GetMedicsServices : IGetMedicsServices
         {
             //_ = Task.Run(async () =>
             //{
-            _logger.Debug("Medicos traidos correctamente");
+                //_logger.Debug("Medicos traidos correctamente");
             //});
             var med = await _medicRepository.GetList();
 
@@ -51,7 +50,7 @@ public class GetMedicsServices : IGetMedicsServices
         }
         catch (Exception ex)
         {
-            _logger.Error(ex.Message, ex);
+            ////_logger.Error(ex.Message, ex);
             return new List<Medic>();
         }
     }
@@ -62,7 +61,7 @@ public class GetMedicsServices : IGetMedicsServices
         {
             //_ = Task.Run(async () =>
             //{
-            _logger.Debug("Medico traido correctamente");
+                //_logger.Debug("Medico traido correctamente");
             //});
             Medic med = await _medicRepository.GetById(id);
 
@@ -70,7 +69,7 @@ public class GetMedicsServices : IGetMedicsServices
         }
         catch (Exception ex)
         {
-            _logger.Error(ex.Message, ex);
+            //_logger.Error(ex.Message, ex);
             return new Medic();
         }
     }
@@ -81,7 +80,7 @@ public class GetMedicsServices : IGetMedicsServices
         {
             //_ = Task.Run(async () =>
             //{
-            _logger.Debug("Medico traido correctamente por usuario");
+                //_logger.Debug("Medico traido correctamente por usuario");
             //});
             Medic med = await _medicRepository.GetByUserId(id);
 
@@ -89,7 +88,7 @@ public class GetMedicsServices : IGetMedicsServices
         }
         catch (Exception ex)
         {
-            _logger.Error(ex.Message, ex);
+            //_logger.Error(ex.Message, ex);
             return new Medic();
         }
     }
@@ -102,7 +101,7 @@ public class GetMedicsServices : IGetMedicsServices
         }
         catch (Exception ex)
         {
-            _logger.Error(ex.Message, ex);
+            //_logger.Error(ex.Message, ex);
             return false;
         }
     }
@@ -115,7 +114,7 @@ public class GetMedicsServices : IGetMedicsServices
         }
         catch (Exception ex)
         {
-            _logger.Error(ex.Message, ex);
+            //_logger.Error(ex.Message, ex);
             return null;
         }
     }

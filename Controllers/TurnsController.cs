@@ -88,12 +88,28 @@ public class TurnsController : Controller {
 
         string isMedic = await CheckMedic();
         var turns = this._getTurnDTO.GetTurnsDto();
-        var draw = Request.Form["draw"].FirstOrDefault();
+        _ = SetTable(isMedic, turns, out string draw, out int pageSize, out int skip, out List<TurnDTO> data, out int recordsTotal);
+
+        data = SetPage(pageSize, skip, data);
+
+        foreach (var t in data)
+        {
+            t.IsMedic = isMedic != null;
+        }
+
+        var json = new { draw, recordsFiltered = recordsTotal, recordsTotal, data };
+
+        return await Task.FromResult<IActionResult>(Ok(json));
+    }
+
+    private IQueryable<TurnDTO> SetTable(string isMedic, IQueryable<TurnDTO> turns, out string draw, out int pageSize, out int skip, out List<TurnDTO> data, out int recordsTotal)
+    {
+        draw = Request.Form["draw"].FirstOrDefault();
         var start = Request.Form["start"].FirstOrDefault();
         var length = Request.Form["length"].FirstOrDefault();
         var searchValue = Request.Form["search[value]"].FirstOrDefault();
-        int pageSize = length != null ? int.Parse(length) : 0;
-        int skip = start != null ? int.Parse(start) : 0;
+        pageSize = length != null ? int.Parse(length) : 0;
+        skip = start != null ? int.Parse(start) : 0;
         var medic = isMedic ?? Request.Form["Columns[5][search][value]"].FirstOrDefault();
         var dateTurn = Request.Form["Columns[6][search][value]"].FirstOrDefault();
         var sortColumn = Request.Form["columns[" + Request.Form["order[0][column]"].FirstOrDefault() + "][name]"].FirstOrDefault();
@@ -105,24 +121,20 @@ public class TurnsController : Controller {
             turns = turns.OrderBy(sortColumn + " " + sortColumnDirection);
         }
 
-        var data = turns.ToList();
-
+        data = turns.ToList();
         if (!string.IsNullOrEmpty(medic))
         {
             data = data.Where(a => a.MedicId == Guid.Parse(medic)).ToList();
         }
 
-        if (!string.IsNullOrEmpty(dateTurn))
-        {
-            data = data.Where(a => a.Date == dateTurn).ToList();
-        }
-        else
-        {
-            data = data.Where(a => a.Date == defa).ToList();
-        }
+        data = !string.IsNullOrEmpty(dateTurn) ? data.Where(a => a.Date == dateTurn).ToList() : data.Where(a => a.Date == defa).ToList();
 
-        int recordsTotal = data.Count;
+        recordsTotal = data.Count;
+        return turns;
+    }
 
+    private static List<TurnDTO> SetPage(int pageSize, int skip, List<TurnDTO> data)
+    {
         if (skip != 0)
         {
             data = data.Skip(skip).Take(pageSize).ToList();
@@ -132,14 +144,7 @@ public class TurnsController : Controller {
             data = data.Take(pageSize).ToList();
         }
 
-        foreach (var t in data)
-        {
-            t.IsMedic = isMedic != null;
-        }
-
-        var json = new { draw, recordsFiltered = recordsTotal, recordsTotal, data };
-
-        return await Task.FromResult<IActionResult>(Ok(json));
+        return data;
     }
 
     private async Task<string> CheckMedic()

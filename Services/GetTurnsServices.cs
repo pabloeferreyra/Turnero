@@ -22,16 +22,15 @@ public class GetTurnsServices : IGetTurnsServices
     {
         try
         {
-            _ = Task.Run(() =>
-            {
-                _logger.Info($"{dateTurn} Turnos llegaron correctamente");
+            _ = Task.Run(() => {
+                //_logger.Info($"{dateTurn} Turnos llegaron correctamente");
                 return Task.CompletedTask;
             });
             return _turnRepository.GetList(dateTurn, medicId);
         }
         catch (Exception ex)
         {
-            _logger.Error(ex.Message, ex);
+            //_logger.Error(ex.Message, ex);
             return null;
         }
     }
@@ -42,13 +41,13 @@ public class GetTurnsServices : IGetTurnsServices
         {
             _ = Task.Run(() =>
             {
-                _logger.Info($"Turno {id}");
+                //_logger.Info($"Turno {id}");
             });
             return await _turnRepository.GetById(id);
         }
         catch (Exception ex)
         {
-            _logger.Error(ex.Message, ex);
+            //_logger.Error(ex.Message, ex);
             return null;
         }
     }
@@ -57,15 +56,15 @@ public class GetTurnsServices : IGetTurnsServices
     {
         try
         {
-            _ = Task.Run(() =>
-            {
-                _logger.Info($"Turno {id}");
-            });
+            //_ = Task.Run(() =>
+            //{
+            //    _logger.Info($"Turno {id}");
+            //});
             return await _turnRepository.GetDTOById(id);
         }
         catch (Exception ex)
         {
-            _logger.Error(ex.Message, ex);
+            //_logger.Error(ex.Message, ex);
             return null;
         }
     }
@@ -78,7 +77,7 @@ public class GetTurnsServices : IGetTurnsServices
         }
         catch (Exception ex)
         {
-            _logger.Error(ex.Message, ex);
+            //_logger.Error(ex.Message, ex);
             return false;
         }
     }
@@ -91,7 +90,7 @@ public class GetTurnsServices : IGetTurnsServices
         }
         catch (Exception ex)
         {
-            _logger.Error(ex.Message, ex);
+            //_logger.Error(ex.Message, ex);
             return false;
         }
     }
