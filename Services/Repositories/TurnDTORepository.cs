@@ -1,7 +1,5 @@
 ﻿using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using Microsoft.Extensions.Caching.Memory;
-using System.Collections.Generic;
 using System.Linq;
 using Turnero.Data;
 using Turnero.Models;
@@ -19,7 +17,7 @@ namespace Turnero.Services.Repositories
 
         public IQueryable<TurnDTO> GetListDto(string connectionString)
         {
-            var turnDto = this.CallStoredProcedureDTO(connectionString, "GetAllTurns");
+            var turnDto = this.CallStoredProcedureDTO(connectionString, "select * from getallturns()");
             return turnDto;
         }
     }

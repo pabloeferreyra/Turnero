@@ -13,7 +13,8 @@ public class GetTurnsServices : IGetTurnsServices
     private readonly ILoggerServices _logger;
     private readonly ITurnRepository _turnRepository;
     public GetTurnsServices(ILoggerServices logger,
-                            ITurnRepository turnRepository) {
+                            ITurnRepository turnRepository)
+    {
         _logger = logger;
         _turnRepository = turnRepository;
     }
@@ -34,17 +35,6 @@ public class GetTurnsServices : IGetTurnsServices
         }
     }
 
-    public IQueryable<TurnDTO> GetTurnsDto() {
-        try {
-            
-            return _turnRepository.GetListDto();
-        }
-        catch (Exception ex) {
-            //_logger.Error(ex.Message, ex);
-            return null;
-        }
-    }
-
     public async Task<Turn> GetTurn(Guid id)
     {
         try
@@ -55,7 +45,7 @@ public class GetTurnsServices : IGetTurnsServices
             });
             return await _turnRepository.GetById(id);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             //_logger.Error(ex.Message, ex);
             return null;
@@ -85,7 +75,7 @@ public class GetTurnsServices : IGetTurnsServices
         {
             return _turnRepository.TurnExists(id);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             //_logger.Error(ex.Message, ex);
             return false;

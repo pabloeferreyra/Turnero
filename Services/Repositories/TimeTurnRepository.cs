@@ -17,7 +17,8 @@ public class TimeTurnRepository : RepositoryBase<TimeTurn>, ITimeTurnRepository
 
     }
 
-    public async Task<List<TimeTurn>> GetList() {
+    public async Task<List<TimeTurn>> GetList()
+    {
         return await FindAll().OrderBy(t => t.Time).ToListAsync();
     }
 

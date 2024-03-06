@@ -22,7 +22,7 @@ public class UpdateTurnsServices : IUpdateTurnsServices
     {
         try
         {
-            if(turn.DateTurn <= DateTime.Today)
+            if (turn.DateTurn <= DateTime.Today)
             {
                 _turnRepository.Access(turn);
                 //_ = Task.Run(() =>

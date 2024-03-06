@@ -64,7 +64,7 @@ public class GetTimeTurnsServices : IGetTimeTurnsServices
             //});
             return await _timeTurnRepository.GetbyId(id);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             //_logger.Error(ex.Message, ex);
             return null;
