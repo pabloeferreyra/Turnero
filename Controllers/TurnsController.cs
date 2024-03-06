@@ -223,12 +223,15 @@ public class TurnsController : Controller {
     [HttpPost]
     //[ValidateAntiForgeryToken]
     public async Task<StatusCodeResult> Create(TurnDTO turn) {
-        if (!ModelState.IsValid) return this.BadRequest();
         try
         {
             turn.Reason = turn.Reason.TrimEnd('\"');
             var t = new Turn();
             t = mapper.Map(turn, t);
+            if (t.DateTurn.Kind != DateTimeKind.Utc)
+            {
+                t.DateTurn = t.DateTurn.ToUniversalTime();
+            }
             await this._insertTurns.CreateTurnAsync(t);
             var medic = await this._getMedics.GetMedicById(turn.MedicId);
             await _hubContext.Clients.User(medic.UserGuid).SendAsync("UpdateTableDirected", "La tabla se ha actualizado"); ;
