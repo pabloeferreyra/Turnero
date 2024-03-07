@@ -27,6 +27,7 @@ public class TurnsRepository : RepositoryBase<Turn>, ITurnRepository
     public void Access(Turn turn)
     {
         turn.Accessed = true;
+        turn.DateTurn = turn.DateTurn.ToLocalTime();
         this.Update(turn);
     }
 
@@ -97,6 +98,7 @@ public class TurnsRepository : RepositoryBase<Turn>, ITurnRepository
 
     public void UpdateTurn(Turn turn)
     {
+        turn.DateTurn = turn.DateTurn.ToUniversalTime();
         this.Update(turn);
     }
 
@@ -104,6 +106,7 @@ public class TurnsRepository : RepositoryBase<Turn>, ITurnRepository
     {
         turn.Medic = null;
         turn.Time = null;
+        turn.DateTurn = turn.DateTurn.ToUniversalTime();
         await this.CreateAsync(turn);
     }
 }

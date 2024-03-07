@@ -228,10 +228,6 @@ public class TurnsController : Controller {
             turn.Reason = turn.Reason.TrimEnd('\"');
             var t = new Turn();
             t = mapper.Map(turn, t);
-            if (t.DateTurn.Kind != DateTimeKind.Utc)
-            {
-                t.DateTurn = t.DateTurn.ToUniversalTime();
-            }
             await this._insertTurns.CreateTurnAsync(t);
             var medic = await this._getMedics.GetMedicById(turn.MedicId);
             await _hubContext.Clients.User(medic.UserGuid).SendAsync("UpdateTableDirected", "La tabla se ha actualizado"); ;
@@ -332,10 +328,7 @@ public class TurnsController : Controller {
         {
             var t = new Turn();
             t = mapper.Map(turn, t);
-            if (t.DateTurn.Kind != DateTimeKind.Utc)
-            {
-                t.DateTurn = t.DateTurn.ToUniversalTime();
-            }
+            
             _updateTurns.Update(t);
             var users = await this._userManager.GetUsersInRoleAsync(RolesConstants.Ingreso);
             foreach (var u in users) { await _hubContext.Clients.User(u.Id).SendAsync("UpdateTableDirected", "La tabla se ha actualizado"); }
