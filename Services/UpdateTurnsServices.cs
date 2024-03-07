@@ -22,7 +22,7 @@ public class UpdateTurnsServices : IUpdateTurnsServices
     {
         try
         {
-            if (turn.DateTurn.ToShortDateString() <= DateTime.Today.ToShortDateString())
+            if (turn.DateTurn.ToUniversalTime() <= DateTime.Today.ToUniversalTime())
             {
                 _turnRepository.Access(turn);
                 //_ = Task.Run(() =>
