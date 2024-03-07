@@ -24,6 +24,10 @@ public class UpdateTurnsServices : IUpdateTurnsServices
         {
             if (turn.DateTurn <= DateTime.Today)
             {
+                if (turn.DateTurn.Kind != DateTimeKind.Utc)
+                {
+                    turn.DateTurn = turn.DateTurn.ToUniversalTime();
+                }
                 _turnRepository.Access(turn);
                 //_ = Task.Run(() =>
                 //{

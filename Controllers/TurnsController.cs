@@ -268,10 +268,6 @@ public class TurnsController : Controller {
         }
 
         if (ModelState.IsValid) {
-            if (turn.DateTurn.Kind != DateTimeKind.Utc)
-            {
-                turn.DateTurn = turn.DateTurn.ToUniversalTime();
-            }
             this._updateTurns.Accessed(turn);
         }
         var users = await this._userManager.GetUsersInRoleAsync(RolesConstants.Ingreso);
