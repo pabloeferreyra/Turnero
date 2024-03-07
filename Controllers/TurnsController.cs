@@ -268,6 +268,10 @@ public class TurnsController : Controller {
         }
 
         if (ModelState.IsValid) {
+            if (turn.DateTurn.Kind != DateTimeKind.Utc)
+            {
+                turn.DateTurn = turn.DateTurn.ToUniversalTime();
+            }
             this._updateTurns.Accessed(turn);
         }
         var users = await this._userManager.GetUsersInRoleAsync(RolesConstants.Ingreso);
@@ -332,6 +336,10 @@ public class TurnsController : Controller {
         {
             var t = new Turn();
             t = mapper.Map(turn, t);
+            if (t.DateTurn.Kind != DateTimeKind.Utc)
+            {
+                t.DateTurn = t.DateTurn.ToUniversalTime();
+            }
             _updateTurns.Update(t);
             var users = await this._userManager.GetUsersInRoleAsync(RolesConstants.Ingreso);
             foreach (var u in users) { await _hubContext.Clients.User(u.Id).SendAsync("UpdateTableDirected", "La tabla se ha actualizado"); }
