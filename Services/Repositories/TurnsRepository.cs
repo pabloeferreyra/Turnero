@@ -27,7 +27,7 @@ public class TurnsRepository : RepositoryBase<Turn>, ITurnRepository
     public void Access(Turn turn)
     {
         turn.Accessed = true;
-        turn.DateTurn = turn.DateTurn.ToLocalTime();
+        turn.DateTurn = turn.DateTurn.ToUniversalTime();
         this.Update(turn);
     }
 
