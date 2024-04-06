@@ -7,26 +7,32 @@ const connection = new signalR.HubConnectionBuilder()
 
 connection.on("UpdateTableDirected", function (user, message) {
     if (!("Notification" in window)) {
-        alert("Este navegador no soporta notificaciones web");
+        Swal.fire({
+            position: 'top-end',
+            icon: 'info',
+            title: "Este navegador no soporta notificaciones web",
+            showConfirmButton: false,
+            timer: 500
+        });
     } else if (Notification.permission === "granted") {
-        var options = {
-            body: message,
-            icon: "/favicon.ico" // Ruta a una imagen para el ícono de la notificación
-        };
-        var notification = new Notification(options, user + " Hay nuevos turnos");
-    } else if (Notification.permission !== 'denied') {
+        mostrarNotificacionReal(user, message);
+    } else {
         Notification.requestPermission(function (permission) {
             if (permission === "granted") {
-                var options = {
-                    body: message,
-                    icon: "/favicon.ico" // Ruta a una imagen para el ícono de la notificación
-                };
-                var notification = new Notification(options, user + " Hay nuevos turnos");
+                mostrarNotificacionReal(user, message);
             }
         });
     }
     reset();
 })
+
+mostrarNotificacionReal(user, message){
+    var options = {
+        body: message,
+        icon: "/favicon.ico" // Ruta a una imagen para el ícono de la notificación
+    };
+    var notification = new Notification(options, user + " Hay nuevos turnos");
+}
 
 connection.on("UpdateTable", function (message) {
     reset();
