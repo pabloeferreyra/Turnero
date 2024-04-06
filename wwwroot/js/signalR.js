@@ -6,6 +6,25 @@ const connection = new signalR.HubConnectionBuilder()
     .build();
 
 connection.on("UpdateTableDirected", function (user, message) {
+    if (!("Notification" in window)) {
+        alert("Este navegador no soporta notificaciones web");
+    } else if (Notification.permission === "granted") {
+        var options = {
+            body: message,
+            icon: "/favicon.ico" // Ruta a una imagen para el ícono de la notificación
+        };
+        var notification = new Notification(options, user + " Hay nuevos turnos");
+    } else if (Notification.permission !== 'denied') {
+        Notification.requestPermission(function (permission) {
+            if (permission === "granted") {
+                var options = {
+                    body: message,
+                    icon: "/favicon.ico" // Ruta a una imagen para el ícono de la notificación
+                };
+                var notification = new Notification(options, user + " Hay nuevos turnos");
+            }
+        });
+    }
     reset();
 })
 
