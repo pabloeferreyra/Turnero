@@ -5,7 +5,21 @@ const connection = new signalR.HubConnectionBuilder()
     .configureLogging(signalR.LogLevel.Information)
     .build();
 
-connection.on("UpdateTableDirected", function (user, message) {
+function formatDate(date) {
+    var day = date.getDate();
+    var month = date.getMonth() + 1; // Los meses en JavaScript van de 0 a 11
+    var year = date.getFullYear();
+
+    // Asegurarse de que day y month tengan dos dígitos
+
+    if (month < 10) {
+        month = '0' + month;
+    }
+
+    return day + '/' + month + '/' + year;
+}
+
+connection.on("UpdateTableDirected", function (user, message, date) {
     if (!("Notification" in window)) {
         Swal.fire({
             position: 'top-end',
@@ -15,25 +29,34 @@ connection.on("UpdateTableDirected", function (user, message) {
             timer: 500
         });
     } else if (Notification.permission === "granted") {
-        mostrarNotificacionReal(user, message);
+        var options = {
+            body: message,
+            icon: "/favicon.ico" // Ruta a una imagen para el ícono de la notificación
+        };
+        var currentDate = new Date();
+        currentDate = formatDate(currentDate);
+        if (date === currentDate) {
+            new Notification(user + " Hay nuevos turnos", options);
+            console.log("notificacion");
+        }
     } else {
         Notification.requestPermission(function (permission) {
             if (permission === "granted") {
-                mostrarNotificacionReal(user, message);
+                var options = {
+                    body: message,
+                    icon: "/favicon.ico" // Ruta a una imagen para el ícono de la notificación
+                };
+                var currentDate = new Date();
+                currentDate = formatDate(currentDate);
+                if (date === currentDate) {
+                    new Notification(user + " Hay nuevos turnos", options);
+                    console.log("notificacion 2");
+                }
             }
         });
     }
     reset();
 })
-
-function mostrarNotificacionReal(user, message) {
-    var options = {
-        body: message,
-        icon: "/favicon.ico" // Ruta a una imagen para el ícono de la notificación
-    };
-    var notification = new Notification(options, user + " Hay nuevos turnos");
-
-}
 
 connection.on("UpdateTable", function (message) {
     reset();

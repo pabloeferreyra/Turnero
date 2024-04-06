@@ -230,8 +230,9 @@ public class TurnsController : Controller {
             t = mapper.Map(turn, t);
             await this._insertTurns.CreateTurnAsync(t);
             var medic = await this._getMedics.GetMedicById(turn.MedicId);
-            var turnMsj = "se agrego un nuevo turno a las "+t.Time;
-            await _hubContext.Clients.User(medic.UserGuid).SendAsync("UpdateTableDirected", medic.Name, turnMsj); ;
+            var turnMsj = "se agrego un nuevo turno";
+
+            await _hubContext.Clients.User(medic.UserGuid).SendAsync("UpdateTableDirected", medic.Name, turnMsj, t.DateTurn.ToShortDateString()); ;
 
             return Ok();
         }
