@@ -10,11 +10,6 @@ function formatDate(date) {
     var month = date.getMonth() + 1; // Los meses en JavaScript van de 0 a 11
     var year = date.getFullYear();
 
-    // Asegurarse de que day y month tengan dos dígitos
-
-    if (month < 10) {
-        month = '0' + month;
-    }
 
     return day + '/' + month + '/' + year;
 }
@@ -31,26 +26,24 @@ connection.on("UpdateTableDirected", function (user, message, date) {
     } else if (Notification.permission === "granted") {
         var options = {
             body: message,
-            icon: "/favicon.ico" // Ruta a una imagen para el ícono de la notificación
+            icon: "/favicon.ico"
         };
         var currentDate = new Date();
         currentDate = formatDate(currentDate);
         if (date === currentDate) {
             new Notification(user + " Hay nuevos turnos", options);
-            console.log("notificacion");
         }
     } else {
         Notification.requestPermission(function (permission) {
             if (permission === "granted") {
                 var options = {
                     body: message,
-                    icon: "/favicon.ico" // Ruta a una imagen para el ícono de la notificación
+                    icon: "/favicon.ico"
                 };
                 var currentDate = new Date();
                 currentDate = formatDate(currentDate);
                 if (date === currentDate) {
                     new Notification(user + " Hay nuevos turnos", options);
-                    console.log("notificacion 2");
                 }
             }
         });
