@@ -19,21 +19,21 @@
     <link href="https://cdn.datatables.net/responsive/2.4.1/css/responsive.bootstrap5.min.css" rel="stylesheet" />
     <link rel="manifest" href="/manifest.json">
     <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-          navigator.serviceWorker.register('/service-worker.js')
-            .then(function(registration) {
-              console.log('Service Worker registrado con éxito:', registration.scope);
-            })
-            .catch(function(error) {
-              console.error('Error al registrar el Service Worker:', error);
+      // Verificar si el navegador es compatible con service worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('/service-worker.js').then(function (registration) {
+                    console.log('Service Worker registrado con éxito:', registration);
+                }).catch(function (error) {
+                    console.log('Error al registrar el Service Worker:', error);
+                });
             });
-        });
-      }
+        }
     </script>
     @RenderSection("header", required: false)
 </head>
 <body>
+
     @{
         if (SignInManager.IsSignedIn(User))
         {
