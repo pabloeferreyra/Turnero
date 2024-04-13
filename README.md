@@ -38,4 +38,4 @@ This project is licensed under the MIT License
 
 <h2>💖Like my work?</h2>
 
-If you have any questions or comments about the application you can contact the author through the following email address: pabloeferreyra@gmail.com.<p>![Open Collective sponsors](https://img.shields.io/opencollective/sponsors/patreon?style=flat-square&amp;logo=patreon&amp;label=Patreon&amp;link=https%3A%2F%2Fpatreon.com%2Fpfsoftware)<br>![Open Collective sponsors](https://img.shields.io/opencollective/sponsors/patreon?style=flat-square&amp;logo=ko-fi&amp;label=cafecito&amp;link=https%3A%2F%2Fcafecito.app%2Fpfsoftware)</p>
+If you have any questions or comments about the application you can contact the author through the following email address: pabloeferreyra@gmail.com.<p>![Open Collective sponsors](https://img.shields.io/opencollective/sponsors/patreon?style=flat-square&amp;logo=patreon&amp;label=Patreon&amp;link=https%3A%2F%2Fpatreon.com%2Fpfsoftware)<br>[![Invitame un café en cafecito.app](https://cdn.cafecito.app/imgs/buttons/button_5.svg)](https://cafecito.app/pfsoftware)</p>
