@@ -1,0 +1,49 @@
+﻿@model Turnero.Models.TurnDTO
+@using System;
+@using System.Globalization;
+@{
+    ViewBag.Date = String.Format("{0:dd/MM/yyyy}", DateTime.Now);
+}
+<form method="post" id="CreateForm">
+    <div class="modal-body">
+        <div class="form-group">
+            <label asp-for="Name" class="control-label">Nombre</label>
+            <input asp-for="Name" id="Name" class="form-control" />
+            <span asp-for="Name" id="clientValidation" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label class="control-label">Dni</label>
+            <input asp-for="Dni" id="Dni" class="form-control" />
+            <span id="dniValidation" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label class="control-label">Medico</label>
+            <select asp-for="MedicId" id="medicIdCreate"
+                    class="form-control medicId"
+                    asp-items="@ViewBag.Medics">
+                <option value="" selected>== Seleccione un profesional ==</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="control-label">Obra Social</label>
+            <input asp-for="SocialWork" id="socialWorkCreate" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label class="control-label">Motivo</label>
+            <input asp-for="Reason" id="reasonCreate" class="form-control" />
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        <button type="submit" id="btnCrearTurno" class="btn btn-primary">Crear</button>
+
+    </div>
+</form>
+
+<script src="~/js/createTurnPublic.js"></script>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

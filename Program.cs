@@ -23,8 +23,18 @@ using Turnero.Services.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
+if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+{
+    builder.WebHost.ConfigureKestrel((context, options) =>
+    {
+        var config = builder.Configuration.GetSection("Kestrel");
+        options.Configure(config);
+    });
+}
+
 #region Path
 string secretsPath;
+
 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 {
     secretsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Microsoft", "UserSecrets", builder.Configuration["secretsFolder"], "secrets.json");
@@ -37,7 +47,7 @@ else
 #endregion
 
 #region secrets
-builder.Configuration.AddJsonFile(secretsPath, optional: true);
+builder.Configuration.AddJsonFile(secretsPath, optional: false);
 
 builder.Configuration.AddUserSecrets<Program>();
 #endregion
@@ -118,6 +128,7 @@ builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddSignalR().AddJsonProtocol();
+builder.Services.AddHttpClient();
 
 builder.Host.UseWindowsService();
 
@@ -194,6 +205,8 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
+app.UsePathBase("/Demo");
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
@@ -210,7 +223,7 @@ app.UseStaticFiles(new StaticFileOptions
 {
     OnPrepareResponse = ctx =>
     {
-        const int durationInSeconds = 86400; // Duración de la caché en segundos (24 horas)
+        const int durationInSeconds = 86400; // DuraciÃ³n de la cachÃ© en segundos (24 horas)
         ctx.Context.Response.Headers[HeaderNames.CacheControl] =
             "public,max-age=" + durationInSeconds;
     }

@@ -11,6 +11,34 @@
       "ancmHostingModel": "InProcess",
       "nativeDebugging": true,
       "use64Bit": true
+    },
+    "Https": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:44334;http://localhost:5001"
+    },
+    "Http": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "http://localhost:5001",
+      "sqlDebugging": true,
+      "nativeDebugging": false
+    }
+  },
+  "Kestrel": {
+    "Endpoints": {
+      "Http": {
+        "Url": "http://localhost:5002"
+      },
+      "Https": {
+        "Url": "https://localhost:5003"
+      }
     }
   },
   "iisSettings": {
