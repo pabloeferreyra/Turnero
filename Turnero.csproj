@@ -60,12 +60,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="Migrations\20230703133944_PostgreSql.cs" />
-    <Compile Include="Migrations\20230703133944_PostgreSql.Designer.cs" />
-    <Compile Include="Migrations\ApplicationDbContextModelSnapshot.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Include="wwwroot\css\Login.css" />
   </ItemGroup>
 
