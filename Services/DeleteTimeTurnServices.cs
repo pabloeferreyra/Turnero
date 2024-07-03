@@ -23,7 +23,7 @@ public class DeleteTimeTurnServices : IDeleteTimeTurnServices
             _timeTurnRepository.DeleteTT(timeTurn);
             //_logger.Info($"Tiempo {timeTurn.Id} eliminado correctamente");
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             //_logger.Error(ex.Message, ex);
         }

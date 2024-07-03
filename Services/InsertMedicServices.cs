@@ -27,7 +27,7 @@ public class InsertMedicServices : IInsertMedicServices
             //});
             await _medicRepository.NewMedic(medic);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             //_logger.Error(ex.Message, ex);
         }

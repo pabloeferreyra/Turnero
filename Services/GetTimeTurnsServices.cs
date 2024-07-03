@@ -30,7 +30,7 @@ public class GetTimeTurnsServices : IGetTimeTurnsServices
             //});
             return await _timeTurnRepository.GetList();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             //_logger.Error(ex.Message, ex);
             return null;
@@ -47,7 +47,7 @@ public class GetTimeTurnsServices : IGetTimeTurnsServices
             //});
             return _timeTurnRepository.GetQueryable();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             //_logger.Error(ex.Message, ex);
             return null;
@@ -64,7 +64,7 @@ public class GetTimeTurnsServices : IGetTimeTurnsServices
             //});
             return await _timeTurnRepository.GetbyId(id);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             //_logger.Error(ex.Message, ex);
             return null;
@@ -77,7 +77,7 @@ public class GetTimeTurnsServices : IGetTimeTurnsServices
         {
             return _timeTurnRepository.Exists(id);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             //_logger.Error(ex.Message, ex);
             return false;
@@ -90,7 +90,7 @@ public class GetTimeTurnsServices : IGetTimeTurnsServices
         {
             return await _timeTurnRepository.GetCachedTimes();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             //_logger.Error(ex.Message, ex);
             return null;

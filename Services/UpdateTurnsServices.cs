@@ -31,7 +31,7 @@ public class UpdateTurnsServices : IUpdateTurnsServices
                 //});
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             //_logger.Error(ex.Message, ex);
         }
@@ -48,7 +48,7 @@ public class UpdateTurnsServices : IUpdateTurnsServices
             //  });
             
         }
-        catch (DbUpdateConcurrencyException ex)
+        catch (DbUpdateConcurrencyException)
         {
             //_logger.Error(ex.Message, ex);
         }
@@ -64,7 +64,7 @@ public class UpdateTurnsServices : IUpdateTurnsServices
             //    _logger.Debug($"Turno {turn.Id} Eliminado");
             //});
         }
-        catch (DbUpdateConcurrencyException ex)
+        catch (DbUpdateConcurrencyException)
         {
             //_logger.Error(ex.Message, ex);
         }

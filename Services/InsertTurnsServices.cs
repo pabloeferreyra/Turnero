@@ -26,7 +26,7 @@ public class InsertTurnsServices : IInsertTurnsServices
             //});
             return true;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             //_logger.Error(ex.Message, ex);
             return false;

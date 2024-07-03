@@ -65,10 +65,10 @@ namespace Turnero.Controllers
         public async Task<ActionResult> Index()
         {
             List<MedicDto> medics = null;
-            List<TimeTurnViewModel> time = null;
+            List<TimeTurn> time = null;
 
             medics = _cache.Get<List<MedicDto>>("medics");
-            time = _cache.Get<List<TimeTurnViewModel>>("timeTurns");
+            time = _cache.Get<List<TimeTurn>>("timeTurns");
             if (medics.IsNullOrEmpty())
             {
                 Task medicsTask = Task.Run(() =>

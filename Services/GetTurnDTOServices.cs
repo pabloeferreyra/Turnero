@@ -28,7 +28,7 @@ namespace Turnero.Services
 
                 return _turnRepository.GetListDto(this._connectionString);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //_logger.Error(ex.Message, ex);
                 return null;

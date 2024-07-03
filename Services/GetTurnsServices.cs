@@ -28,7 +28,7 @@ public class GetTurnsServices : IGetTurnsServices
             });
             return _turnRepository.GetList(dateTurn, medicId);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             //_logger.Error(ex.Message, ex);
             return null;
@@ -45,7 +45,7 @@ public class GetTurnsServices : IGetTurnsServices
             });
             return await _turnRepository.GetById(id);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             //_logger.Error(ex.Message, ex);
             return null;
@@ -62,7 +62,7 @@ public class GetTurnsServices : IGetTurnsServices
             //});
             return await _turnRepository.GetDTOById(id);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             //_logger.Error(ex.Message, ex);
             return null;
@@ -75,7 +75,7 @@ public class GetTurnsServices : IGetTurnsServices
         {
             return _turnRepository.TurnExists(id);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             //_logger.Error(ex.Message, ex);
             return false;
@@ -88,7 +88,7 @@ public class GetTurnsServices : IGetTurnsServices
         {
             return _turnRepository.CheckTurn(medicId, date, timeTurn);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             //_logger.Error(ex.Message, ex);
             return false;

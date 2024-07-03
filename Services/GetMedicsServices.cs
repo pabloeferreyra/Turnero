@@ -30,7 +30,8 @@ public class GetMedicsServices : IGetMedicsServices
 
             return med;
         }
-        catch (Exception ex) {
+        catch (Exception)
+        {
             //_logger.Error(ex.Message, ex);
             return new List<MedicDto>();
         }
@@ -48,7 +49,7 @@ public class GetMedicsServices : IGetMedicsServices
 
             return med;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             ////_logger.Error(ex.Message, ex);
             return new List<Medic>();
@@ -67,7 +68,7 @@ public class GetMedicsServices : IGetMedicsServices
 
             return med;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             //_logger.Error(ex.Message, ex);
             return new Medic();
@@ -86,7 +87,7 @@ public class GetMedicsServices : IGetMedicsServices
 
             return med;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             //_logger.Error(ex.Message, ex);
             return new Medic();
@@ -99,7 +100,7 @@ public class GetMedicsServices : IGetMedicsServices
         {
             return _medicRepository.Exists(id);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             //_logger.Error(ex.Message, ex);
             return false;
@@ -112,7 +113,7 @@ public class GetMedicsServices : IGetMedicsServices
         {
             return await _medicRepository.GetCachedMedics();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             //_logger.Error(ex.Message, ex);
             return null;

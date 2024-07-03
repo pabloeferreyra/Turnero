@@ -28,7 +28,7 @@ public class InsertTimeTurnServices : IInsertTimeTurnServices
             //});
             await _timeTurnRepository.CreateTT(timeTurnViewModel);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             //_logger.Error(ex.Message, ex);
         }
