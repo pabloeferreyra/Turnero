@@ -11,23 +11,23 @@ jobs:
 
     steps: 
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@master
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@master
         with:
-          dotnet-version: 7.0.x
+          dotnet-version: 8.0.x
       - name: Build and publish
         run: |
           dotnet publish -c Release --nologo -r linux-x64 --self-contained -o ./TurneroAppDemo
           
       - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.5.3
+        uses: webfactory/ssh-agent@master
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       
       - name: Create ZIP
-        uses: montudor/action-zip@v1
+        uses: montudor/action-zip@master
         with:
           args: zip -qq -r TurneroDemo.zip TurneroAppDemo
 
@@ -43,7 +43,7 @@ jobs:
             service turneroDemo stop
     
       - name: copy file via ssh
-        uses: appleboy/scp-action@v0.1.4
+        uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.SERVER }}
           username: ${{ secrets.USER_NAME }}
