@@ -52,7 +52,7 @@ builder.Configuration.AddJsonFile(secretsPath, optional: false);
 builder.Configuration.AddUserSecrets<Program>();
 #endregion
 
-var connectionString = builder.Configuration["ConnectionStrings:PostgresConnection"];
+var connectionString = builder.Configuration["ConnectionStrings:PostgresDemoConnection"];
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
    options.UseNpgsql(connectionString)).AddDefaultIdentity<IdentityUser>(options =>
 {

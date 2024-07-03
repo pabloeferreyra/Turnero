@@ -18,7 +18,7 @@ namespace Turnero.Services
         {
             _logger = logger;
             _turnRepository = turnRepository;
-            _connectionString = configuration["ConnectionStrings:PostgresConnection"];
+            _connectionString = configuration["ConnectionStrings:PostgresDemoConnection"];
         }
 
         public IQueryable<TurnDTO> GetTurnsDto()
