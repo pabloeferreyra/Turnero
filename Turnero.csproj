@@ -49,12 +49,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\**" />
     <Compile Remove="packages\**" />
     <Compile Remove="Turnero.Models\**" />
+    <Content Remove="Migrations\**" />
     <Content Remove="packages\**" />
     <Content Remove="Turnero.Models\**" />
+    <EmbeddedResource Remove="Migrations\**" />
     <EmbeddedResource Remove="packages\**" />
     <EmbeddedResource Remove="Turnero.Models\**" />
+    <None Remove="Migrations\**" />
     <None Remove="packages\**" />
     <None Remove="Turnero.Models\**" />
   </ItemGroup>
