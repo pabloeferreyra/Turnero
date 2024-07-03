@@ -23,18 +23,8 @@ using Turnero.Services.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
-if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-{
-    builder.WebHost.ConfigureKestrel((context, options) =>
-    {
-        var config = builder.Configuration.GetSection("Kestrel");
-        options.Configure(config);
-    });
-}
-
 #region Path
 string secretsPath;
-
 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 {
     secretsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Microsoft", "UserSecrets", builder.Configuration["secretsFolder"], "secrets.json");
@@ -47,7 +37,7 @@ else
 #endregion
 
 #region secrets
-builder.Configuration.AddJsonFile(secretsPath, optional: false);
+builder.Configuration.AddJsonFile(secretsPath, optional: true);
 
 builder.Configuration.AddUserSecrets<Program>();
 #endregion
@@ -55,15 +45,15 @@ builder.Configuration.AddUserSecrets<Program>();
 var connectionString = builder.Configuration["ConnectionStrings:PostgresConnection"];
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
    options.UseNpgsql(connectionString)).AddDefaultIdentity<IdentityUser>(options =>
-{
-    options.SignIn.RequireConfirmedAccount = false;
-    options.Password.RequireDigit = true;
-    options.Password.RequireLowercase = true;
-    options.Password.RequireNonAlphanumeric = false;
-    options.Password.RequireUppercase = false;
-    options.Password.RequiredLength = 6;
-    options.Password.RequiredUniqueChars = 0;
-}).AddRoles<IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
+   {
+       options.SignIn.RequireConfirmedAccount = false;
+       options.Password.RequireDigit = true;
+       options.Password.RequireLowercase = true;
+       options.Password.RequireNonAlphanumeric = false;
+       options.Password.RequireUppercase = false;
+       options.Password.RequiredLength = 6;
+       options.Password.RequiredUniqueChars = 0;
+   }).AddRoles<IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
 
 
 builder.Services.ConfigureApplicationCookie(options =>
@@ -128,7 +118,6 @@ builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddSignalR().AddJsonProtocol();
-builder.Services.AddHttpClient();
 
 builder.Host.UseWindowsService();
 
@@ -204,8 +193,6 @@ app.MapHub<TurnsTableHub>("/TurnsTableHub");
 app.UseAuthentication();
 
 app.UseAuthorization();
-
-app.UsePathBase("/Demo");
 
 app.MapControllerRoute(
     name: "default",
