@@ -24,7 +24,7 @@ builder.Configuration.AddJsonFile(secretsPath, optional: true);
 builder.Configuration.AddUserSecrets<Program>();
 #endregion
 
-AppSettings.ConnectionString = builder.Configuration["ConnectionStrings:PostgresConnection"];
+var connectionString = builder.Configuration["ConnectionStrings:PostgresDemoConnection"];
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
    options.UseNpgsql(AppSettings.ConnectionString)).AddDefaultIdentity<IdentityUser>(options =>
    {
@@ -90,6 +90,7 @@ builder.Services.AddScoped<IGetMedicsServices, GetMedicsServices>();
 builder.Services.AddScoped<IInsertTimeTurnServices, InsertTimeTurnServices>();
 builder.Services.AddScoped<IDeleteTimeTurnServices, DeleteTimeTurnServices>();
 builder.Services.AddScoped<IGetTimeTurnsServices, GetTimeTurnsServices>();
+builder.Services.AddSingleton<ILoggerServices, LoggerServices>();
 builder.Services.AddScoped<IGetTurnDTOServices, GetTurnDTOServices>();
 builder.Services.AddScoped<ITimeTurnRepository, TimeTurnRepository>();
 builder.Services.AddScoped<IMedicRepository, MedicRepository>();
@@ -106,6 +107,7 @@ builder.Services.AddAutoMapper(typeof(Turnero.Utilities.Utilities.AutoMapperProf
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddSignalR().AddJsonProtocol();
+builder.Services.AddHttpClient();
 
 builder.Host.UseWindowsService();
 
