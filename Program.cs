@@ -1,41 +1,38 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Microsoft.EntityFrameworkCore;
-using Turnero.Data;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
-using Turnero.Services.Interfaces;
-using Turnero.Services.Repositories;
-using Turnero.Services;
-using System.IO;
-using Turnero.Hubs;
-using System.Runtime.InteropServices;
-using Microsoft.Extensions.Caching.Memory;
-using System.Collections.Generic;
-using Turnero.Models;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Net.Http.Headers;
+using System;
+using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using Microsoft.Net.Http.Headers;
-using Microsoft.Extensions.Logging;
+using System.Runtime.InteropServices;
+using Turnero.Data;
+using Turnero.Hubs;
+using Turnero.Services;
+using Turnero.Services.Interfaces;
+using Turnero.Services.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
 #region Path
 string secretsPath;
-if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) 
- { 
-     secretsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Microsoft", "UserSecrets", builder.Configuration["secretsFolder"], "secrets.json"); 
- } 
- else 
- { 
-     secretsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".microsoft", "usersecrets", builder.Configuration["secretsFolder"], "secrets.json"); 
- }
+if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+{
+    secretsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Microsoft", "UserSecrets", builder.Configuration["secretsFolder"], "secrets.json");
+}
+else
+{
+    secretsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".microsoft", "usersecrets", builder.Configuration["secretsFolder"], "secrets.json");
+}
 
 #endregion
 
@@ -45,18 +42,18 @@ builder.Configuration.AddJsonFile(secretsPath, optional: true);
 builder.Configuration.AddUserSecrets<Program>();
 #endregion
 
-var connectionString = builder.Configuration["ConnectionStrings:DefaultConnection"];
- builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString)).AddDefaultIdentity<IdentityUser>(options =>
-{
-    options.SignIn.RequireConfirmedAccount = false;
-    options.Password.RequireDigit = true;
-    options.Password.RequireLowercase = true;
-    options.Password.RequireNonAlphanumeric = false;
-    options.Password.RequireUppercase = false;
-    options.Password.RequiredLength = 6;
-    options.Password.RequiredUniqueChars = 0;
-}).AddRoles<IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
+var connectionString = builder.Configuration["ConnectionStrings:PostgresConnection"];
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+   options.UseNpgsql(connectionString)).AddDefaultIdentity<IdentityUser>(options =>
+   {
+       options.SignIn.RequireConfirmedAccount = false;
+       options.Password.RequireDigit = true;
+       options.Password.RequireLowercase = true;
+       options.Password.RequireNonAlphanumeric = false;
+       options.Password.RequireUppercase = false;
+       options.Password.RequiredLength = 6;
+       options.Password.RequiredUniqueChars = 0;
+   }).AddRoles<IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
 
 
 builder.Services.ConfigureApplicationCookie(options =>
@@ -81,12 +78,13 @@ builder.Services.AddSession(options =>
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddMvc(
-    options =>{
-    var policy = new AuthorizationPolicyBuilder()
-                     .RequireAuthenticatedUser()
-                     .Build();
-    options.Filters.Add(new AuthorizeFilter(policy));
-}
+    options =>
+    {
+        var policy = new AuthorizationPolicyBuilder()
+                         .RequireAuthenticatedUser()
+                         .Build();
+        options.Filters.Add(new AuthorizeFilter(policy));
+    }
 ).AddXmlSerializerFormatters();
 
 builder.Services.AddAuthorization(options =>
@@ -153,7 +151,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var serviceProvider = scope.ServiceProvider;
-    
+
     var timeTurnsRepository = serviceProvider.GetRequiredService<ITimeTurnRepository>();
     var medicsRepository = serviceProvider.GetRequiredService<IMedicRepository>();
 
@@ -212,7 +210,7 @@ app.UseStaticFiles(new StaticFileOptions
 {
     OnPrepareResponse = ctx =>
     {
-        const int durationInSeconds = 86400; // Duración de la caché en segundos (24 horas)
+        const int durationInSeconds = 86400; // DuraciÃ³n de la cachÃ© en segundos (24 horas)
         ctx.Context.Response.Headers[HeaderNames.CacheControl] =
             "public,max-age=" + durationInSeconds;
     }

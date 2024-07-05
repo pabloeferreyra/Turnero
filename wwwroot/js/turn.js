@@ -67,7 +67,10 @@ $(document).ready(function () {
                                 '</span>' +
                             '<span id="accessedSpan_'+data['id']+'">' +
                             '<a href="#" class="btn btn-primary" onclick="ConfirmAccess(\''+data['id']+'\', true)">Ingreso</a>'+
-                                '</span> ';
+                            '</span> ' +
+                            '<span id="Caller_' + data['id'] + '">' +
+                            '<a href="#" class="btn btn-primary" onclick="Call(\'' + data['name'] + '\'\,\''+ data['medicName'] +'\')">Llamar</a>' +
+                            '</span> ';
                     }
 
                     return '';
@@ -178,6 +181,28 @@ function Accessed(id) {
                 timer: 1200
             });
             return reset();
+        },
+        error: function (req, status, error) {
+        }
+    });
+}
+
+function Call(name, medicName) {
+    $.ajax({
+        type: "POST",
+        url: "/Turns/Call",
+        data: {
+            Patient: name,
+            MedicCaller: medicName
+        },
+        success: function (result) {
+            Swal.fire({
+                position: 'top-end',
+                icon: 'success',
+                title: 'Llamando paciente',
+                showConfirmButton: false,
+                timer: 1200
+            });
         },
         error: function (req, status, error) {
         }

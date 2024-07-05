@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Turnero.Data;
 using Turnero.Models;
@@ -18,7 +17,8 @@ public class TurnsRepository : RepositoryBase<Turn>, ITurnRepository
 {
     private readonly IMapper mapper;
 
-    public TurnsRepository(ApplicationDbContext context, IMapper mapper, IMemoryCache cache) : base(context, mapper, cache) {
+    public TurnsRepository(ApplicationDbContext context, IMapper mapper, IMemoryCache cache) : base(context, mapper, cache)
+    {
         this.mapper = mapper;
     }
 
@@ -27,26 +27,19 @@ public class TurnsRepository : RepositoryBase<Turn>, ITurnRepository
     public void Access(Turn turn)
     {
         turn.Accessed = true;
+        turn.DateTurn = turn.DateTurn.ToUniversalTime();
         this.Update(turn);
     }
 
     public async Task<Turn> GetById(Guid id)
     {
         return await this.FindByCondition(m => m.Id == id)
-            .Include(m => m.Medic)
-            .Include(t => t.Time).SingleOrDefaultAsync();
+            .SingleOrDefaultAsync();
     }
 
     public async Task<TurnDTO> GetDTOById(Guid id)
     {
         return await this.FindByCondition(m => m.Id == id).ProjectTo<TurnDTO>(this.mapper.ConfigurationProvider).FirstOrDefaultAsync();
-    }
-
-    public IQueryable<TurnDTO> GetListDto() 
-    {
-        var turns = this.CallStoredProcedure("GetAllTurns");
-        var dto = this.mapper.Map<List<Turn>, List<TurnDTO>>(turns);
-        return this.FindAll().ProjectTo<TurnDTO>(this.mapper.ConfigurationProvider);
     }
 
     public List<Turn> GetList(DateTime? date, Guid? id)
@@ -55,12 +48,12 @@ public class TurnsRepository : RepositoryBase<Turn>, ITurnRepository
         var formattedDate = new StringBuilder();
         if (date != null)
         {
-            var dat = $"N'{date.Value.ToString("yyyyMMdd", CultureInfo.InvariantCulture)}'";
+            var dat = $"'{date.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}'";
             formattedDate.Append(dat);
         }
         else
         {
-            var dat = $"N'{DateTime.Today.ToString("yyyyMMdd", CultureInfo.InvariantCulture)}'";
+            var dat = $"'{DateTime.Today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}'";
             formattedDate.Append(dat);
         }
         if (id != null)
@@ -82,7 +75,7 @@ public class TurnsRepository : RepositoryBase<Turn>, ITurnRepository
 
     public async Task<List<Turn>> ForExport(DateTime date, Guid id)
     {
-        
+
         return await this.FindByCondition(m => m.MedicId == id && m.DateTurn.Date == date.Date)
             .Include(m => m.Medic).Include(t => t.Time)
             .OrderBy(t => t.Time.Time)
@@ -105,6 +98,7 @@ public class TurnsRepository : RepositoryBase<Turn>, ITurnRepository
 
     public void UpdateTurn(Turn turn)
     {
+        turn.DateTurn = turn.DateTurn.ToUniversalTime();
         this.Update(turn);
     }
 
@@ -112,6 +106,7 @@ public class TurnsRepository : RepositoryBase<Turn>, ITurnRepository
     {
         turn.Medic = null;
         turn.Time = null;
+        turn.DateTurn = turn.DateTurn.ToUniversalTime();
         await this.CreateAsync(turn);
     }
 }

@@ -23,13 +23,13 @@ public class InsertMedicServices : IInsertMedicServices
         {
             //_ = Task.Run(async () =>
             //{
-                _logger.Info($"Creado Medico {medic.Id}");
+                //_logger.Info($"Creado Medico {medic.Id}");
             //});
             await _medicRepository.NewMedic(medic);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _logger.Error(ex.Message, ex);
+            //_logger.Error(ex.Message, ex);
         }
     }
 }

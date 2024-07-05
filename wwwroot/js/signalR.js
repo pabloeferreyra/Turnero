@@ -5,7 +5,49 @@ const connection = new signalR.HubConnectionBuilder()
     .configureLogging(signalR.LogLevel.Information)
     .build();
 
-connection.on("UpdateTableDirected", function (user, message) {
+function formatDate(date) {
+    var day = date.getDate();
+    var month = date.getMonth() + 1; // Los meses en JavaScript van de 0 a 11
+    var year = date.getFullYear();
+
+
+    return day + '/' + month + '/' + year;
+}
+
+connection.on("UpdateTableDirected", function (user, message, date) {
+    if (!("Notification" in window)) {
+        Swal.fire({
+            position: 'top-end',
+            icon: 'info',
+            title: "Este navegador no soporta notificaciones web",
+            showConfirmButton: false,
+            timer: 500
+        });
+    } else if (Notification.permission === "granted") {
+        var options = {
+            body: message,
+            icon: "/favicon.ico"
+        };
+        var currentDate = new Date();
+        currentDate = formatDate(currentDate);
+        if (date === currentDate) {
+            new Notification(user + " Hay nuevos turnos", options);
+        }
+    } else {
+        Notification.requestPermission(function (permission) {
+            if (permission === "granted") {
+                var options = {
+                    body: message,
+                    icon: "/favicon.ico"
+                };
+                var currentDate = new Date();
+                currentDate = formatDate(currentDate);
+                if (date === currentDate) {
+                    new Notification(user + " Hay nuevos turnos", options);
+                }
+            }
+        });
+    }
     reset();
 })
 

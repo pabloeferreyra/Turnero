@@ -1,7 +1,5 @@
 ﻿using System;
-using System.IO;
 using System.Threading.Tasks;
-using Turnero.Data;
 using Turnero.Models;
 using Turnero.Services.Interfaces;
 using Turnero.Services.Repositories;
@@ -26,13 +24,13 @@ public class InsertTimeTurnServices : IInsertTimeTurnServices
         {
             //_ = Task.Run(async () =>
             //{
-                _logger.Debug($"Horario {timeTurnViewModel.Id} creado");
+                //_logger.Debug($"Horario {timeTurnViewModel.Id} creado");
             //});
             await _timeTurnRepository.CreateTT(timeTurnViewModel);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _logger.Error(ex.Message, ex);
+            //_logger.Error(ex.Message, ex);
         }
     }
 }

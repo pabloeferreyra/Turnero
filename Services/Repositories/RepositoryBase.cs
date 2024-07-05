@@ -3,6 +3,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
+using Npgsql;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -11,7 +12,6 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using Turnero.Data;
-using Dapper;
 
 namespace Turnero.Services.Repositories;
 
@@ -29,7 +29,10 @@ public abstract class RepositoryBase<T> : IRepositoryBase<T> where T : class
     }
 
     public IQueryable<T> FindAll() => this._context.Set<T>().AsNoTracking();
-    public IQueryable<T> FindByCondition(Expression<Func<T, bool>> expression) => this._context.Set<T>().Where(expression).AsNoTracking();
+    public IQueryable<T> FindByCondition(Expression<Func<T, bool>> expression)
+    {
+        return this._context.Set<T>().Where(expression).AsNoTracking();
+    }
 
     public void Create(T entity)
     {
@@ -86,8 +89,6 @@ public abstract class RepositoryBase<T> : IRepositoryBase<T> where T : class
             var parameterName = $"@p{i}";
             var sqlParameter = new SqlParameter(parameterName, parameters[i]);
             sqlParameters.Add(sqlParameter);
-            sqlParametersString.Append(parameterName);
-            sqlParametersString.Append(" = ");
             sqlParametersString.Append(parameters[i]);
 
             if (i != parameters.Length - 1)
@@ -96,7 +97,7 @@ public abstract class RepositoryBase<T> : IRepositoryBase<T> where T : class
             }
         }
 
-        var sql = $"EXEC {procedureName} {sqlParametersString}";
+        var sql = $"select * from {procedureName}({sqlParametersString})";
 
         return this._context.Set<T>()
             .FromSqlRaw(sql)
@@ -105,11 +106,40 @@ public abstract class RepositoryBase<T> : IRepositoryBase<T> where T : class
 
     public IQueryable<T> CallStoredProcedureDTO(string connectionString, string procedureName)
     {
-        using (var connection = new SqlConnection(connectionString))
+        using (var connection = new NpgsqlConnection(connectionString))
         {
             connection.Open();
-            var results = connection.Query<T>(procedureName, commandType: CommandType.StoredProcedure);
-            return results.AsQueryable();
+            var command = new NpgsqlCommand(procedureName, connection)
+            {
+                CommandType = CommandType.Text
+            };
+
+            var results = command.ExecuteReader();
+            var mappedResults = MapResults(results);
+            return mappedResults.AsQueryable();
         }
+    }
+
+    private static List<T> MapResults(NpgsqlDataReader reader)
+    {
+        var results = new List<T>();
+        var properties = typeof(T).GetProperties();
+
+        while (reader.Read())
+        {
+            var instance = Activator.CreateInstance<T>();
+
+            foreach (var property in properties)
+            {
+                if (reader[property.Name] != DBNull.Value)
+                {
+                    property.SetValue(instance, reader[property.Name]);
+                }
+            }
+
+            results.Add(instance);
+        }
+
+        return results;
     }
 }

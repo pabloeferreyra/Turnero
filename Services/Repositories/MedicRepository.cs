@@ -21,7 +21,8 @@ public class MedicRepository : RepositoryBase<Medic>, IMedicRepository
         this.mapper = mapper;
     }
 
-    public async Task<List<MedicDto>> GetListDto() {
+    public async Task<List<MedicDto>> GetListDto()
+    {
         return await FindAll().ProjectTo<MedicDto>(this.mapper.ConfigurationProvider).ToListAsync();
     }
 
@@ -54,7 +55,7 @@ public class MedicRepository : RepositoryBase<Medic>, IMedicRepository
         
     }
 
-    public void DeleteMedic (Medic medic)
+    public void DeleteMedic(Medic medic)
     {
         this.DeleteAsync(medic);
     }

@@ -1,27 +1,25 @@
-name: Deploy Prod
+name: Deploy Demo
 
 on:
-  workflow_run:
-    workflows: [".NET Core"]
-    types:
-      - completed
+  push:
+    branches: 
+    - demo
 
 jobs:
   deploy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' && github.ref == 'refs/heads/master' }}
     runs-on: ubuntu-latest
 
     steps: 
       - name: Checkout code
         uses: actions/checkout@master
-      
+
       - name: Setup .NET
         uses: actions/setup-dotnet@master
         with:
           dotnet-version: 8.0.x
       - name: Build and publish
         run: |
-          dotnet publish -c Release --nologo -r linux-x64 --self-contained -o ./TurneroApp
+          dotnet publish -c Release --nologo -r linux-x64 --self-contained -o ./TurneroAppDemo
           
       - name: Setup SSH
         uses: webfactory/ssh-agent@master
@@ -31,7 +29,7 @@ jobs:
       - name: Create ZIP
         uses: montudor/action-zip@master
         with:
-          args: zip -qq -r TurneroApp.zip TurneroApp
+          args: zip -qq -r TurneroDemo.zip TurneroAppDemo
 
       - name: Stop Server
         uses: appleboy/ssh-action@master
@@ -42,7 +40,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             # Detener servicio
-            service turnero stop
+            service turneroDemo stop
     
       - name: copy file via ssh
         uses: appleboy/scp-action@master
@@ -51,7 +49,7 @@ jobs:
           username: ${{ secrets.USER_NAME }}
           port: ${{ secrets.PORT }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: TurneroApp.zip
+          source: TurneroDemo.zip
           target: /root
           
       - name: Restart Server
@@ -63,6 +61,8 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |            
             # Reiniciar servicio
-            unzip -o /root/TurneroApp.zip
+            unzip -o /root/TurneroDemo.zip
             systemctl daemon-reload
-            service turnero start
+            service turneroDemo start
+            
+      

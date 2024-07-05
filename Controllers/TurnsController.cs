@@ -26,7 +26,8 @@ using Turnero.Services;
 
 namespace Turnero.Controllers;
 
-public class TurnsController : Controller {
+public class TurnsController : Controller
+{
     private readonly UserManager<IdentityUser> _userManager;
     public IInsertTurnsServices _insertTurns;
     public ILogger<TurnsController> _logger;
@@ -48,7 +49,8 @@ public class TurnsController : Controller {
                            IGetTimeTurnsServices getTimeTurns,
                            IMapper mapper,
                            IHubContext<TurnsTableHub> hubContext,
-                           IMemoryCache cache) {
+                           IMemoryCache cache)
+    {
         _userManager = userManager;
         _logger = logger;
         _insertTurns = insertTurns;
@@ -63,7 +65,8 @@ public class TurnsController : Controller {
     }
 
     [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
-    public async Task<IActionResult> Index() {
+    public async Task<IActionResult> Index()
+    {
 
         List<MedicDto> medics = null;
 
@@ -154,30 +157,36 @@ public class TurnsController : Controller {
         return isMedic?.Id.ToString();
     }
 
-    public async Task<List<Turn>> TurnListAsync(DateTime? dateTurn, Guid? medicId) {
+    public async Task<List<Turn>> TurnListAsync(DateTime? dateTurn, Guid? medicId)
+    {
         var user = this.User.FindFirst(ClaimTypes.NameIdentifier).Value;
         var medic = await _getMedics.GetMedicByUserId(user);
         ViewBag.Date = dateTurn.HasValue ? String.Format("{0:yyyy-MM-dd}", dateTurn) : String.Format("{0:yyyy-MM-dd}", DateTime.Now);
         ViewBag.IsMedic = medic != null;
-        if (ViewBag.IsMedic) {
+        if (ViewBag.IsMedic)
+        {
             ViewBag.MedicId = medic.Id;
             return this._getTurns.GetTurns(dateTurn, medic.Id);
         }
-        else {
+        else
+        {
             ViewBag.MedicId = null;
             return this._getTurns.GetTurns(dateTurn, medicId);
         }
     }
 
     [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
-    public async Task<IActionResult> Details(Guid? id) {
-        if (id == null) {
+    public async Task<IActionResult> Details(Guid? id)
+    {
+        if (id == null)
+        {
             return NotFound();
         }
 
         var turn = await this._getTurns.GetTurn((Guid)id);
 
-        if (turn == null) {
+        if (turn == null)
+        {
             return NotFound();
         }
 
@@ -222,8 +231,8 @@ public class TurnsController : Controller {
     [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
     [HttpPost]
     //[ValidateAntiForgeryToken]
-    public async Task<StatusCodeResult> Create(TurnDTO turn) {
-        if (!ModelState.IsValid) return this.BadRequest();
+    public async Task<StatusCodeResult> Create(TurnDTO turn)
+    {
         try
         {
             turn.Reason = turn.Reason.TrimEnd('\"');
@@ -231,7 +240,9 @@ public class TurnsController : Controller {
             t = mapper.Map(turn, t);
             await this._insertTurns.CreateTurnAsync(t);
             var medic = await this._getMedics.GetMedicById(turn.MedicId);
-            await _hubContext.Clients.User(medic.UserGuid).SendAsync("UpdateTableDirected", "La tabla se ha actualizado"); ;
+            var turnMsj = "se agrego un nuevo turno";
+
+            await _hubContext.Clients.User(medic.UserGuid).SendAsync("UpdateTableDirected", medic.Name, turnMsj, t.DateTurn.ToShortDateString()); ;
 
             return Ok();
         }
@@ -239,37 +250,43 @@ public class TurnsController : Controller {
         {
             return Conflict();
         }
-         
-        
+
+
     }
 
     [Authorize(Roles = RolesConstants.Medico)]
     [HttpPost]
-    public async Task<IActionResult> Accessed(Guid? id) {
+    public async Task<IActionResult> Accessed(Guid? id)
+    {
         Turn turn;
-        if (id != null) {
+        if (id != null)
+        {
             turn = await this._getTurns.GetTurn((Guid)id);
         }
-        else {
+        else
+        {
             ViewBag.ErrorMessage = $"Turn with no id cannot be found";
             return View("NotFound");
         }
-        if (turn == null) {
+        if (turn == null)
+        {
             ViewBag.ErrorMessage = $"Turn with Id = {id} cannot be found";
             return View("NotFound");
         }
 
-        if (!_getTurns.Exists(turn.Id)) {
+        if (!_getTurns.Exists(turn.Id))
+        {
             ViewBag.ErrorMessage = $"Turn with Id = {id} cannot be found";
             return View("NotFound");
         }
 
-        if (ModelState.IsValid) {
+        if (ModelState.IsValid)
+        {
             this._updateTurns.Accessed(turn);
         }
         var users = await this._userManager.GetUsersInRoleAsync(RolesConstants.Ingreso);
-        foreach(var u in  users) { await _hubContext.Clients.User(u.Id).SendAsync("UpdateTableDirected", "La tabla se ha actualizado"); }
-        
+        foreach (var u in users) { await _hubContext.Clients.User(u.Id).SendAsync("UpdateTableDirected", "La tabla se ha actualizado"); }
+
         return Ok();
     }
 
@@ -288,7 +305,7 @@ public class TurnsController : Controller {
             ViewBag.ErrorMessage = $"Turn with Id = {id} cannot be found";
             return null;
         }
-        
+
         List<MedicDto> medics = null;
         List<TimeTurn> time = null;
         medics = _cache.Get<List<MedicDto>>("medics");
@@ -312,7 +329,7 @@ public class TurnsController : Controller {
 
         ViewBag.Medics = new SelectList(medics, "Id", "Name", turn.MedicId);
         ViewBag.TimeEdit = new SelectList(time, "Id", "Time", turn.TimeId);
-        
+
         return PartialView("_Edit", turn);
     }
 
@@ -329,6 +346,7 @@ public class TurnsController : Controller {
         {
             var t = new Turn();
             t = mapper.Map(turn, t);
+
             _updateTurns.Update(t);
             var users = await this._userManager.GetUsersInRoleAsync(RolesConstants.Ingreso);
             foreach (var u in users) { await _hubContext.Clients.User(u.Id).SendAsync("UpdateTableDirected", "La tabla se ha actualizado"); }
@@ -346,8 +364,8 @@ public class TurnsController : Controller {
         await _hubContext.Clients.All.SendAsync("UpdateTable", "La tabla se ha actualizado");
         return Ok();
     }
-    
-    [Authorize(Roles = RolesConstants.Admin +", "+ RolesConstants.Ingreso)]
+
+    [Authorize(Roles = RolesConstants.Admin + ", " + RolesConstants.Ingreso)]
     [HttpPost]
     public bool CheckTurn(Guid medicId, DateTime date, Guid timeTurn)
     {
