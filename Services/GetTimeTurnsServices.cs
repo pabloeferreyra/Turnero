@@ -1,38 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Turnero.Models;
-using Turnero.Services.Interfaces;
-using Turnero.Services.Repositories;
+﻿namespace Turnero.Services;
 
-namespace Turnero.Services;
-
-public class GetTimeTurnsServices : IGetTimeTurnsServices
+public class GetTimeTurnsServices(
+                            ITimeTurnRepository timeTurnRepository) : IGetTimeTurnsServices
 {
-    private readonly ILoggerServices _logger;
-    private readonly ITimeTurnRepository _timeTurnRepository;
-
-    public GetTimeTurnsServices(ILoggerServices logger,
-                                ITimeTurnRepository timeTurnRepository)
-    {
-        _logger = logger;
-        _timeTurnRepository = timeTurnRepository;
-    }
+    private readonly ITimeTurnRepository _timeTurnRepository = timeTurnRepository;
 
     public async Task<List<TimeTurn>> GetTimeTurns()
     {
         try
         {
-            //_ = Task.Run(async () =>
-            //{
-            //    _logger.Debug("Tiempos obtenidos");
-            //});
             return await _timeTurnRepository.GetList();
         }
         catch (Exception)
         {
-            //_logger.Error(ex.Message, ex);
             return null;
         }
     }
@@ -41,15 +21,10 @@ public class GetTimeTurnsServices : IGetTimeTurnsServices
     {
         try
         {
-            //_ = Task.Run(async () =>
-            //{
-            //    _logger.Debug("Tiempos obtenidos");
-            //});
             return _timeTurnRepository.GetQueryable();
         }
         catch (Exception)
         {
-            //_logger.Error(ex.Message, ex);
             return null;
         }
     }
@@ -58,15 +33,10 @@ public class GetTimeTurnsServices : IGetTimeTurnsServices
     {
         try
         {
-            //_ = Task.Run(async () =>
-            //{
-            //    _logger.Info($"Tiempo {id} obtenido");
-            //});
             return await _timeTurnRepository.GetbyId(id);
         }
         catch (Exception)
         {
-            //_logger.Error(ex.Message, ex);
             return null;
         }
     }
@@ -79,7 +49,6 @@ public class GetTimeTurnsServices : IGetTimeTurnsServices
         }
         catch (Exception)
         {
-            //_logger.Error(ex.Message, ex);
             return false;
         }
     }
@@ -92,7 +61,6 @@ public class GetTimeTurnsServices : IGetTimeTurnsServices
         }
         catch (Exception)
         {
-            //_logger.Error(ex.Message, ex);
             return null;
         }
     }

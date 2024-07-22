@@ -1,26 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc.Authorization;
-using Microsoft.AspNetCore.ResponseCompression;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Net.Http.Headers;
-using System;
-using System.IO;
-using System.IO.Compression;
-using System.Linq;
-using System.Runtime.InteropServices;
-using Turnero.Data;
-using Turnero.Hubs;
-using Turnero.Services;
-using Turnero.Services.Interfaces;
-using Turnero.Services.Repositories;
-
 var builder = WebApplication.CreateBuilder(args);
 
 #region Path
@@ -42,7 +19,7 @@ builder.Configuration.AddJsonFile(secretsPath, optional: true);
 builder.Configuration.AddUserSecrets<Program>();
 #endregion
 
-var connectionString = builder.Configuration["ConnectionStrings:PostgresConnection"];
+var connectionString = builder.Configuration["ConnectionStrings:PostgresDemoConnection"];
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
    options.UseNpgsql(connectionString)).AddDefaultIdentity<IdentityUser>(options =>
    {
@@ -87,11 +64,8 @@ builder.Services.AddMvc(
     }
 ).AddXmlSerializerFormatters();
 
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("DeleteRolePolicy",
-        policy => policy.RequireClaim("Delete Role"));
-});
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("DeleteRolePolicy", policy => policy.RequireClaim("Delete Role"));
 
 builder.Services.AddRazorPages();
 
@@ -107,11 +81,15 @@ builder.Services.AddScoped<IDeleteTimeTurnServices, DeleteTimeTurnServices>();
 builder.Services.AddScoped<IGetTimeTurnsServices, GetTimeTurnsServices>();
 builder.Services.AddSingleton<ILoggerServices, LoggerServices>();
 builder.Services.AddScoped<IGetTurnDTOServices, GetTurnDTOServices>();
+builder.Services.AddScoped<IGetAvailableService, GetAvailableService>();
+builder.Services.AddScoped<IInsertAvailableService, InsertAvailableService>();
+builder.Services.AddScoped<IEditAvailableService, EditAvailableService>();
 
 builder.Services.AddScoped<ITimeTurnRepository, TimeTurnRepository>();
 builder.Services.AddScoped<IMedicRepository, MedicRepository>();
 builder.Services.AddScoped<ITurnRepository, TurnsRepository>();
 builder.Services.AddScoped<ITurnDTORepository, TurnDTORepository>();
+builder.Services.AddScoped<IAvailableRepository, AvailableRepository>();
 
 builder.Services.AddAutoMapper(typeof(Program));
 
@@ -133,7 +111,7 @@ builder.Services.AddResponseCompression(options =>
 {
     options.Providers.Add<BrotliCompressionProvider>();
     options.Providers.Add<GzipCompressionProvider>();
-    options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "image/x-icon" });
+    options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(["image/x-icon"]);
 });
 
 builder.Services.Configure<BrotliCompressionProviderOptions>(options =>
@@ -179,7 +157,7 @@ else
 
 app.Use(async (context, next) =>
 {
-    context.Response.Headers["Cache-Control"] = "public, max-age=300"; // Permite cachear la respuesta durante 1 hora (3600 segundos)
+    context.Response.Headers.CacheControl = "public, max-age=300"; // Permite cachear la respuesta durante 1 hora (3600 segundos)
     await next();
 });
 

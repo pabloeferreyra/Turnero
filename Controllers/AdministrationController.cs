@@ -1,16 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using Turnero.Models;
-using Turnero.Utilities;
-
-namespace Turnero.Controllers;
+﻿namespace Turnero.Controllers;
 
 [Authorize(Roles = RolesConstants.Admin)]
 public class AdministrationController : Controller

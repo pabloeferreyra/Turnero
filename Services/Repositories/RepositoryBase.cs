@@ -1,32 +1,9 @@
-﻿using AutoMapper;
-using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.IdentityModel.Tokens;
-using Npgsql;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
-using Turnero.Data;
+﻿namespace Turnero.Services.Repositories;
 
-namespace Turnero.Services.Repositories;
-
-public abstract class RepositoryBase<T> : IRepositoryBase<T> where T : class
+public abstract class RepositoryBase<T>(ApplicationDbContext context, IMemoryCache cache) : IRepositoryBase<T> where T : class
 {
-    protected ApplicationDbContext _context;
-    private readonly IMapper mapper;
-    public IMemoryCache _cache;
-
-    public RepositoryBase(ApplicationDbContext context, IMapper mapper, IMemoryCache cache)
-    {
-        this._context = context;
-        this.mapper = mapper;
-        this._cache = cache;
-    }
+    protected ApplicationDbContext _context = context;
+    public IMemoryCache _cache = cache;
 
     public IQueryable<T> FindAll() => this._context.Set<T>().AsNoTracking();
     public IQueryable<T> FindByCondition(Expression<Func<T, bool>> expression)
@@ -99,25 +76,21 @@ public abstract class RepositoryBase<T> : IRepositoryBase<T> where T : class
 
         var sql = $"select * from {procedureName}({sqlParametersString})";
 
-        return this._context.Set<T>()
-            .FromSqlRaw(sql)
-            .ToList();
+        return [.. this._context.Set<T>().FromSqlRaw(sql)];
     }
 
     public IQueryable<T> CallStoredProcedureDTO(string connectionString, string procedureName)
     {
-        using (var connection = new NpgsqlConnection(connectionString))
+        using var connection = new NpgsqlConnection(connectionString);
+        connection.Open();
+        var command = new NpgsqlCommand(procedureName, connection)
         {
-            connection.Open();
-            var command = new NpgsqlCommand(procedureName, connection)
-            {
-                CommandType = CommandType.Text
-            };
+            CommandType = CommandType.Text
+        };
 
-            var results = command.ExecuteReader();
-            var mappedResults = MapResults(results);
-            return mappedResults.AsQueryable();
-        }
+        var results = command.ExecuteReader();
+        var mappedResults = MapResults(results);
+        return mappedResults.AsQueryable();
     }
 
     private static List<T> MapResults(NpgsqlDataReader reader)

@@ -1,36 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Turnero.Models;
-using Turnero.Services.Interfaces;
-using Turnero.Services.Repositories;
+﻿namespace Turnero.Services;
 
-namespace Turnero.Services;
-
-public class GetTurnsServices : IGetTurnsServices
+public class GetTurnsServices(
+                        ITurnRepository turnRepository) : IGetTurnsServices
 {
-    private readonly ILoggerServices _logger;
-    private readonly ITurnRepository _turnRepository;
-    public GetTurnsServices(ILoggerServices logger,
-                            ITurnRepository turnRepository)
-    {
-        _logger = logger;
-        _turnRepository = turnRepository;
-    }
+    private readonly ITurnRepository _turnRepository = turnRepository;
+
     public List<Turn> GetTurns(DateTime? dateTurn, Guid? medicId)
     {
         try
         {
-            _ = Task.Run(() => {
-                //_logger.Info($"{dateTurn} Turnos llegaron correctamente");
-                return Task.CompletedTask;
-            });
             return _turnRepository.GetList(dateTurn, medicId);
         }
         catch (Exception)
         {
-            //_logger.Error(ex.Message, ex);
             return null;
         }
     }
@@ -39,15 +21,10 @@ public class GetTurnsServices : IGetTurnsServices
     {
         try
         {
-            _ = Task.Run(() =>
-            {
-                //_logger.Info($"Turno {id}");
-            });
             return await _turnRepository.GetById(id);
         }
         catch (Exception)
         {
-            //_logger.Error(ex.Message, ex);
             return null;
         }
     }
@@ -56,15 +33,10 @@ public class GetTurnsServices : IGetTurnsServices
     {
         try
         {
-            //_ = Task.Run(() =>
-            //{
-            //    _logger.Info($"Turno {id}");
-            //});
             return await _turnRepository.GetDTOById(id);
         }
         catch (Exception)
         {
-            //_logger.Error(ex.Message, ex);
             return null;
         }
     }
@@ -77,7 +49,6 @@ public class GetTurnsServices : IGetTurnsServices
         }
         catch (Exception)
         {
-            //_logger.Error(ex.Message, ex);
             return false;
         }
     }
@@ -90,7 +61,6 @@ public class GetTurnsServices : IGetTurnsServices
         }
         catch (Exception)
         {
-            //_logger.Error(ex.Message, ex);
             return false;
         }
     }

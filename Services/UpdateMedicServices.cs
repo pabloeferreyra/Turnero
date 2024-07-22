@@ -1,21 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
-using Turnero.Models;
-using Turnero.Services.Interfaces;
-using Turnero.Services.Repositories;
+﻿namespace Turnero.Services;
 
-namespace Turnero.Services;
-
-public class UpdateMedicServices : IUpdateMedicServices
+public class UpdateMedicServices(ILoggerServices logger, IMedicRepository medicRepository) : IUpdateMedicServices
 {
-    private readonly ILoggerServices _logger;
-    private readonly IMedicRepository _medicRepository;
-
-    public UpdateMedicServices(ILoggerServices logger, IMedicRepository medicRepository)
-    {
-        _logger = logger;
-        _medicRepository = medicRepository;
-    }
+    private readonly ILoggerServices _logger = logger;
+    private readonly IMedicRepository _medicRepository = medicRepository;
 
     public async Task<bool> Update(Medic medic)
     {

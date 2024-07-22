@@ -1,39 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
-using Turnero.Models;
-using Turnero.Services.Interfaces;
+﻿namespace Turnero.Controllers;
 
-namespace Turnero.Controllers;
-
-public class HomeController : Controller
+public class HomeController(ILogger<HomeController> logger,
+                      IGetTurnsServices getTurns,
+                      IGetMedicsServices getMedics,
+                      IGetTimeTurnsServices getTimeTurns,
+                      IMemoryCache cache) : Controller
 {
-    private readonly ILogger<HomeController> _logger;
-    public IGetTurnsServices _getTurns;
-    public IGetMedicsServices _getMedics;
-    public IGetTimeTurnsServices _getTimeTurns;
-    public IMemoryCache _cache;
-    
-    public HomeController(ILogger<HomeController> logger,
-                          IGetTurnsServices getTurns,
-                          IGetMedicsServices getMedics,
-                          IGetTimeTurnsServices getTimeTurns,
-                          IMemoryCache cache)
-    {
-        _logger = logger;
-        _getTurns = getTurns;
-        _cache = cache;
-        _getMedics = getMedics;
-        _getTimeTurns = getTimeTurns;
-    }
+    private readonly ILogger<HomeController> _logger = logger;
+    public IGetTurnsServices _getTurns = getTurns;
+    public IGetMedicsServices _getMedics = getMedics;
+    public IGetTimeTurnsServices _getTimeTurns = getTimeTurns;
+    public IMemoryCache _cache = cache;
 
     public async Task<IActionResult> Index()
     {
@@ -48,11 +25,11 @@ public class HomeController : Controller
         }
 
         var turnsAsync = _getTurns.GetTurns(DateTime.Today, null);
-        List<int> turns = new()
-        {
+        List<int> turns =
+        [
             turnsAsync.Where(t => t.Accessed).Count(),
             turnsAsync.Where(t => !t.Accessed).Count()
-        };
+        ];
 
         return View(turns);
     }

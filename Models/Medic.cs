@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace Turnero.Models;
+﻿namespace Turnero.Models;
 
 public class Medic
 {
@@ -15,6 +10,7 @@ public class Medic
     public string UserGuid { get; set; }
 
     public ICollection<Turn> Turns { get; set; }
+    public ICollection<Available> Availables { get; set; }
 }
 
 public class MedicDto {

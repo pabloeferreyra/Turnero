@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Turnero.Models;
-
-namespace Turnero.Services.Repositories;
+﻿namespace Turnero.Services.Repositories;
 
 public interface IMedicRepository
 {

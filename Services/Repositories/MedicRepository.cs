@@ -1,29 +1,14 @@
-﻿using AutoMapper;
-using AutoMapper.QueryableExtensions;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Threading.Tasks;
-using Turnero.Data;
-using Turnero.Models;
+﻿
 
 namespace Turnero.Services.Repositories;
 
-public class MedicRepository : RepositoryBase<Medic>, IMedicRepository
+public class MedicRepository(ApplicationDbContext context, IMapper mapper, IMemoryCache cache) : RepositoryBase<Medic>(context, cache), IMedicRepository
 {
-    public IMapper mapper { get; }
-
-    public MedicRepository(ApplicationDbContext context, IMapper mapper, IMemoryCache cache) : base(context, mapper, cache)
-    {
-        this.mapper = mapper;
-    }
+    public IMapper Mapper { get; } = mapper;
 
     public async Task<List<MedicDto>> GetListDto()
     {
-        return await FindAll().ProjectTo<MedicDto>(this.mapper.ConfigurationProvider).ToListAsync();
+        return await FindAll().ProjectTo<MedicDto>(this.Mapper.ConfigurationProvider).ToListAsync();
     }
 
     public async Task<List<Medic>> GetList()

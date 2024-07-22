@@ -1,68 +1,28 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using System.Text.Json;
-using System;
-using System.Collections.Generic;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using Turnero.Models;
-using Turnero.Services.Interfaces;
-using System.Linq;
-using AutoMapper;
-using System.Globalization;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Linq.Dynamic.Core;
-using Microsoft.EntityFrameworkCore;
-using Turnero.Utilities;
-using Microsoft.AspNetCore.SignalR;
-using Turnero.Hubs;
-using Microsoft.Extensions.Caching.Memory;
-using System.Collections;
-using Microsoft.IdentityModel.Tokens;
-using Turnero.Services;
+﻿namespace Turnero.Controllers;
 
-namespace Turnero.Controllers;
-
-public class TurnsController : Controller
+public class TurnsController(UserManager<IdentityUser> userManager,
+                       ILogger<TurnsController> logger,
+                       IInsertTurnsServices insertTurns,
+                       IGetTurnsServices getTurns,
+                       IGetTurnDTOServices getTurnDTO,
+                       IUpdateTurnsServices updateTurns,
+                       IGetMedicsServices getMedics,
+                       IGetTimeTurnsServices getTimeTurns,
+                       IMapper mapper,
+                       IHubContext<TurnsTableHub> hubContext,
+                       IMemoryCache cache) : Controller
 {
-    private readonly UserManager<IdentityUser> _userManager;
-    public IInsertTurnsServices _insertTurns;
-    public ILogger<TurnsController> _logger;
-    public IGetTurnsServices _getTurns;
-    public IGetTurnDTOServices _getTurnDTO;
-    public IUpdateTurnsServices _updateTurns;
-    public IGetMedicsServices _getMedics;
-    public IGetTimeTurnsServices _getTimeTurns;
-    private readonly IMapper mapper;
-    private readonly IHubContext<TurnsTableHub> _hubContext;
-    public IMemoryCache _cache;
-    public TurnsController(UserManager<IdentityUser> userManager,
-                           ILogger<TurnsController> logger,
-                           IInsertTurnsServices insertTurns,
-                           IGetTurnsServices getTurns,
-                           IGetTurnDTOServices getTurnDTO,
-                           IUpdateTurnsServices updateTurns,
-                           IGetMedicsServices getMedics,
-                           IGetTimeTurnsServices getTimeTurns,
-                           IMapper mapper,
-                           IHubContext<TurnsTableHub> hubContext,
-                           IMemoryCache cache)
-    {
-        _userManager = userManager;
-        _logger = logger;
-        _insertTurns = insertTurns;
-        _getTurns = getTurns;
-        _updateTurns = updateTurns;
-        _getMedics = getMedics;
-        _getTimeTurns = getTimeTurns;
-        this.mapper = mapper;
-        _hubContext = hubContext;
-        _cache = cache;
-        _getTurnDTO = getTurnDTO;
-    }
+    private readonly UserManager<IdentityUser> _userManager = userManager;
+    public IInsertTurnsServices _insertTurns = insertTurns;
+    public ILogger<TurnsController> _logger = logger;
+    public IGetTurnsServices _getTurns = getTurns;
+    public IGetTurnDTOServices _getTurnDTO = getTurnDTO;
+    public IUpdateTurnsServices _updateTurns = updateTurns;
+    public IGetMedicsServices _getMedics = getMedics;
+    public IGetTimeTurnsServices _getTimeTurns = getTimeTurns;
+    private readonly IMapper mapper = mapper;
+    private readonly IHubContext<TurnsTableHub> _hubContext = hubContext;
+    public IMemoryCache _cache = cache;
 
     [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
     public async Task<IActionResult> Index()

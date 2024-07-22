@@ -8,9 +8,9 @@ $(document).ready(function () {
     });
 
 
-    dt = $('#turns').dataTable({
+    dt = $('#turns').DataTable({
         "language": {
-            url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json',
+            url: '//cdn.datatables.net/plug-ins/2.0.8/i18n/es-ES.json',
             "buttons": {
                 "collection": "Exportar"
             }

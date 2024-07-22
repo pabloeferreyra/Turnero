@@ -1,28 +1,8 @@
-﻿using AutoMapper;
-using AutoMapper.QueryableExtensions;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Turnero.Data;
-using Turnero.Models;
+﻿namespace Turnero.Services.Repositories;
 
-namespace Turnero.Services.Repositories;
-
-public class TurnsRepository : RepositoryBase<Turn>, ITurnRepository
+public class TurnsRepository(ApplicationDbContext context, IMapper mapper, IMemoryCache cache) : RepositoryBase<Turn>(context, cache), ITurnRepository
 {
-    private readonly IMapper mapper;
-
-    public TurnsRepository(ApplicationDbContext context, IMapper mapper, IMemoryCache cache) : base(context, mapper, cache)
-    {
-        this.mapper = mapper;
-    }
-
-
+    private readonly IMapper mapper = mapper;
 
     public void Access(Turn turn)
     {
@@ -64,10 +44,10 @@ public class TurnsRepository : RepositoryBase<Turn>, ITurnRepository
         }
         else
         {
-            param = new object[]
-            {
+            param =
+            [
                 formattedDate.ToString()
-            };
+            ];
         }
 
         return this.CallStoredProcedure("GetTurns", param);

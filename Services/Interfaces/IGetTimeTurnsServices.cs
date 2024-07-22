@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Turnero.Models;
+﻿namespace Turnero.Services.Interfaces;
 
-namespace Turnero.Services.Interfaces
+public interface IGetTimeTurnsServices
 {
-    public interface IGetTimeTurnsServices
-    {
-        Task<List<TimeTurn>> GetTimeTurns();
-        IQueryable<TimeTurn> GetTimeTurnsQ();
-        Task<TimeTurn> GetTimeTurn(Guid id);
-        bool TimeTurnViewModelExists(Guid id);
-        Task<List<TimeTurn>> GetCachedTimes();
-    }
+    Task<List<TimeTurn>> GetTimeTurns();
+    IQueryable<TimeTurn> GetTimeTurnsQ();
+    Task<TimeTurn> GetTimeTurn(Guid id);
+    bool TimeTurnViewModelExists(Guid id);
+    Task<List<TimeTurn>> GetCachedTimes();
 }

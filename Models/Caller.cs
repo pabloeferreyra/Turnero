@@ -1,8 +1,7 @@
-﻿namespace Turnero.Models
+﻿namespace Turnero.Models;
+
+public class Caller
 {
-    public class Caller
-    {
-        public string Patient { get; set; }
-        public string MedicCaller { get; set; }
-    }
+    public string Patient { get; set; }
+    public string MedicCaller { get; set; }
 }

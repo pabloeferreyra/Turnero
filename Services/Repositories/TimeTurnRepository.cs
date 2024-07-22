@@ -1,22 +1,7 @@
-﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Turnero.Data;
-using Turnero.Models;
+﻿namespace Turnero.Services.Repositories;
 
-namespace Turnero.Services.Repositories;
-
-public class TimeTurnRepository : RepositoryBase<TimeTurn>, ITimeTurnRepository
+public class TimeTurnRepository(ApplicationDbContext context, IMemoryCache cache) : RepositoryBase<TimeTurn>(context, cache), ITimeTurnRepository
 {
-    public TimeTurnRepository(ApplicationDbContext context, IMapper mapper, IMemoryCache cache) : base(context, mapper, cache)
-    {
-
-    }
-
     public async Task<List<TimeTurn>> GetList()
     {
         return await FindAll().OrderBy(t => t.Time).ToListAsync();

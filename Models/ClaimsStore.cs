@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Security.Claims;
-
-namespace Turnero.Models;
+﻿namespace Turnero.Models;
 
 public static class ClaimsStore
 {

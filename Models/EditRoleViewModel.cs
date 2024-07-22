@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-
-namespace Turnero.Models;
+﻿namespace Turnero.Models;
 
 public class EditRoleViewModel
 {

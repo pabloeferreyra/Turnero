@@ -11,16 +11,10 @@ using Microsoft.AspNetCore.WebUtilities;
 namespace Turnero.Areas.Identity.Pages.Account
 {
     [AllowAnonymous]
-    public class ForgotPasswordModel : PageModel
+    public class ForgotPasswordModel(UserManager<IdentityUser> userManager, IEmailSender emailSender) : PageModel
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly IEmailSender _emailSender;
-
-        public ForgotPasswordModel(UserManager<IdentityUser> userManager, IEmailSender emailSender)
-        {
-            _userManager = userManager;
-            _emailSender = emailSender;
-        }
+        private readonly UserManager<IdentityUser> _userManager = userManager;
+        private readonly IEmailSender _emailSender = emailSender;
 
         [BindProperty]
         public InputModel Input { get; set; }

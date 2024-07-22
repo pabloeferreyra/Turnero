@@ -1,0 +1,132 @@
+﻿@model Available
+
+<form id="EditForm" method="post">
+    <div class="modal-body">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" asp-for="Id" />
+        <p class="modal-title fs-3 fw-semibold text-secondary">@ViewBag.Name</p>
+        <div class="form-group row">
+            <h2 class="control-label col-12 modal-title text-primary">
+                Lunes
+            </h2>
+            <input type="hidden" asp-for="Day" id="Day_Monday" value="@DayOfWeek.Monday" />
+
+            <div class="col-6 form-floating">
+                <select asp-for="TimeStart" id="TimeStartMonday" title="Inicio" class="form-control" asp-items="@ViewBag.Time">
+                    <option value="" selected>Ausente</option>
+                </select>
+                <label for="TimeStart">Inicio Turno</label>
+            </div>
+            <div class="col-6 form-floating">
+                <select asp-for="TimeEnd" id="TimeEndMonday" title="Fin" class="form-control" asp-items="@ViewBag.Time">
+                    <option value="" selected>Ausente</option>
+                </select>
+                <label for="TimeEnd"> Fin Turno</label>
+            </div>
+        </div>
+        <div class="form-group row">
+            <h2 class="control-label col-12 modal-title text-primary">
+                Martes
+            </h2>
+            <input type="hidden" asp-for="Day" id="Day_Tuesday" value="@DayOfWeek.Tuesday" />
+
+            <div class="col-6 form-floating">
+                <select asp-for="TimeStart" id="TimeStartTuesday" title="Inicio" class="form-control" asp-items="@ViewBag.Time">
+                    <option value="" selected>Ausente</option>
+                </select>
+                <label for="TimeStart">Inicio Turno</label>
+            </div>
+            <div class="col-6 form-floating">
+                <select asp-for="TimeEnd" id="TimeEndTuesday" title="Fin" class="form-control" asp-items="@ViewBag.Time">
+                    <option value="" selected>Ausente</option>
+                </select>
+                <label for="TimeEnd"> Fin Turno</label>
+            </div>
+        </div>
+        <div class="form-group row">
+            <h2 class="control-label col-12 modal-title text-primary">
+                Miercoles
+            </h2>
+            <input type="hidden" asp-for="Day" id="Day_Wednesday" value="@DayOfWeek.Wednesday" />
+
+            <div class="col-6 form-floating">
+                <select asp-for="TimeStart" id="TimeStartWednesday" title="Inicio" class="form-control" asp-items="@ViewBag.Time">
+                    <option value="" selected>Ausente</option>
+                </select>
+                <label for="TimeStart">Inicio Turno</label>
+            </div>
+            <div class="col-6 form-floating">
+                <select asp-for="TimeEnd" id="TimeEndWednesday" title="Fin" class="form-control" asp-items="@ViewBag.Time">
+                    <option value="" selected>Ausente</option>
+                </select>
+                <label for="TimeEnd"> Fin Turno</label>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <h2 class="control-label col-12 modal-title text-primary">
+                Jueves
+            </h2>
+            <input type="hidden" asp-for="Day" id="Day_Thursday" value="@DayOfWeek.Thursday" />
+
+            <div class="col-6 form-floating">
+                <select asp-for="TimeStart" id="TimeStartThursday" title="Inicio" class="form-control" asp-items="@ViewBag.Time">
+                    <option value="" selected>Ausente</option>
+                </select>
+                <label for="TimeStart">Inicio Turno</label>
+            </div>
+            <div class="col-6 form-floating">
+                <select asp-for="TimeEnd" id="TimeEndThursday" title="Fin" class="form-control" asp-items="@ViewBag.Time">
+                    <option value="" selected>Ausente</option>
+                </select>
+                <label for="TimeEnd"> Fin Turno</label>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <h2 class="control-label col-12 modal-title text-primary">
+                Viernes
+            </h2>
+            <input type="hidden" asp-for="Day" id="Day_Friday" value="@DayOfWeek.Friday" />
+
+            <div class="col-6 form-floating">
+                <select asp-for="TimeStart" id="TimeStartFriday" title="Inicio" class="form-control" asp-items="@ViewBag.Time">
+                    <option value="" selected>Ausente</option>
+                </select>
+                <label for="TimeStart">Inicio Turno</label>
+            </div>
+            <div class="col-6 form-floating">
+                <select asp-for="TimeEnd" id="TimeEndFriday" title="Fin" class="form-control" asp-items="@ViewBag.Time">
+                    <option value="" selected>Ausente</option>
+                </select>
+                <label for="TimeEnd"> Fin Turno</label>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <h2 class="control-label col-12 modal-title text-primary">
+                Sabado
+            </h2>
+            <input type="hidden" asp-for="Day" id="Day_Saturday" value="@DayOfWeek.Saturday" />
+
+            <div class="col-6 form-floating">
+                <select asp-for="TimeStart" id="TimeStartSaturday" title="Inicio" class="form-control" asp-items="@ViewBag.Time">
+                    <option value="" selected>Ausente</option>
+                </select>
+                <label for="TimeStart">Inicio Turno</label>
+            </div>
+            <div class="col-6 form-floating">
+                <select asp-for="TimeEnd" id="TimeEndSaturday" title="Fin" class="form-control" asp-items="@ViewBag.Time">
+                    <option value="" selected>Ausente</option>
+                </select>
+                <label for="TimeEnd"> Fin Turno</label>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        <button type="submit" id="btnSave" class="btn btn-primary">Guardar</button>
+    </div>
+</form>
+<script src="~/js/editAvailability.js"></script>

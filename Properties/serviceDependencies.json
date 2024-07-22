@@ -4,13 +4,18 @@
       "type": "sqlite",
       "connectionId": "ConnectionStrings:SQLite"
     },
-    "mssql1": {
-      "type": "mssql",
-      "connectionId": "ConnectionStrings:DefaultConnection"
-    },
     "signalr1": {
       "ignored": "true",
       "type": "signalr"
+    },
+    "mssql1": {
+      "ignored": "true",
+      "type": "mssql",
+      "connectionId": "ConnectionStrings:DefaultConnection"
+    },
+    "identityapp1": {
+      "ignored": "true",
+      "type": "identityapp"
     }
   }
 }

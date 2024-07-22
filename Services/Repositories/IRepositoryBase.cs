@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
-
-namespace Turnero.Services.Repositories;
+﻿namespace Turnero.Services.Repositories;
 
 public interface IRepositoryBase<T>
 {

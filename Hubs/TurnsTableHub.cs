@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.SignalR;
-using System.Threading.Tasks;
-
-namespace Turnero.Hubs
+﻿namespace Turnero.Hubs
 {
     public class TurnsTableHub : Hub
     {

@@ -17,7 +17,7 @@ namespace Turnero.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.8")
+                .HasAnnotation("ProductVersion", "8.0.6")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -222,6 +222,44 @@ namespace Turnero.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Turnero.Models.Available", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Day")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("MedicId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Time")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("TimeEnd")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TimeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TimeStart")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("TimeTurnId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MedicId");
+
+                    b.HasIndex("TimeTurnId");
+
+                    b.ToTable("Available");
+                });
+
             modelBuilder.Entity("Turnero.Models.Medic", b =>
                 {
                     b.Property<Guid>("Id")
@@ -229,9 +267,11 @@ namespace Turnero.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("UserGuid")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -246,6 +286,7 @@ namespace Turnero.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("Time")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -265,7 +306,7 @@ namespace Turnero.Migrations
                     b.Property<DateTime>("DateTurn")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("CURRENT_DATE");
+                        .HasDefaultValueSql("getdate()");
 
                     b.Property<string>("Dni")
                         .IsRequired()
@@ -280,9 +321,11 @@ namespace Turnero.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Reason")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("SocialWork")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<Guid>("TimeId")
@@ -348,6 +391,21 @@ namespace Turnero.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Turnero.Models.Available", b =>
+                {
+                    b.HasOne("Turnero.Models.Medic", "Medic")
+                        .WithMany("Availables")
+                        .HasForeignKey("MedicId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Turnero.Models.TimeTurn", null)
+                        .WithMany("Availables")
+                        .HasForeignKey("TimeTurnId");
+
+                    b.Navigation("Medic");
+                });
+
             modelBuilder.Entity("Turnero.Models.Turn", b =>
                 {
                     b.HasOne("Turnero.Models.Medic", "Medic")
@@ -369,11 +427,15 @@ namespace Turnero.Migrations
 
             modelBuilder.Entity("Turnero.Models.Medic", b =>
                 {
+                    b.Navigation("Availables");
+
                     b.Navigation("Turns");
                 });
 
             modelBuilder.Entity("Turnero.Models.TimeTurn", b =>
                 {
+                    b.Navigation("Availables");
+
                     b.Navigation("Turns");
                 });
 #pragma warning restore 612, 618

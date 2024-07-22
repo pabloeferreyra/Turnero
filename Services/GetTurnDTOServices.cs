@@ -1,25 +1,11 @@
-﻿using Microsoft.Extensions.Configuration;
-using System;
-using System.Linq;
-using Turnero.Models;
-using Turnero.Services.Interfaces;
-using Turnero.Services.Repositories;
-
-namespace Turnero.Services
+﻿namespace Turnero.Services
 {
-    public class GetTurnDTOServices : IGetTurnDTOServices
+    public class GetTurnDTOServices(
+                            ITurnDTORepository turnRepository,
+                            IConfiguration configuration) : IGetTurnDTOServices
     {
-        private readonly ILoggerServices _logger;
-        private readonly ITurnDTORepository _turnRepository;
-        private readonly string _connectionString;
-        public GetTurnDTOServices(ILoggerServices logger,
-                                ITurnDTORepository turnRepository,
-                                IConfiguration configuration)
-        {
-            _logger = logger;
-            _turnRepository = turnRepository;
-            _connectionString = configuration["ConnectionStrings:PostgresConnection"];
-        }
+        private readonly ITurnDTORepository _turnRepository = turnRepository;
+        private readonly string _connectionString = configuration["ConnectionStrings:PostgresDemoConnection"];
 
         public IQueryable<TurnDTO> GetTurnsDto()
         {
@@ -30,7 +16,6 @@ namespace Turnero.Services
             }
             catch (Exception)
             {
-                //_logger.Error(ex.Message, ex);
                 return null;
             }
         }

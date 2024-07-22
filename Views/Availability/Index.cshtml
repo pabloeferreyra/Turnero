@@ -1,0 +1,53 @@
+﻿@using Turnero.Models;
+@model Available;
+
+@using Microsoft.AspNetCore.Identity;
+@using Turnero.Utilities;
+
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+@{
+
+    ViewData["Title"] = "Disponibilidades - Turnero";
+}
+
+<div class="back container-fluid">
+    <div class="form-group row">
+        <div class="col-lg-2 col-md-5 col-sm-12">
+            <select id="Medics" title="Medico" class="form-control" asp-items="@ViewBag.Medics">
+                <option value="" selected>== Seleccione un profesional ==</option>
+            </select>
+            
+        </div>
+        <div class="col-lg-2 col-md-3 col-sm-12">
+            <button type="button" id="EditButton" class="form-control btn btn-secondary">Editar Disponibilidad</button>
+        </div>
+    </div>
+
+    <!-- #region modal -->
+    <div class="modal modal-lg fade" id="Edit" role="dialog">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title text-primary text-center">Editar Disponibilidad</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div id="EditFormContent">
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <!-- #endregion -->
+</div>
+
+
+
+@section scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <script src="~/js/Aviability.js"></script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

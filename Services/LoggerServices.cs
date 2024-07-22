@@ -1,9 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Runtime.InteropServices;
-using Turnero.Services.Interfaces;
-
-namespace Turnero.Services;
+﻿namespace Turnero.Services;
 
 public class LoggerServices : ILoggerServices
 {
