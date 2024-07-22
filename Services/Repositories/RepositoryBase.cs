@@ -71,7 +71,7 @@ public abstract class RepositoryBase<T> : IRepositoryBase<T> where T : class
     public async Task<List<TResult>> GetCachedData<TResult>(string cacheKey, Func<Task<List<TResult>>> getDataFunc)
     {
         var data = _cache.Get<List<TResult>>(cacheKey);
-        if (data.IsNullOrEmpty())
+        if (data.Count == 0)
         {
             data = await getDataFunc();
             _cache.Set(cacheKey, data);

@@ -71,7 +71,7 @@ public class TurnsController : Controller
         List<MedicDto> medics = null;
 
         medics = _cache.Get<List<MedicDto>>("medics");
-        if (medics.IsNullOrEmpty())
+        if (medics.Count == 0)
         {
             Task medicsTask = Task.Run(() =>
             {
@@ -203,7 +203,7 @@ public class TurnsController : Controller
 
         medics = _cache.Get<List<MedicDto>>("medics");
         time = _cache.Get<List<TimeTurn>>("timeTurns");
-        if (medics.IsNullOrEmpty())
+        if (medics.Count == 0)
         {
             Task medicsTask = Task.Run(() =>
             {
@@ -211,7 +211,7 @@ public class TurnsController : Controller
             });
             await medicsTask;
         }
-        if (time.IsNullOrEmpty())
+        if (time.Count == 0)
         {
 
             Task timeTask = Task.Run(() =>
@@ -310,7 +310,7 @@ public class TurnsController : Controller
         List<TimeTurn> time = null;
         medics = _cache.Get<List<MedicDto>>("medics");
         time = _cache.Get<List<TimeTurn>>("timeTurns");
-        if (medics.IsNullOrEmpty())
+        if (medics.Count == 0)
         {
             Task medicsTask = Task.Run(() =>
             {
@@ -318,7 +318,7 @@ public class TurnsController : Controller
             });
             await medicsTask;
         }
-        if (time.IsNullOrEmpty())
+        if (time.Count == 0)
         {
             Task timeTask = Task.Run(() =>
             {
