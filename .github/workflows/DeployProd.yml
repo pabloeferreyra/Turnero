@@ -63,6 +63,10 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |            
             # Reiniciar servicio
+            cp /root/TurneroApp/appsettings.json /root/appsettings.json
             unzip -o /root/TurneroApp.zip
+            cp /root/appsettings.json /root/TurneroApp/appsettings.json
+            rm /root/TurneroApp.zip
+            rm /rootappsettings.json
             systemctl daemon-reload
             service turnero start
