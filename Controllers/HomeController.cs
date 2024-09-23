@@ -37,12 +37,12 @@ public class HomeController : Controller
 
     public async Task<IActionResult> Index()
     {
-        if (_cache.Get<List<MedicDto>>("medics").IsNullOrEmpty())
+        if (_cache.Get<List<MedicDto>>("medics") == null)
         {
             await _getMedics.GetCachedMedics();
         }
 
-        if (_cache.Get<List<TimeTurn>>("timeTurns").IsNullOrEmpty())
+        if (_cache.Get<List<TimeTurn>>("timeTurns") == null)
         {
             await _getTimeTurns.GetCachedTimes();
         }

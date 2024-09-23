@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using AutoMapper.Internal;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -71,7 +72,7 @@ public abstract class RepositoryBase<T> : IRepositoryBase<T> where T : class
     public async Task<List<TResult>> GetCachedData<TResult>(string cacheKey, Func<Task<List<TResult>>> getDataFunc)
     {
         var data = _cache.Get<List<TResult>>(cacheKey);
-        if (data.IsNullOrEmpty())
+        if (data == null)
         {
             data = await getDataFunc();
             _cache.Set(cacheKey, data);

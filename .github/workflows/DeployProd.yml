@@ -38,8 +38,8 @@ jobs:
         with:
           host: ${{ secrets.SERVER }}
           username: ${{ secrets.USER_NAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
           port: ${{ secrets.PORT }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             # Detener servicio
             service turnero stop
@@ -50,9 +50,9 @@ jobs:
           host: ${{ secrets.SERVER }}
           username: ${{ secrets.USER_NAME }}
           port: ${{ secrets.PORT }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          password: ${{ secrets.SSH_PASSWORD }}
           source: TurneroApp.zip
-          target: /root
+          target: ${{ secrets.SRV_PATH }}
           
       - name: Restart Server
         uses: appleboy/ssh-action@master
@@ -60,9 +60,13 @@ jobs:
           host: ${{ secrets.SERVER }}
           username: ${{ secrets.USER_NAME }}
           port: ${{ secrets.PORT }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          password: ${{ secrets.SSH_PASSWORD }}
           script: |            
             # Reiniciar servicio
-            unzip -o /root/TurneroApp.zip
+            cp ${{ secrets.SRV_PATH }}/TurneroApp/appsettings.json ${{ secrets.SRV_PATH }}/appsettings.json
+            unzip -o ${{ secrets.SRV_PATH }}/TurneroApp.zip
+            cp ${{ secrets.SRV_PATH }}/appsettings.json ${{ secrets.SRV_PATH }}/TurneroApp/appsettings.json
+            rm ${{ secrets.SRV_PATH }}/TurneroApp.zip
+            rm ${{ secrets.SRV_PATH }}/appsettings.json
             systemctl daemon-reload
             service turnero start

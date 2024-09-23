@@ -69,7 +69,7 @@ namespace Turnero.Controllers
 
             medics = _cache.Get<List<MedicDto>>("medics");
             time = _cache.Get<List<TimeTurn>>("timeTurns");
-            if (medics.IsNullOrEmpty())
+            if (medics == null)
             {
                 Task medicsTask = Task.Run(() =>
                 {
@@ -77,7 +77,7 @@ namespace Turnero.Controllers
                 });
                 await medicsTask;
             }
-            if (time.IsNullOrEmpty())
+            if (time == null)
             {
 
                 Task timeTask = Task.Run(() =>
