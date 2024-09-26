@@ -82,7 +82,7 @@ namespace Turnero.Areas.Identity.Pages.Account
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             if (ModelState.IsValid)
             {
-                var user = await _firebaseService.RegisterAdminAsync(new UserRegisterRequestDTO { Email = $"{Input.UserName}@consultorios.com", Name = Input.UserName, Password = Input.Password, Role = role.Name });
+                var user = await _firebaseService.RegisterAdminAsync(new UserFirebaseDTO { Email = $"{Input.UserName}@consultorios.com", Name = Input.UserName, Password = Input.Password, Role = role.Name });
                 if (user != null)
                 {
                     _logger.LogInformation("User created a new account with password.");

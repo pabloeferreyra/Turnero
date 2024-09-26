@@ -16,7 +16,7 @@ public class FirebaseController : ControllerBase
 
     [AllowAnonymous]
     [HttpPost("register")]
-    public async Task<ActionResult<UserRecord>> Register([FromBody]UserRegisterRequestDTO userRegister)
+    public async Task<ActionResult<UserRecord>> Register([FromBody]UserFirebaseDTO userRegister)
     {
         var obj = await _firebaseService.RegisterAsync(userRegister);
         return obj;

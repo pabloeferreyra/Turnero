@@ -36,3 +36,7 @@ global using FirebaseAdmin.Auth;
 global using Google.Apis.Auth.OAuth2;
 global using System.Net.Http;
 global using System.Net.Http.Json;
+global using Microsoft.AspNetCore.Http;
+global using System.Text.Json;
+global using System.ComponentModel.DataAnnotations;
+global using Microsoft.AspNetCore.Mvc.RazorPages;

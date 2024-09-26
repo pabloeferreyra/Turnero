@@ -1,15 +1,10 @@
-﻿
-
-
-using Microsoft.AspNetCore.Identity;
-using System.Data;
-using System.Text.Json;
+﻿using System.Net;
 
 namespace Turnero.Services;
 
 public class FirebaseService(HttpClient httpClient, IConfiguration configuration, UserManager<IdentityUser> userManager) : IFirebaseService
 {
-    public async Task<UserRecord> RegisterAsync(UserRegisterRequestDTO usrDto)
+    public async Task<UserRecord> RegisterAsync(UserFirebaseDTO usrDto)
     {
         var userArgs = new UserRecordArgs { DisplayName = usrDto.Name, Email = usrDto.Email, Password = usrDto.Password };
         var user = await FirebaseAuth.DefaultInstance.CreateUserAsync(userArgs);
@@ -34,11 +29,10 @@ public class FirebaseService(HttpClient httpClient, IConfiguration configuration
         else
             await userManager.AddToRoleAsync(iUser, "Medico");
 
-        //var sent = await SendEmailVerificationLinkAsync(tid.IdToken);
         return user;
     }
 
-    public async Task<IdentityResult> RegisterAdminAsync(UserRegisterRequestDTO usrDto)
+    public async Task<IdentityResult> RegisterAdminAsync(UserFirebaseDTO usrDto)
     {
         var userArgs = new UserRecordArgs { DisplayName = usrDto.Name, Email = usrDto.Email, Password = usrDto.Password };
         await FirebaseAuth.DefaultInstance.CreateUserAsync(userArgs);
@@ -57,14 +51,16 @@ public class FirebaseService(HttpClient httpClient, IConfiguration configuration
         }
 
         await userManager.AddToRoleAsync(user, usrDto.Role);
+        await SendEmailVerificationLinkAsync(tid.IdToken);
         return createResult;
     }
 
     public async Task<AuthFirebase> LoginAsync(UserLoginRequestDTO usrDto)
     {
-        var credentials = new { 
-            usrDto.Email, 
-            usrDto.Password, 
+        var credentials = new
+        {
+            usrDto.Email,
+            usrDto.Password,
             returnSecureToken = true
         };
 
@@ -83,7 +79,7 @@ public class FirebaseService(HttpClient httpClient, IConfiguration configuration
             var payload = new
             {
                 requestType = "VERIFY_EMAIL",
-                idToken = idToken
+                idToken
             };
 
             var content = new StringContent(JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
@@ -102,6 +98,55 @@ public class FirebaseService(HttpClient httpClient, IConfiguration configuration
         catch (Exception ex)
         {
             return $"Exception: {ex.Message}";
+        }
+    }
+
+    public async Task<HttpStatusCode> SendPasswordResetLinkAsync(string email)
+    {
+        try { 
+            using var client = new HttpClient();
+            var requestUri = configuration["Authentication:TokenCode"];
+
+            var payload = new
+            {
+                requestType = "PASSWORD_RESET",
+                email
+            };
+
+            var content = new StringContent(JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
+            var response = await client.PostAsync(requestUri, content);
+
+            return response.StatusCode;
+        }
+        catch (Exception ex)
+        {
+            return HttpStatusCode.InternalServerError;
+        }
+    }
+
+    public async Task<HttpStatusCode> UpdatePasswordAsync(UserResetPasswordDTO userReset)
+    {
+        try
+        {
+            using var client = new HttpClient();
+            var idToken = await userManager.FindByEmailAsync(userReset.Email);
+            var requestUri = configuration["Authentication:TokenReset"];
+
+            var payload = new
+            {
+                idToken.Id,
+                password = userReset.NewPassword,
+                returnSecureToken = true
+            };
+
+            var content = new StringContent(JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
+            var response = await client.PostAsync(requestUri, content);
+
+            return response.StatusCode;
+        }
+        catch (Exception ex)
+        {
+            return HttpStatusCode.InternalServerError;
         }
     }
 }

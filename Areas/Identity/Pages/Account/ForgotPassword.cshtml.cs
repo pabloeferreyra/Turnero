@@ -11,17 +11,8 @@ using Microsoft.AspNetCore.WebUtilities;
 namespace Turnero.Areas.Identity.Pages.Account
 {
     [AllowAnonymous]
-    public class ForgotPasswordModel : PageModel
+    public class ForgotPasswordModel(UserManager<IdentityUser> userManager, IEmailSender emailSender, IFirebaseService firebaseService) : PageModel
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly IEmailSender _emailSender;
-
-        public ForgotPasswordModel(UserManager<IdentityUser> userManager, IEmailSender emailSender)
-        {
-            _userManager = userManager;
-            _emailSender = emailSender;
-        }
-
         [BindProperty]
         public InputModel Input { get; set; }
 
@@ -36,17 +27,16 @@ namespace Turnero.Areas.Identity.Pages.Account
         {
             if (ModelState.IsValid)
             {
-                var user = await _userManager.FindByEmailAsync(Input.Email);
+                var user = await userManager.FindByEmailAsync(Input.Email);
                 if (user == null)
                 {
                     // Don't reveal that the user does not exist or is not confirmed
                     return RedirectToPage("./ForgotPasswordConfirmation");
                 }
 
-                var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-                code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+                await firebaseService.SendPasswordResetLinkAsync(Input.Email);
                 
-                return RedirectToPage("./ResetPassword", new { code });
+                return RedirectToPage("./ForgotPasswordConfirmation");
             }
 
             return Page();
