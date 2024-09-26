@@ -175,7 +175,7 @@ public class TurnsController : Controller
         }
     }
 
-    [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
+    [Authorize(Roles = $"{RolesConstants.Ingreso}, {RolesConstants.Medico}")]
     public async Task<IActionResult> Details(Guid? id)
     {
         if (id == null)
@@ -194,7 +194,7 @@ public class TurnsController : Controller
     }
 
 
-    [Authorize(Roles = "Ingreso, Medico")]
+    [Authorize(Roles = $"{RolesConstants.Ingreso}, {RolesConstants.Medico}")]
     [HttpGet]
     public async Task<IActionResult> Create()
     {
