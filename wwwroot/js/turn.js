@@ -67,9 +67,6 @@ $(document).ready(function () {
                                 '</span>' +
                             '<span id="accessedSpan_'+data['id']+'">' +
                             '<a href="#" class="btn btn-primary" onclick="ConfirmAccess(\''+data['id']+'\', true)">Ingreso</a>'+
-                            '</span> ' +
-                            '<span id="Caller_' + data['id'] + '">' +
-                            '<a href="#" class="btn btn-primary" onclick="Call(\'' + data['name'] + '\'\,\''+ data['medicName'] +'\')">Llamar</a>' +
                             '</span> ';
                     }
 
