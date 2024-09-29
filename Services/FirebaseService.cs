@@ -118,7 +118,7 @@ public class FirebaseService(HttpClient httpClient, IConfiguration configuration
 
             return response.StatusCode;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return HttpStatusCode.InternalServerError;
         }
@@ -144,7 +144,7 @@ public class FirebaseService(HttpClient httpClient, IConfiguration configuration
 
             return response.StatusCode;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return HttpStatusCode.InternalServerError;
         }
