@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using Turnero.Services;
 
 namespace Turnero.Areas.Identity.Pages.Account
 {
@@ -19,16 +20,19 @@ namespace Turnero.Areas.Identity.Pages.Account
         private readonly ILogger<RegisterModel> _logger;
         RoleManager<IdentityRole> _roleManager;
 
+        private readonly IFirebaseService _firebaseService;
         public RegisterModel(
             UserManager<IdentityUser> userManager,
             SignInManager<IdentityUser> signInManager,
             ILogger<RegisterModel> logger,
-            RoleManager<IdentityRole> roleManager)
+            RoleManager<IdentityRole> roleManager,
+            IFirebaseService firebaseService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
             _roleManager = roleManager;
+            _firebaseService = firebaseService;
         }
 
         [BindProperty]
@@ -78,28 +82,17 @@ namespace Turnero.Areas.Identity.Pages.Account
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             if (ModelState.IsValid)
             {
-                var user = new IdentityUser { UserName = Input.UserName, Email = Input.Email };
-                user.EmailConfirmed = true;
-                var result = await _userManager.CreateAsync(user, Input.Password);
-                if (result.Succeeded)
+                var user = await _firebaseService.RegisterAdminAsync(new UserFirebaseDTO { Email = $"{Input.UserName}@consultorios.com", Name = Input.UserName, Password = Input.Password, Role = role.Name });
+                if (user != null)
                 {
                     _logger.LogInformation("User created a new account with password.");
 
-                    await _userManager.AddToRoleAsync(user, role.Name);
                     
-                    if (_signInManager.IsSignedIn(User) && User.IsInRole("Admin"))
+                    
+                    if (_signInManager.IsSignedIn(User) && User.IsInRole(RolesConstants.Admin))
                     {
                         return RedirectToAction("ListUsers", "Administration");
                     }
-                    else
-                    {
-                        await _signInManager.SignInAsync(user, isPersistent: false);
-                        return RedirectToAction("Index", "Home");
-                    }
-                }
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError(string.Empty, error.Description);
                 }
             }
 

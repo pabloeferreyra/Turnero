@@ -1,37 +1,17 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc.Authorization;
-using Microsoft.AspNetCore.ResponseCompression;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Net.Http.Headers;
-using System;
-using System.IO;
-using System.IO.Compression;
-using System.Linq;
-using System.Runtime.InteropServices;
-using Turnero.Data;
-using Turnero.Hubs;
-using Turnero.Services;
-using Turnero.Services.Interfaces;
-using Turnero.Services.Repositories;
-
 var builder = WebApplication.CreateBuilder(args);
 
 #region Path
 string secretsPath;
+string firebasePath;
 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 {
     secretsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Microsoft", "UserSecrets", builder.Configuration["secretsFolder"], "secrets.json");
+    firebasePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Microsoft", "UserSecrets", builder.Configuration["secretsFolder"], "firebase.json");
 }
 else
 {
     secretsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".microsoft", "usersecrets", builder.Configuration["secretsFolder"], "secrets.json");
+    firebasePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".microsoft", "usersecrets", builder.Configuration["secretsFolder"], "firebase.json");
 }
 
 #endregion
@@ -42,9 +22,9 @@ builder.Configuration.AddJsonFile(secretsPath, optional: true);
 builder.Configuration.AddUserSecrets<Program>();
 #endregion
 
-var connectionString = builder.Configuration["ConnectionStrings:PostgresConnection"];
+AppSettings.ConnectionString = builder.Configuration["ConnectionStrings:PostgresConnection"];
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-   options.UseNpgsql(connectionString)).AddDefaultIdentity<IdentityUser>(options =>
+   options.UseNpgsql(AppSettings.ConnectionString)).AddDefaultIdentity<IdentityUser>(options =>
    {
        options.SignIn.RequireConfirmedAccount = false;
        options.Password.RequireDigit = true;
@@ -94,6 +74,9 @@ builder.Services.AddAuthorization(options =>
 });
 
 builder.Services.AddRazorPages();
+FirebaseApp.Create(new AppOptions { Credential = GoogleCredential.FromFile(firebasePath) });
+
+builder.Services.AddSingleton<ILoggerServices, LoggerServices>();
 
 builder.Services.AddScoped<IInsertTurnsServices, InsertTurnsServices>();
 builder.Services.AddScoped<IUpdateTurnsServices, UpdateTurnsServices>();
@@ -105,13 +88,16 @@ builder.Services.AddScoped<IGetMedicsServices, GetMedicsServices>();
 builder.Services.AddScoped<IInsertTimeTurnServices, InsertTimeTurnServices>();
 builder.Services.AddScoped<IDeleteTimeTurnServices, DeleteTimeTurnServices>();
 builder.Services.AddScoped<IGetTimeTurnsServices, GetTimeTurnsServices>();
-builder.Services.AddSingleton<ILoggerServices, LoggerServices>();
 builder.Services.AddScoped<IGetTurnDTOServices, GetTurnDTOServices>();
-
 builder.Services.AddScoped<ITimeTurnRepository, TimeTurnRepository>();
 builder.Services.AddScoped<IMedicRepository, MedicRepository>();
 builder.Services.AddScoped<ITurnRepository, TurnsRepository>();
 builder.Services.AddScoped<ITurnDTORepository, TurnDTORepository>();
+
+builder.Services.AddHttpClient<IFirebaseService, FirebaseService>(httpClient =>
+{
+    httpClient.BaseAddress = new Uri(builder.Configuration["Authentication:TokenUri"]!);
+});
 
 builder.Services.AddAutoMapper(typeof(Program));
 
@@ -144,6 +130,13 @@ builder.Services.Configure<BrotliCompressionProviderOptions>(options =>
 builder.Services.Configure<GzipCompressionProviderOptions>(options =>
 {
     options.Level = CompressionLevel.Fastest;
+});
+
+builder.Services.AddAuthentication().AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, jwtOptions =>
+{
+    jwtOptions.Authority = builder.Configuration["Authentication:ValidIssuer"];
+    jwtOptions.Audience = builder.Configuration["Authentication:Audience"];
+    jwtOptions.TokenValidationParameters.ValidIssuer = builder.Configuration["Authentication:ValidIssuer"];
 });
 
 var app = builder.Build();
@@ -179,12 +172,13 @@ else
 
 app.Use(async (context, next) =>
 {
-    context.Response.Headers["Cache-Control"] = "public, max-age=300"; // Permite cachear la respuesta durante 1 hora (3600 segundos)
+    context.Response.Headers.CacheControl = "public, max-age=300"; // Permite cachear la respuesta durante 1 hora (3600 segundos)
     await next();
 });
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+app.UseSession();
 
 app.UseRouting();
 

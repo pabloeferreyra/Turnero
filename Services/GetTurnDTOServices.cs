@@ -7,30 +7,19 @@ using Turnero.Services.Repositories;
 
 namespace Turnero.Services
 {
-    public class GetTurnDTOServices : IGetTurnDTOServices
+    public class GetTurnDTOServices(ITurnDTORepository turnRepository) : IGetTurnDTOServices
     {
-        private readonly ILoggerServices _logger;
-        private readonly ITurnDTORepository _turnRepository;
-        private readonly string _connectionString;
-        public GetTurnDTOServices(ILoggerServices logger,
-                                ITurnDTORepository turnRepository,
-                                IConfiguration configuration)
-        {
-            _logger = logger;
-            _turnRepository = turnRepository;
-            _connectionString = configuration["ConnectionStrings:PostgresConnection"];
-        }
+        private readonly string _connectionString = AppSettings.ConnectionString;
 
         public IQueryable<TurnDTO> GetTurnsDto()
         {
             try
             {
 
-                return _turnRepository.GetListDto(this._connectionString);
+                return turnRepository.GetListDto(this._connectionString);
             }
             catch (Exception)
             {
-                //_logger.Error(ex.Message, ex);
                 return null;
             }
         }

@@ -1,14 +1,11 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿[assembly: HostingStartup(typeof(Turnero.Areas.Identity.IdentityHostingStartup))]
+namespace Turnero.Areas.Identity;
 
-[assembly: HostingStartup(typeof(Turnero.Areas.Identity.IdentityHostingStartup))]
-namespace Turnero.Areas.Identity
+public class IdentityHostingStartup : IHostingStartup
 {
-    public class IdentityHostingStartup : IHostingStartup
+    public void Configure(IWebHostBuilder builder)
     {
-        public void Configure(IWebHostBuilder builder)
-        {
-            builder.ConfigureServices((context, services) => {
-            });
-        }
+        builder.ConfigureServices((context, services) => {
+        });
     }
 }

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Turnero.Data;
@@ -47,7 +48,11 @@ public class MedicRepository : RepositoryBase<Medic>, IMedicRepository
 
     public async Task NewMedic(Medic medic)
     {
-        await this.CreateAsync(medic);
+        if (!string.IsNullOrEmpty(medic.Name))
+        {
+            await this.CreateAsync(medic);
+        }
+        
     }
 
     public void DeleteMedic(Medic medic)
