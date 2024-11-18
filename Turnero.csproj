@@ -84,7 +84,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.10" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="8.0.10">
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="9.0.0">
       <TreatAsUsed>true</TreatAsUsed>
     </PackageReference>
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2" />
@@ -106,7 +106,7 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.10" />
     <PackageReference Include="System.Linq.Dynamic.Core" Version="1.4.8" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.2.0" />
-    <PackageReference Include="System.Text.Json" Version="8.0.5">
+    <PackageReference Include="System.Text.Json" Version="9.0.0">
       <TreatAsUsed>true</TreatAsUsed>
     </PackageReference>
   </ItemGroup>
