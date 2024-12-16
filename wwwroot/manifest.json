@@ -3,8 +3,8 @@
   "short_name": "Turnero",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1b6ec2",
-  "theme_color": "#1b6ec2",
+  "background_color": "#74ADB9",
+  "theme_color": "#74ADB9",
   "icons": [
     {
       "src": "/192x192.png",

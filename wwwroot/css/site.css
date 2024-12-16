@@ -18,8 +18,8 @@ a {
 
 .buttons-page-length {
     color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+    background-color: #74ADB9;
+    border-color: #74ADB9;
 }
 
 input[type="text"] {
@@ -28,14 +28,14 @@ input[type="text"] {
 
 .btn-primary {
     color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+    background-color: #74ADB9;
+    border-color: #74ADB9;
 }
 
 .nav-pills .nav-link.active, .nav-pills .show > .nav-link {
-  color: #fff;
-  background-color: #1b6ec2;
-  border-color: #1861ac;
+    color: #fff;
+    background-color: #74ADB9;
+    border-color: #74ADB9;
 }
 
 /* Sticky footer styles
