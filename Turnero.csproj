@@ -7,8 +7,8 @@
     <CopyRefAssembliesToPublishDirectory>false</CopyRefAssembliesToPublishDirectory>
     <IsTransformWebConfigDisabled>true</IsTransformWebConfigDisabled>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <Version>2.0.6</Version>
-    <AssemblyVersion>2.0.6</AssemblyVersion>
+    <Version>3.0.1</Version>
+    <AssemblyVersion>3.0.1</AssemblyVersion>
 	<Deterministic>False</Deterministic>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <IsPackable>true</IsPackable>
@@ -49,28 +49,42 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Data\**" />
     <compile Remove="Migrations\**" />
+    <Compile Remove="Models\**" />
     <Compile Remove="packages\**" />
+    <Compile Remove="Turnero.DAL\**" />
     <Compile Remove="Turnero.Models\**" />
+    <Compile Remove="Turnero.SL\**" />
     <Compile Remove="Turnero.Test\**" />
+    <Compile Remove="Turnero.Utilities\**" />
+    <Content Remove="Data\**" />
     <Content Remove="Migrations\**" />
+    <Content Remove="Models\**" />
     <Content Remove="packages\**" />
+    <Content Remove="Turnero.DAL\**" />
     <Content Remove="Turnero.Models\**" />
+    <Content Remove="Turnero.SL\**" />
     <Content Remove="Turnero.Test\**" />
+    <Content Remove="Turnero.Utilities\**" />
+    <EmbeddedResource Remove="Data\**" />
     <EmbeddedResource Remove="Migrations\**" />
+    <EmbeddedResource Remove="Models\**" />
     <EmbeddedResource Remove="packages\**" />
+    <EmbeddedResource Remove="Turnero.DAL\**" />
     <EmbeddedResource Remove="Turnero.Models\**" />
+    <EmbeddedResource Remove="Turnero.SL\**" />
     <EmbeddedResource Remove="Turnero.Test\**" />
+    <EmbeddedResource Remove="Turnero.Utilities\**" />
+    <None Remove="Data\**" />
     <None Remove="Migrations\**" />
+    <None Remove="Models\**" />
     <None Remove="packages\**" />
+    <None Remove="Turnero.DAL\**" />
     <None Remove="Turnero.Models\**" />
+    <None Remove="Turnero.SL\**" />
     <None Remove="Turnero.Test\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="Migrations\20230703133944_PostgreSql.cs" />
-    <Compile Include="Migrations\20230703133944_PostgreSql.Designer.cs" />
-    <Compile Include="Migrations\ApplicationDbContextModelSnapshot.cs" />
+    <None Remove="Turnero.Utilities\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -78,37 +92,25 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="13.0.1" />
-    <PackageReference Include="FirebaseAdmin" Version="3.1.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10" />
-    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.10" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.10" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.10" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="8.0.10">
-      <TreatAsUsed>true</TreatAsUsed>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.11" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.11" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.11" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.11" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1">
       <TreatAsUsed>true</TreatAsUsed>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="8.0.1">
-      <TreatAsUsed>true</TreatAsUsed>
-    </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="8.0.1" />
-    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.2.0">
-      <TreatAsUsed>true</TreatAsUsed>
-    </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.6" />
-    <PackageReference Include="Npgsql" Version="8.0.5">
-      <TreatAsUsed>true</TreatAsUsed>
-    </PackageReference>
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.10" />
-    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.4.8" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.2.0" />
-    <PackageReference Include="System.Text.Json" Version="8.0.5">
-      <TreatAsUsed>true</TreatAsUsed>
-    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.11" />
+    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.5.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="Turnero.DAL\Turnero.DAL.csproj" />
+    <ProjectReference Include="Turnero.SL\Turnero.SL.csproj" />
+    <ProjectReference Include="Turnero.Utilities\Turnero.Utilities.csproj" />
   </ItemGroup>
 
 </Project>

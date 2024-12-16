@@ -1,4 +1,6 @@
-﻿namespace Turnero.Areas.Identity.Pages.Account.Manage;
+﻿using Turnero.SL.Services.Interfaces;
+
+namespace Turnero.Areas.Identity.Pages.Account.Manage;
 
 public class ChangePasswordModel(
     UserManager<IdentityUser> userManager,

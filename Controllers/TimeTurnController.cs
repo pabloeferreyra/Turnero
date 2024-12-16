@@ -6,10 +6,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Turnero.Data;
-using Turnero.Models;
-using Turnero.Services.Interfaces;
-using Turnero.Utilities;
+using Turnero.DAL.Data;
+using Turnero.DAL.Models;
+using Turnero.SL.Services.Interfaces;
+using Turnero.Utilities.Utilities;
 
 namespace Turnero.Controllers;
 
