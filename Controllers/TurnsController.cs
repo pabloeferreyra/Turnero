@@ -1,28 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using System.Text.Json;
-using System;
-using System.Collections.Generic;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using Turnero.Models;
-using Turnero.Services.Interfaces;
-using System.Linq;
-using AutoMapper;
-using System.Globalization;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Linq.Dynamic.Core;
-using Microsoft.EntityFrameworkCore;
-using Turnero.Utilities;
-using Microsoft.AspNetCore.SignalR;
-using Turnero.Hubs;
-using Microsoft.Extensions.Caching.Memory;
-using System.Collections;
-using Microsoft.IdentityModel.Tokens;
-using Turnero.Services;
+﻿using Turnero.Hubs;
+using Turnero.Utilities.Utilities;
 
 namespace Turnero.Controllers;
 

@@ -1,0 +1,15 @@
+﻿global using Microsoft.EntityFrameworkCore;
+global using AutoMapper;
+global using Microsoft.Data.SqlClient;
+global using Microsoft.Extensions.Caching.Memory;
+global using Npgsql;
+global using System.Data;
+global using System.Linq.Expressions;
+global using System.Text;
+global using Turnero.DAL.Data;
+global using Turnero.DAL.Models;
+global using Turnero.SL.Services.Interfaces;
+global using Turnero.SL.Services.Repositories;
+global using FirebaseAdmin.Auth;
+global using Microsoft.AspNetCore.Identity;
+global using System.Net;

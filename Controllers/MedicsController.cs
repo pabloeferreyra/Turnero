@@ -4,10 +4,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Turnero.Data;
-using Turnero.Models;
-using Turnero.Services.Interfaces;
-using Turnero.Utilities;
+using Turnero.DAL.Data;
+using Turnero.DAL.Models;
+using Turnero.SL.Services.Interfaces;
+using Turnero.Utilities.Utilities;
 
 namespace Turnero.Controllers;
 

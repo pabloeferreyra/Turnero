@@ -1,3 +1,5 @@
+using Turnero.Hubs;
+
 var builder = WebApplication.CreateBuilder(args);
 
 #region Path
@@ -99,7 +101,7 @@ builder.Services.AddHttpClient<IFirebaseService, FirebaseService>(httpClient =>
     httpClient.BaseAddress = new Uri(builder.Configuration["Authentication:TokenUri"]!);
 });
 
-builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddAutoMapper(typeof(Turnero.Utilities.Utilities.AutoMapperProfiles));
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
@@ -119,7 +121,7 @@ builder.Services.AddResponseCompression(options =>
 {
     options.Providers.Add<BrotliCompressionProvider>();
     options.Providers.Add<GzipCompressionProvider>();
-    options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "image/x-icon" });
+    options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(["image/x-icon"]);
 });
 
 builder.Services.Configure<BrotliCompressionProviderOptions>(options =>

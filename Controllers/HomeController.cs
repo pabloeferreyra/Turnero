@@ -9,8 +9,8 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using Turnero.Models;
-using Turnero.Services.Interfaces;
+using Turnero.DAL.Models;
+using Turnero.SL.Services.Interfaces;
 
 namespace Turnero.Controllers;
 
