@@ -24,7 +24,7 @@ builder.Configuration.AddJsonFile(secretsPath, optional: true);
 builder.Configuration.AddUserSecrets<Program>();
 #endregion
 
-AppSettings.ConnectionString = builder.Configuration["ConnectionStrings:PostgresConnection"];
+AppSettings.ConnectionString = builder.Configuration["ConnectionStrings:PostgresDemoConnection"];
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
    options.UseNpgsql(AppSettings.ConnectionString)).AddDefaultIdentity<IdentityUser>(options =>
    {
