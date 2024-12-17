@@ -8,34 +8,42 @@
 <link rel="stylesheet" href="~/css/Login.css" />
       <div class="container py-5 h-100">
         <div class="row d-flex justify-content-center align-items-center h-100">
-            <div class="col-12 col-md-8 col-lg-6 col-xl-5">
-                <div     class="card shadow-2-strong" style="border-radius: 1rem;">
-                    <div class="card-body p-5 text-center">
-                        <form id="account" method="post">
-                            <img class="rounded mx-auto d-block" src="~/favicon.ico" />
-                            <hr />
-                            <div asp-validation-summary="All" class="text-danger"></div>
-                            <div class="form-outline mb-4">
-                                <input asp-for="Input.User" class="form-control form-control-lg" placeholder="User" />
-                                
-                                <span asp-validation-for="Input.User" class="text-danger"></span>
-                            </div>
-                            <div class="form-outline mb-4">
-                                <input asp-for="Input.Password" class="form-control form-control-lg" placeholder="Password" />
-                                <span asp-validation-for="Input.Password" class="text-danger"></span>
-                            </div>
-                            <div class="form-group">
-                            <button type="submit" class="btn btn-primary btn-lg btn-block">Ingresar</button>
-                            </div>
-                            <div class="form-group">
-                                <p>
-                                    <a id="forgot-password" asp-page="./ForgotPassword">Contraseña perdida?</a>
-                                </p>
-                            </div>
-                        </form>
-
-                    <a href="mailto:pabloeferreyra@gmail.com?subject=Solicito%20asistencia%20con%20turnero&body=Hola%20Pablo,%0D%0A%0D%0ANecesito%20asistencia%20con%20el%20sistema%20de%20turnero.%0D%0A%0D%0AGracias%20de%20antemano,%0D%0ATu%20nombre" target="_blank">Ayuda</a>
+            
+            <div class="col-12 col-md-8 col-lg-8 col-xl-8">
+                <div class="card shadow-2-strong" style="border-radius: 1.5rem;">
+                    <div class="card-header" style="border: none;">
+                        <h5> Bienvenido a Turnero - Calchaqui, por favor ingrese sus credenciales a continuación</h5>
                     </div>
+                    <div class="card-body row">
+                        <div class="p-5 col-md-4 col-6">
+                            <img class="rounded d-block" id="login-icon" src="~/favicon.ico" />
+                        </div>
+                        <div class="p-5 col-md-8 col-6 text-center">
+                            <form id="account" method="post">
+                                <div asp-validation-summary="All" class="text-danger"></div>
+                                <div class="form-outline mb-4">
+                                    <input asp-for="Input.User" class="form-control form-control-lg" placeholder="User" />
+                                
+                                    <span asp-validation-for="Input.User" class="text-danger"></span>
+                                </div>
+                                <div class="form-outline mb-4">
+                                    <input asp-for="Input.Password" class="form-control form-control-lg" placeholder="Password" />
+                                    <span asp-validation-for="Input.Password" class="text-danger"></span>
+                                </div>
+                                <div class="form-group row d-md-flex justify-content-md-end">
+                                    <div class="col-3">
+                                        <button type="submit" class="btn btn-primary btn-lg btn-block">Ingresar</button>
+                                    </div>
+                                    <div class="col-6">
+                                        <a class="btn btn-danger btn-lg btn-block" id="forgot-password" asp-page="./ForgotPassword">Contraseña perdida?</a>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 d-flex justify-content-end">
+                    <a id="help" href="mailto:pabloeferreyra@gmail.com?subject=Solicito%20asistencia%20con%20turnero&body=Hola%20Pablo,%0D%0A%0D%0ANecesito%20asistencia%20con%20el%20sistema%20de%20turnero.%0D%0A%0D%0AGracias%20de%20antemano,%0D%0ATu%20nombre" target="_blank">ayuda</a>
                 </div>
             </div>
         </div>
