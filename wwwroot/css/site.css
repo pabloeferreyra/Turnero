@@ -34,14 +34,14 @@ input[type="password"] {
     border-radius: 0.375rem !important;
 }
 
-.btn-primary {
+.btn-primary, .dropdown-item.active, .previous, .next {
     color: #fff;
     background-color: #74ADB9;
     border-color: #74ADB9;
     border-radius: 1.5rem;
 }
 
-.btn-primary:hover {
+.btn-primary:hover, .btn-primary:focus, .dropdown-item:focus {
     color: #fff;
     background-color: #0B5066;
     border-color: #0B5066;
