@@ -59,10 +59,11 @@ connection.start()
     .then(function () {
         Swal.fire({
             position: 'top-end',
-            icon: 'success',
-            title: "Conexion Exitosa",
+            text: "Conexion Exitosa",
+            color: "#fff",
+            background: "#28a745",
             showConfirmButton: false,
-            timer: 100
+            timer: 200
         });
     })
     .catch(function (err) {
