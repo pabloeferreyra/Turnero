@@ -9,8 +9,12 @@ a.navbar-brand {
 
 /* Provide sufficient contrast against white background */
 a {
-  color: #0366d6;
+    color: #fff;
+    text-decoration: none;
 }
+    a:hover {
+        color: #0B5066;
+    }
 
 .Red {
     background-color: red !important;
@@ -22,7 +26,11 @@ a {
     border-color: #74ADB9;
 }
 
-input[type="text"] {
+input[type="text"]  {
+    border-radius: 0.375rem !important;
+}
+
+input[type="password"] {
     border-radius: 0.375rem !important;
 }
 
@@ -30,12 +38,37 @@ input[type="text"] {
     color: #fff;
     background-color: #74ADB9;
     border-color: #74ADB9;
+    border-radius: 1.5rem;
 }
 
-.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+.btn-primary:hover {
+    color: #fff;
+    background-color: #0B5066;
+    border-color: #0B5066;
+}
+
+.btn-danger {
+    background-color: #d9626e;
+    border-radius: 1.5rem;
+}
+
+.btn-secondary {
+    border-radius: 1.5rem;
+}
+
+.active > .page-link, .page-link.active {
+    z-index: 3;
     color: #fff;
     background-color: #74ADB9;
     border-color: #74ADB9;
+}
+
+.page-link {
+    color: #74ADB9;
+}
+
+.page-link:hover {
+    color: #0B5066;
 }
 
 /* Sticky footer styles
