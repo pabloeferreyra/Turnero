@@ -77,25 +77,21 @@ public abstract class RepositoryBase<T>(ApplicationDbContext context, IMapper ma
 
         var sql = $"select * from {procedureName}({sqlParametersString})";
 
-        return _context.Set<T>()
-            .FromSqlRaw(sql)
-            .ToList();
+        return [.. _context.Set<T>().FromSqlRaw(sql)];
     }
 
     public IQueryable<T> CallStoredProcedureDTO(string connectionString, string procedureName)
     {
-        using (var connection = new NpgsqlConnection(connectionString))
+        using var connection = new NpgsqlConnection(connectionString);
+        connection.Open();
+        var command = new NpgsqlCommand(procedureName, connection)
         {
-            connection.Open();
-            var command = new NpgsqlCommand(procedureName, connection)
-            {
-                CommandType = CommandType.Text
-            };
+            CommandType = CommandType.Text
+        };
 
-            var results = command.ExecuteReader();
-            var mappedResults = MapResults(results);
-            return mappedResults.AsQueryable();
-        }
+        var results = command.ExecuteReader();
+        var mappedResults = MapResults(results);
+        return mappedResults.AsQueryable();
     }
 
     private static List<T> MapResults(NpgsqlDataReader reader)
