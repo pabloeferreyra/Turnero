@@ -1,7 +1,4 @@
-﻿using Turnero.Hubs;
-using Turnero.Utilities.Utilities;
-
-namespace Turnero.Controllers;
+﻿namespace Turnero.Controllers;
 
 public class TurnsController : Controller
 {

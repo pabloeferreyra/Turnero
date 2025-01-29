@@ -4,6 +4,7 @@ using Turnero.SL.Services.Interfaces;
 using Turnero.SL.Services.Repositories;
 using Turnero.SL.Services;
 using Microsoft.EntityFrameworkCore;
+using Xunit;
 
 namespace Turnero.Test;
 

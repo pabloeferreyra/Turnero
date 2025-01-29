@@ -37,3 +37,5 @@ global using Turnero.DAL.Models;
 global using Turnero.SL.Services;
 global using Turnero.SL.Services.Interfaces;
 global using Turnero.SL.Services.Repositories;
+global using Turnero.Hubs;
+global using Turnero.Utilities.Utilities;

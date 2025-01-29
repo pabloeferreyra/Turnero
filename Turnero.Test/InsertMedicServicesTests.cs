@@ -3,6 +3,7 @@ using Turnero.SL.Services.Interfaces;
 using Turnero.SL.Services.Repositories;
 using Turnero.SL.Services;
 using Turnero.DAL.Models;
+using Xunit;
 
 namespace Turnero.Test;
 
