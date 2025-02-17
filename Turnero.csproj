@@ -105,7 +105,7 @@
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.3" />
     <PackageReference Include="System.Linq.Dynamic.Core" Version="1.6.0.2" />
-    <PackageReference Include="System.Text.Json" Version="9.0.1" />
+    <PackageReference Include="System.Text.Json" Version="9.0.2" />
   </ItemGroup>
 
   <ItemGroup>
