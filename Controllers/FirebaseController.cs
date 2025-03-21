@@ -1,8 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Turnero.DAL.Models;
-using Turnero.SL.Services.Interfaces;
-
-namespace Turnero.Controllers;
+﻿namespace Turnero.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]

@@ -1,6 +1,4 @@
-﻿using Turnero.Hubs;
-
-namespace Turnero.Controllers
+﻿namespace Turnero.Controllers
 {
     [AllowAnonymous]
     public class TurnsPublicController : Controller
