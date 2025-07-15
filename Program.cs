@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using Turnero.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -102,8 +103,10 @@ builder.Services.AddHttpClient<IFirebaseService, FirebaseService>(httpClient =>
     httpClient.BaseAddress = new Uri(builder.Configuration["Authentication:TokenUri"]!);
 });
 
-builder.Services.AddAutoMapper(typeof(Turnero.Utilities.Utilities.AutoMapperProfiles));
-
+builder.Services.AddAutoMapper(cfg =>
+{
+    cfg.AddProfile<AutoMapperProfiles>();
+});
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddSignalR().AddJsonProtocol();
