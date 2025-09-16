@@ -1,10 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace Turnero.DAL.Models;
+﻿namespace Turnero.DAL.Models;
 
 public class PaginatedList<T> : List<T>
 {
@@ -44,7 +38,7 @@ public class PaginatedList<T> : List<T>
 
     public static PaginatedList<T> Create(List<T> source, int pageIndex, int pageSize)
     {
-        var count = source.Count();
+        var count = source.Count;
         var items = source.Skip((pageIndex - 1) * pageSize).Take(pageSize).ToList();
         return new PaginatedList<T>(items, count, pageIndex, pageSize);
     }

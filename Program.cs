@@ -1,4 +1,6 @@
 var builder = WebApplication.CreateBuilder(args);
+
+MapsterConfig.RegisterMappings();
 #region Path Configuration
 string firebasePath = GetFirebasePath(builder.Configuration["secretsFolder"]);
 
@@ -15,7 +17,7 @@ builder.Configuration.AddUserSecrets<Program>();
 #endregion
 
 #region Database Configuration
-AppSettings.ConnectionString = builder.Configuration.GetConnectionString("PostgresConnection");
+AppSettings.ConnectionString = builder.Configuration.GetConnectionString("LocalConnection");
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
         options.UseNpgsql(AppSettings.ConnectionString));
 
@@ -127,10 +129,6 @@ builder.Services.AddHttpClient<IFirebaseService, FirebaseService>(httpClient =>
         httpClient.BaseAddress = new Uri(tokenUri);
     }
 });
-#endregion
-
-#region AutoMapper
-builder.Services.AddAutoMapper(cfg => { }, typeof(AutoMapperProfiles));
 #endregion
 
 #region Development Tools
@@ -251,5 +249,7 @@ app.MapRazorPages();
 
 app.UseCookiePolicy();
 #endregion
+
+
 
 await app.RunAsync();

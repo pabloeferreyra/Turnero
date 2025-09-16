@@ -1,6 +1,6 @@
 ﻿namespace Turnero.SL.Services.Repositories;
 
-public class TimeTurnRepository(ApplicationDbContext context, IMapper mapper, IMemoryCache cache) : RepositoryBase<TimeTurn>(context, mapper, cache), ITimeTurnRepository
+public class TimeTurnRepository(ApplicationDbContext context, IMemoryCache cache) : RepositoryBase<TimeTurn>(context, cache), ITimeTurnRepository
 {
     public async Task<List<TimeTurn>> GetList()
     {
@@ -14,7 +14,8 @@ public class TimeTurnRepository(ApplicationDbContext context, IMapper mapper, IM
 
     public async Task<TimeTurn> GetbyId(Guid id)
     {
-        return await FindByCondition(t => t.Id == id).FirstOrDefaultAsync();
+        return await FindByCondition(t => t.Id == id).FirstOrDefaultAsync()
+            ?? throw new InvalidOperationException("No se encontró el turno con el id especificado.");
     }
 
     public bool Exists(Guid id)

@@ -13,21 +13,12 @@ using Turnero.Utilities.Utilities;
 namespace Turnero.Controllers;
 
 [Authorize(Roles = RolesConstants.Admin)]
-public class AdministrationController : Controller
+public class AdministrationController(RoleManager<IdentityRole> roleManager,
+                                UserManager<IdentityUser> userManager,
+                                ILogger<AdministrationController> logger) : Controller
 {
-    private readonly RoleManager<IdentityRole> roleManager;
-    private readonly UserManager<IdentityUser> userManager;
 
-    public ILogger<AdministrationController> Logger { get; }
-
-    public AdministrationController(RoleManager<IdentityRole> roleManager,
-                                    UserManager<IdentityUser> userManager,
-                                    ILogger<AdministrationController> logger)
-    {
-        this.roleManager = roleManager;
-        this.userManager = userManager;
-        this.Logger = logger;
-    }
+    public ILogger<AdministrationController> Logger { get; } = logger;
 
     [HttpGet]
     public async Task<IActionResult> ManageUserClaims(string userId)
@@ -47,7 +38,7 @@ public class AdministrationController : Controller
 
         foreach (Claim claim in ClaimsStore.AllClaims)
         {
-            UserClaim userClaim = new UserClaim
+            UserClaim userClaim = new()
             {
                 ClaimType = claim.Type
             };
@@ -113,7 +104,7 @@ public class AdministrationController : Controller
             Id = user.Id,
             Email = user.Email,
             UserName = user.UserName,
-            Claims = userClaims.Select(c => c.Value).ToList(),
+            Claims = [.. userClaims.Select(c => c.Value)],
             Roles = userRoles
         };
 
@@ -152,7 +143,7 @@ public class AdministrationController : Controller
             }
             catch(DbUpdateException ex)
             {
-                Logger.LogError($"Error updating user {ex}");
+                Logger.LogError("Error updating user: {Exception}", ex);
                 return View("Error");
             }
         }
@@ -189,7 +180,7 @@ public class AdministrationController : Controller
             }
             catch (DbUpdateException ex)
             {
-                Logger.LogError($"Error deleting user {ex}");
+                Logger.LogError("Error deleting user: {Exception}", ex);
                 return View("Error");
             }
         }
@@ -226,7 +217,7 @@ public class AdministrationController : Controller
             }
             catch (DbUpdateException ex)
             {
-                Logger.LogError($"Error deleting role {ex}");
+                Logger.LogError("Error deleting role: {Exception}", ex);
                 ViewBag.ErrorTitle = $"{role.Name} role is in use";
                 ViewBag.ErrorMessage = $"{role.Name} role cannot be deleted as there are users " +
                     $"in this role. If you want to delete this role, please remove the users from" +
@@ -306,7 +297,7 @@ public class AdministrationController : Controller
             }
             catch (DbUpdateException ex)
             {
-                Logger.LogError($"Error editing role {ex}");
+                Logger.LogError("Error editing role: {Exception}", ex);
                 return View("Error");
             }
         }
