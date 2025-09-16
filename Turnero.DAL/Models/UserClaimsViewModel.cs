@@ -1,12 +1,11 @@
-﻿using System.Collections.Generic;
-
-namespace Turnero.DAL.Models;
+﻿namespace Turnero.DAL.Models;
 
 public class UserClaimsViewModel
 {
     public UserClaimsViewModel()
     {
-        Claims = new List<UserClaim>();
+        UserId = string.Empty;
+        Claims = [];
     }
 
     public string UserId { get; set; }

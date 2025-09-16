@@ -1,11 +1,9 @@
-﻿using System.Text.Json.Serialization;
-
-namespace Turnero.DAL.Models;
+﻿namespace Turnero.DAL.Models;
 
 public class AuthFirebase
 {
     [JsonPropertyName("kind")]
-    public string Kind { get; set; }
+    public string? Kind { get; set; }
 
     [JsonPropertyName("localId")]
     public string? LocalId { get; set; }

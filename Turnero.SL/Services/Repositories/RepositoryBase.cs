@@ -1,9 +1,8 @@
 ﻿namespace Turnero.SL.Services.Repositories;
 
-public abstract class RepositoryBase<T>(ApplicationDbContext context, IMapper mapper, IMemoryCache cache) : IRepositoryBase<T> where T : class
+public abstract class RepositoryBase<T>(ApplicationDbContext context, IMemoryCache cache) : IRepositoryBase<T> where T : class
 {
     protected ApplicationDbContext _context = context;
-    private readonly IMapper mapper = mapper;
     public IMemoryCache _cache = cache;
 
     public IQueryable<T> FindAll() => _context.Set<T>().AsNoTracking();

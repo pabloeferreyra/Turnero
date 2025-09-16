@@ -1,15 +1,9 @@
 ﻿namespace Turnero.SL.Services;
 
-public class GetMedicsServices : IGetMedicsServices
+public class GetMedicsServices(ILoggerServices logger, IMedicRepository medicRepository) : IGetMedicsServices
 {
-    private readonly ILoggerServices _logger;
-    private readonly IMedicRepository _medicRepository;
-
-    public GetMedicsServices(ILoggerServices logger, IMedicRepository medicRepository)
-    {
-        _logger = logger;
-        _medicRepository = medicRepository;
-    }
+    private readonly ILoggerServices _logger = logger;
+    private readonly IMedicRepository _medicRepository = medicRepository;
 
     public async Task<List<MedicDto>> GetMedicsDto()
     {
@@ -26,7 +20,7 @@ public class GetMedicsServices : IGetMedicsServices
         catch (Exception)
         {
             //_logger.Error(ex.Message, ex);
-            return new List<MedicDto>();
+            return [];
         }
     }
 
@@ -45,7 +39,7 @@ public class GetMedicsServices : IGetMedicsServices
         catch (Exception)
         {
             ////_logger.Error(ex.Message, ex);
-            return new List<Medic>();
+            return [];
         }
     }
 
@@ -68,7 +62,7 @@ public class GetMedicsServices : IGetMedicsServices
         }
     }
 
-    public async Task<Medic> GetMedicByUserId(string id)
+    public async Task<Medic?> GetMedicByUserId(string id)
     {
         try
         {
@@ -76,7 +70,7 @@ public class GetMedicsServices : IGetMedicsServices
             //{
             //_logger.Debug("Medico traido correctamente por usuario");
             //});
-            Medic med = await _medicRepository.GetByUserId(id);
+            Medic? med = await _medicRepository.GetByUserId(id);
 
             return med;
         }
@@ -104,12 +98,13 @@ public class GetMedicsServices : IGetMedicsServices
     {
         try
         {
-            return await _medicRepository.GetCachedMedics();
+            var result = await _medicRepository.GetCachedMedics();
+            return result ?? [];
         }
         catch (Exception)
         {
             //_logger.Error(ex.Message, ex);
-            return null;
+            return [];
         }
     }
 }

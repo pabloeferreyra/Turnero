@@ -1,9 +1,7 @@
 ﻿namespace Turnero.SL.Services.Repositories
 {
-    public class TurnDTORepository(ApplicationDbContext context, IMapper mapper, IMemoryCache cache) : RepositoryBase<TurnDTO>(context, mapper, cache), ITurnDTORepository
+    public class TurnDTORepository(ApplicationDbContext context, IMemoryCache cache) : RepositoryBase<TurnDTO>(context, cache), ITurnDTORepository
     {
-        private readonly IMapper mapper = mapper;
-
         public IQueryable<TurnDTO> GetListDto(string connectionString)
         {
             var turnDto = CallStoredProcedureDTO(connectionString, "select * from getallturns()");

@@ -1,26 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using System.Linq;
-using System.Threading.Tasks;
-using Turnero.Utilities.Utilities;
-
-namespace Turnero.Controllers;
+﻿namespace Turnero.Controllers;
 
 [Authorize(Roles = RolesConstants.Admin)]
-public class RoleController : Controller
+public class RoleController(RoleManager<IdentityRole> roleManager) : Controller
 {
-    RoleManager<IdentityRole> roleManager;
-
-    /// 
-    /// Injecting Role Manager
-    /// 
-    /// 
-    public RoleController(RoleManager<IdentityRole> roleManager)
-    {
-        this.roleManager = roleManager;
-    }
-
     public IActionResult Index()
     {
         var roles = roleManager.Roles.ToList();

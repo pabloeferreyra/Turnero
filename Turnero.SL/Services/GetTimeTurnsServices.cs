@@ -1,31 +1,21 @@
 ﻿namespace Turnero.SL.Services;
 
-public class GetTimeTurnsServices : IGetTimeTurnsServices
+public class GetTimeTurnsServices(ILoggerServices logger,
+                            ITimeTurnRepository timeTurnRepository) : IGetTimeTurnsServices
 {
-    private readonly ILoggerServices _logger;
-    private readonly ITimeTurnRepository _timeTurnRepository;
-
-    public GetTimeTurnsServices(ILoggerServices logger,
-                                ITimeTurnRepository timeTurnRepository)
-    {
-        _logger = logger;
-        _timeTurnRepository = timeTurnRepository;
-    }
+    private readonly ILoggerServices _logger = logger;
+    private readonly ITimeTurnRepository _timeTurnRepository = timeTurnRepository;
 
     public async Task<List<TimeTurn>> GetTimeTurns()
     {
         try
         {
-            //_ = Task.Run(async () =>
-            //{
-            //    _logger.Debug("Tiempos obtenidos");
-            //});
             return await _timeTurnRepository.GetList();
         }
         catch (Exception)
         {
             //_logger.Error(ex.Message, ex);
-            return null;
+            return [];
         }
     }
 
@@ -42,7 +32,7 @@ public class GetTimeTurnsServices : IGetTimeTurnsServices
         catch (Exception)
         {
             //_logger.Error(ex.Message, ex);
-            return null;
+            return Enumerable.Empty<TimeTurn>().AsQueryable();
         }
     }
 
@@ -54,12 +44,13 @@ public class GetTimeTurnsServices : IGetTimeTurnsServices
             //{
             //    _logger.Info($"Tiempo {id} obtenido");
             //});
-            return await _timeTurnRepository.GetbyId(id);
+            var result = await _timeTurnRepository.GetbyId(id);
+            return result ?? throw new InvalidOperationException("No se encontró el TimeTurn solicitado.");
         }
         catch (Exception)
         {
             //_logger.Error(ex.Message, ex);
-            return null;
+            throw;
         }
     }
 
@@ -80,12 +71,13 @@ public class GetTimeTurnsServices : IGetTimeTurnsServices
     {
         try
         {
-            return await _timeTurnRepository.GetCachedTimes();
+            var result = await _timeTurnRepository.GetCachedTimes();
+            return result ?? [];
         }
         catch (Exception)
         {
             //_logger.Error(ex.Message, ex);
-            return null;
+            return [];
         }
     }
 }

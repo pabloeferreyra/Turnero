@@ -1,12 +1,10 @@
-﻿using AutoMapper.QueryableExtensions;
+﻿using Mapster;
 using System.Globalization;
 
 namespace Turnero.SL.Services.Repositories;
 
-public class TurnsRepository(ApplicationDbContext context, IMapper mapper, IMemoryCache cache) : RepositoryBase<Turn>(context, mapper, cache), ITurnRepository
+public class TurnsRepository(ApplicationDbContext context, IMemoryCache cache) : RepositoryBase<Turn>(context, cache), ITurnRepository
 {
-    private readonly IMapper mapper = mapper;
-
     public void Access(Turn turn)
     {
         turn.Accessed = true;
@@ -17,12 +15,15 @@ public class TurnsRepository(ApplicationDbContext context, IMapper mapper, IMemo
     public async Task<Turn> GetById(Guid id)
     {
         return await FindByCondition(m => m.Id == id)
-            .SingleOrDefaultAsync();
+            .SingleOrDefaultAsync()
+            ?? throw new InvalidOperationException("No se encontró el turno con el id especificado."); 
     }
 
     public async Task<TurnDTO> GetDTOById(Guid id)
     {
-        return await FindByCondition(m => m.Id == id).ProjectTo<TurnDTO>(mapper.ConfigurationProvider).FirstOrDefaultAsync();
+        var turn = await FindByCondition(m => m.Id == id).SingleOrDefaultAsync();
+        return turn.Adapt<TurnDTO>()
+            ?? throw new InvalidOperationException("No se encontró el turno con el id especificado."); 
     }
 
     public List<Turn> GetList(DateTime? date, Guid? id)
@@ -43,14 +44,14 @@ public class TurnsRepository(ApplicationDbContext context, IMapper mapper, IMemo
         {
             param = new object[2];
             param[0] = formattedDate.ToString();
-            param[1] = id != null ? id : null;
+            param[1] = id.Value;
         }
         else
         {
-            param = new object[]
-            {
+            param =
+            [
                 formattedDate.ToString()
-            };
+            ];
         }
 
         return CallStoredProcedure("GetTurns", param);
@@ -58,7 +59,6 @@ public class TurnsRepository(ApplicationDbContext context, IMapper mapper, IMemo
 
     public async Task<List<Turn>> ForExport(DateTime date, Guid id)
     {
-
         return await FindByCondition(m => m.MedicId == id && m.DateTurn.Date == date.Date)
             .Include(m => m.Medic).Include(t => t.Time)
             .OrderBy(t => t.Time.Time)

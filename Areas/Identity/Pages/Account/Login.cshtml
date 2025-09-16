@@ -15,10 +15,10 @@
                         <h5> Bienvenido a Turnero - Calchaqui, por favor ingrese sus credenciales a continuación</h5>
                     </div>
                     <div class="card-body row">
-                        <div class="p-5 col-md-4 col-6">
-                            <img class="rounded d-block" id="login-icon" src="~/favicon.ico" />
+                        <div class="col-12 col-sm-12 col-md-12 col-lg-6">
+                            <img class="rounded mx-auto d-block" id="login-icon" src="~/favicon.ico" />
                         </div>
-                        <div class="p-5 col-md-8 col-6 text-center">
+                        <div class="col-sm-12 col-sm-12 col-md-12 col-lg-6 text-center">
                             <form id="account" method="post">
                                 <div asp-validation-summary="All" class="text-danger"></div>
                                 <div class="form-outline mb-4">
@@ -31,11 +31,11 @@
                                     <span asp-validation-for="Input.Password" class="text-danger"></span>
                                 </div>
                                 <div class="form-group row d-md-flex justify-content-md-end">
-                                    <div class="col-3">
+                                    <div class="col-4">
                                         <button type="submit" class="btn btn-primary btn-lg btn-block">Ingresar</button>
                                     </div>
-                                    <div class="col-6">
-                                        <a class="btn btn-danger btn-lg btn-block" id="forgot-password" asp-page="./ForgotPassword">Contraseña perdida?</a>
+                                    <div class="col-8">
+                                        <a class="btn btn-danger btn-lg btn-block" id="forgot-password" asp-page="./ForgotPassword">Recuperar</a>
                                     </div>
                                 </div>
                             </form>

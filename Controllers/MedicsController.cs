@@ -1,47 +1,15 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using Turnero.DAL.Data;
-using Turnero.DAL.Models;
-using Turnero.SL.Services.Interfaces;
-using Turnero.Utilities.Utilities;
-
-namespace Turnero.Controllers;
+﻿namespace Turnero.Controllers;
 
 [Authorize(Roles = RolesConstants.Admin)]
-public class MedicsController : Controller
+public class MedicsController(UserManager<IdentityUser> userManager,
+                        IGetMedicsServices getMedicsServices,
+                        IInsertMedicServices insertMedicServices,
+                        IUpdateMedicServices updateMedicServices) : Controller
 {
-    private readonly ApplicationDbContext _context;
-    private readonly RoleManager<IdentityRole> roleManager;
-    private readonly UserManager<IdentityUser> userManager;
-    private readonly IGetMedicsServices _getMedicsServices;
-    private readonly IInsertMedicServices _insertMedicServices;
-    private readonly IUpdateMedicServices _updateMedicServices;
-    public ILogger<AdministrationController> Logger { get; }
-
-    public MedicsController(RoleManager<IdentityRole> roleManager,
-                            UserManager<IdentityUser> userManager,
-                            ILogger<AdministrationController> logger,
-                            ApplicationDbContext context,
-                            IGetMedicsServices getMedicsServices,
-                            IInsertMedicServices insertMedicServices, 
-                            IUpdateMedicServices updateMedicServices)
-    {
-        this.roleManager = roleManager;
-        this.userManager = userManager;
-        this.Logger = logger;
-        _context = context;
-        _getMedicsServices = getMedicsServices;
-        _insertMedicServices = insertMedicServices;
-        _updateMedicServices = updateMedicServices;
-    }
 
     public async Task<IActionResult> Index()
     {
-        return View(await _getMedicsServices.GetMedics());
+        return View(await getMedicsServices.GetMedics());
     }
 
     public async Task<IActionResult> Details(Guid? id)
@@ -51,7 +19,7 @@ public class MedicsController : Controller
             return NotFound();
         }
 
-        var medic = await _getMedicsServices.GetMedicById((Guid)id);
+        var medic = await getMedicsServices.GetMedicById((Guid)id);
         if (medic == null)
         {
             return NotFound();
@@ -75,7 +43,7 @@ public class MedicsController : Controller
     {
         if (ModelState.IsValid)
         {
-            await _insertMedicServices.Create(medic);
+            await insertMedicServices.Create(medic);
             return RedirectToAction(nameof(Index));
         }
         return View(medic);
@@ -88,7 +56,7 @@ public class MedicsController : Controller
             return NotFound();
         }
 
-        var medic = await _getMedicsServices.GetMedicById((Guid)id);
+        var medic = await getMedicsServices.GetMedicById((Guid)id);
         if (medic == null)
         {
             return NotFound();
@@ -108,7 +76,7 @@ public class MedicsController : Controller
         }
         else if (ModelState.IsValid)
         {
-            bool resUpd = await _updateMedicServices.Update(medic);
+            bool resUpd = await updateMedicServices.Update(medic);
             if(!resUpd)
             { 
                 return View("Error");
@@ -125,7 +93,7 @@ public class MedicsController : Controller
             return View("NotFound");
         }
 
-        var medic = await _getMedicsServices.GetMedicById((Guid)id);
+        var medic = await getMedicsServices.GetMedicById((Guid)id);
         if (medic == null)
         {
             ViewBag.ErrorMessage = $"Medic with Id = {id} cannot be found";
@@ -141,14 +109,14 @@ public class MedicsController : Controller
     {
         if (MedicExists(id))
         {
-            var medic = await _getMedicsServices.GetMedicById(id);
-            _updateMedicServices.Delete(medic);
+            var medic = await getMedicsServices.GetMedicById(id);
+            updateMedicServices.Delete(medic);
         }
         return RedirectToAction(nameof(Index));
     }
 
     private bool MedicExists(Guid id)
     {
-        return _getMedicsServices.ExistMedic(id);
+        return getMedicsServices.ExistMedic(id);
     }
 }
