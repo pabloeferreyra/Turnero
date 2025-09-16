@@ -1,32 +1,21 @@
-﻿
-
-namespace Turnero.SL.Services
+﻿namespace Turnero.SL.Services
 {
-    public class GetTurnsServices : IGetTurnsServices
+    public class GetTurnsServices(ILoggerServices logger,
+                            ITurnRepository turnRepository) : IGetTurnsServices
     {
-        private readonly ILoggerServices _logger;
-        private readonly ITurnRepository _turnRepository;
-        public GetTurnsServices(ILoggerServices logger,
-                                ITurnRepository turnRepository)
-        {
-            _logger = logger;
-            _turnRepository = turnRepository;
-        }
+        private readonly ILoggerServices _logger = logger;
+        private readonly ITurnRepository _turnRepository = turnRepository;
+
         public List<Turn> GetTurns(DateTime? dateTurn, Guid? medicId)
         {
             try
             {
-                _ = Task.Run(() =>
-                {
-                    //_logger.Info($"{dateTurn} Turnos llegaron correctamente");
-                    return Task.CompletedTask;
-                });
                 return _turnRepository.GetList(dateTurn, medicId);
             }
             catch (Exception)
             {
                 //_logger.Error(ex.Message, ex);
-                return null;
+                return [];
             }
         }
 
@@ -38,12 +27,13 @@ namespace Turnero.SL.Services
                 {
                     //_logger.Info($"Turno {id}");
                 });
-                return await _turnRepository.GetById(id);
+                var turn = await _turnRepository.GetById(id);
+                return turn ?? new Turn();
             }
             catch (Exception)
             {
                 //_logger.Error(ex.Message, ex);
-                return null;
+                return new Turn();
             }
         }
 
@@ -51,16 +41,17 @@ namespace Turnero.SL.Services
         {
             try
             {
-                //_ = Task.Run(() =>
-                //{
-                //    _logger.Info($"Turno {id}");
-                //});
-                return await _turnRepository.GetDTOById(id);
+                // _ = Task.Run(() =>
+                // {
+                //     _logger.Info($"Turno {id}");
+                // });
+                var dto = await _turnRepository.GetDTOById(id);
+                return dto ?? new TurnDTO();
             }
             catch (Exception)
             {
-                //_logger.Error(ex.Message, ex);
-                return null;
+                // _logger.Error(ex.Message, ex);
+                return new TurnDTO();
             }
         }
 

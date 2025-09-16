@@ -16,7 +16,7 @@ public class FirebaseService(HttpClient httpClient, IConfiguration configuration
         var tid = await LoginAsync(new UserLoginRequestDTO { Email = usrDto.Email, Password = usrDto.Password });
         var iUser = new IdentityUser
         {
-            Id = tid.LocalId,
+            Id = tid.LocalId ?? string.Empty, // Soluciona CS8601 asegurando que nunca se asigne null
             UserName = usrDto.Name,
             Email = usrDto.Email
         };
@@ -44,7 +44,7 @@ public class FirebaseService(HttpClient httpClient, IConfiguration configuration
         var tid = await LoginAsync(new UserLoginRequestDTO { Email = usrDto.Email, Password = usrDto.Password });
         var user = new IdentityUser
         {
-            Id = tid.LocalId,
+            Id = tid.LocalId ?? string.Empty, // Soluciona CS8601 asegurando que nunca se asigne null
             UserName = usrDto.Name,
             Email = usrDto.Email
         };
@@ -71,7 +71,7 @@ public class FirebaseService(HttpClient httpClient, IConfiguration configuration
 
         var response = await httpClient.PostAsJsonAsync("", credentials);
         var authFirebaseObject = await response.Content.ReadFromJsonAsync<AuthFirebase>();
-        return authFirebaseObject;
+        return authFirebaseObject ?? throw new InvalidOperationException("No se pudo obtener la autenticación de Firebase.");
     }
 
     private async Task<string> SendEmailVerificationLinkAsync(string idToken)

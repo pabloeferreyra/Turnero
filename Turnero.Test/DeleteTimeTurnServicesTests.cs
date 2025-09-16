@@ -17,7 +17,7 @@ public class DeleteTimeTurnServicesTests
     {
         _loggerMock = new Mock<ILoggerServices>();
         _timeTurnRepositoryMock = new Mock<ITimeTurnRepository>();
-        _deleteTimeTurnServices = new DeleteTimeTurnServices(_loggerMock.Object, _timeTurnRepositoryMock.Object);
+        _deleteTimeTurnServices = new DeleteTimeTurnServices(_timeTurnRepositoryMock.Object);
     }
 
     [Fact]

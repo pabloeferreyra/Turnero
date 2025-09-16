@@ -1,13 +1,14 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-
-namespace Turnero.DAL.Models;
+﻿namespace Turnero.DAL.Models;
 
 public class EditUserViewModel
 {
     public EditUserViewModel()
     {
-        Claims = new List<string>(); Roles = new List<string>();
+        Id = string.Empty;
+        UserName = string.Empty;
+        Email = string.Empty;
+        Claims = [];
+        Roles = [];
     }
 
     public string Id { get; set; }

@@ -1,14 +1,13 @@
-﻿using AutoMapper.QueryableExtensions;
+﻿using Mapster;
 
 namespace Turnero.SL.Services.Repositories;
 
-public class MedicRepository(ApplicationDbContext context, IMapper mapper, IMemoryCache cache) : RepositoryBase<Medic>(context, mapper, cache), IMedicRepository
+public class MedicRepository(ApplicationDbContext context, IMemoryCache cache) : RepositoryBase<Medic>(context, cache), IMedicRepository
 {
-    public IMapper mapper = mapper;
-
     public async Task<List<MedicDto>> GetListDto()
     {
-        return await FindAll().ProjectTo<MedicDto>(mapper.ConfigurationProvider).ToListAsync();
+        var medics = await FindAll().ToListAsync();
+        return medics.Adapt<List<MedicDto>>();
     }
 
     public async Task<List<Medic>> GetList()
@@ -18,12 +17,13 @@ public class MedicRepository(ApplicationDbContext context, IMapper mapper, IMemo
 
     public async Task<Medic> GetById(Guid id)
     {
-        return await FindByCondition(m => m.Id == id).SingleOrDefaultAsync();
+        return await FindByCondition(m => m.Id == id).SingleOrDefaultAsync()
+            ?? throw new InvalidOperationException("No se encontró el médico con el id especificado.");
     }
 
-    public async Task<Medic> GetByUserId(string id)
+    public async Task<Medic?> GetByUserId(string id)
     {
-        return await FindByCondition(m => m.UserGuid == id).SingleOrDefaultAsync();
+        return await FindByCondition(m => m.UserGuid == id).SingleOrDefaultAsync(); 
     }
 
     public bool Exists(Guid id)
@@ -37,7 +37,6 @@ public class MedicRepository(ApplicationDbContext context, IMapper mapper, IMemo
         {
             await CreateAsync(medic);
         }
-
     }
 
     public void DeleteMedic(Medic medic)

@@ -1,18 +1,15 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-
-namespace Turnero.DAL.Models;
+﻿namespace Turnero.DAL.Models;
 
 public class EditRoleViewModel
 {
     public EditRoleViewModel()
     {
-        Users = new List<string>();
+        Users = [];
     }
-    public string Id { get; set; }
+    public string? Id { get; set; }
 
     [Required(ErrorMessage = "Role Name is required")]
-    public string RoleName { get; set; }
+    public string? RoleName { get; set; }
 
     public List<string> Users { get; set; }
 }

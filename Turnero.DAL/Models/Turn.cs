@@ -1,8 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace Turnero.DAL.Models;
+﻿namespace Turnero.DAL.Models;
 
 public class Turn
 {
@@ -10,13 +6,13 @@ public class Turn
     public Guid Id { get; set; }
 
     [Display(Name = "Nombre"), Required]
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     [StringLength(10, MinimumLength = 6), Required]
-    public string Dni { get; set; }
+    public string? Dni { get; set; }
 
     [Display(Name = "Médico")]
-    public Medic Medic { get; set; }
+    public Medic? Medic { get; set; }
     public Guid MedicId { get; set; }
 
     [Display(Name = "Fecha"), Required]
@@ -25,14 +21,14 @@ public class Turn
     public DateTime DateTurn { get; set; }
 
     [Display(Name = "Hora")]
-    public TimeTurn Time { get; set; }
+    public TimeTurn? Time { get; set; }
     public Guid TimeId { get; set; }
 
     [Display(Name = "Obra Social")]
-    public string SocialWork { get; set; }
+    public string? SocialWork { get; set; }
 
     [Display(Name = "Motivo")]
-    public string Reason { get; set; }
+    public string? Reason { get; set; }
 
     [Display(Name = "Ingresado")]
     public bool Accessed { get; set; }
@@ -42,20 +38,20 @@ public class TurnDTO
 {
     public Guid Id { get; set; }
     [Display(Name = "Nombre")]
-    public string Name { get; set; }
-    public string Dni { get; set; }
+    public string? Name { get; set; }
+    public string? Dni { get; set; }
     public Guid MedicId { get; set; }
     [Display(Name = "Médico")]
-    public string MedicName { get; set; }
+    public string? MedicName { get; set; }
     [Display(Name = "Fecha")]
-    public string Date { get; set; }
+    public string? Date { get; set; }
     [Display(Name = "Hora")]
-    public string Time { get; set; }
+    public string? Time { get; set; }
     public Guid TimeId { get; set; }
     [Display(Name = "Obra Social")]
-    public string SocialWork { get; set; }
+    public string? SocialWork { get; set; }
     [Display(Name = "Motivo")]
-    public string Reason { get; set; }
+    public string? Reason { get; set; }
     [Display(Name = "Ingresado")]
     public bool Accessed { get; set; }
     public bool? IsMedic { get; set; }

@@ -1,5 +1,4 @@
 ﻿global using Microsoft.EntityFrameworkCore;
-global using AutoMapper;
 global using Microsoft.Data.SqlClient;
 global using Microsoft.Extensions.Caching.Memory;
 global using Npgsql;
