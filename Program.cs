@@ -1,132 +1,168 @@
-using Microsoft.Extensions.DependencyInjection;
-using Turnero.Hubs;
-
 var builder = WebApplication.CreateBuilder(args);
+#region Path Configuration
+string firebasePath = GetFirebasePath(builder.Configuration["secretsFolder"]);
 
-#region Path
-string secretsPath;
-string firebasePath;
-if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-{
-    secretsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Microsoft", "UserSecrets", builder.Configuration["secretsFolder"], "secrets.json");
-    firebasePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Microsoft", "UserSecrets", builder.Configuration["secretsFolder"], "firebase.json");
-}
-else
-{
-    secretsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".microsoft", "usersecrets", builder.Configuration["secretsFolder"], "secrets.json");
-    firebasePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".microsoft", "usersecrets", builder.Configuration["secretsFolder"], "firebase.json");
-}
-
+static string GetFirebasePath(string secretsFolder) =>
+    RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+        ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                      "Microsoft", "UserSecrets", secretsFolder, "firebase.json")
+        : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                      ".microsoft", "usersecrets", secretsFolder, "firebase.json");
 #endregion
 
-#region secrets
-builder.Configuration.AddJsonFile(secretsPath, optional: true);
-
+#region Configuration
 builder.Configuration.AddUserSecrets<Program>();
 #endregion
 
-AppSettings.ConnectionString = builder.Configuration["ConnectionStrings:PostgresConnection"];
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-   options.UseNpgsql(AppSettings.ConnectionString)).AddDefaultIdentity<IdentityUser>(options =>
-   {
-       options.SignIn.RequireConfirmedAccount = false;
-       options.Password.RequireDigit = true;
-       options.Password.RequireLowercase = true;
-       options.Password.RequireNonAlphanumeric = false;
-       options.Password.RequireUppercase = false;
-       options.Password.RequiredLength = 6;
-       options.Password.RequiredUniqueChars = 0;
-   }).AddRoles<IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
+#region Database Configuration
+AppSettings.ConnectionString = builder.Configuration.GetConnectionString("PostgresConnection");
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseNpgsql(AppSettings.ConnectionString));
 
+builder.Services.AddDefaultIdentity<IdentityUser>(options =>
+{
+    options.SignIn.RequireConfirmedAccount = false;
+    options.Password.RequireDigit = true;
+    options.Password.RequireLowercase = true;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequiredLength = 6;
+    options.Password.RequiredUniqueChars = 0;
+})
+.AddRoles<IdentityRole>()
+.AddEntityFrameworkStores<ApplicationDbContext>();
+#endregion
 
+#region Authentication & Authorization
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    // Cookie settings
     options.Cookie.HttpOnly = true;
-    options.ExpireTimeSpan = TimeSpan.FromHours(24);
-
+    options.ExpireTimeSpan = TimeSpan.FromDays(1);
     options.LoginPath = "/Identity/Account/Login";
     options.LogoutPath = "/Identity/Account/Login";
     options.AccessDeniedPath = "/Identity/Account/AccessDenied";
     options.SlidingExpiration = true;
 });
 
+builder.Services.AddAuthentication()
+    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, jwtOptions =>
+    {
+        var validIssuer = builder.Configuration["Authentication:ValidIssuer"];
+        var audience = builder.Configuration["Authentication:Audience"];
+
+        jwtOptions.Authority = validIssuer;
+        jwtOptions.Audience = audience;
+        jwtOptions.TokenValidationParameters.ValidIssuer = validIssuer;
+    });
+
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("DeleteRolePolicy", policy => policy.RequireClaim("Delete Role"));
+#endregion
+
+#region Session Configuration
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromHours(24);
+    options.IdleTimeout = TimeSpan.FromDays(1);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
+#endregion
 
-builder.Services.AddControllersWithViews();
-
-builder.Services.AddMvc(
-    options =>
-    {
-        var policy = new AuthorizationPolicyBuilder()
-                         .RequireAuthenticatedUser()
-                         .Build();
-        options.Filters.Add(new AuthorizeFilter(policy));
-    }
-).AddXmlSerializerFormatters();
-
-builder.Services.AddAuthorization(options =>
+#region MVC & Razor Pages
+builder.Services.AddControllersWithViews(options =>
 {
-    options.AddPolicy("DeleteRolePolicy",
-        policy => policy.RequireClaim("Delete Role"));
-});
+    var policy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+    options.Filters.Add(new AuthorizeFilter(policy));
+})
+.AddXmlSerializerFormatters();
 
 builder.Services.AddRazorPages();
-FirebaseApp.Create(new AppOptions { Credential = GoogleCredential.FromFile(firebasePath) });
+#endregion
 
+#region Firebase Configuration
+if (File.Exists(firebasePath))
+{
+    FirebaseApp.Create(new AppOptions
+    {
+        Credential = GoogleCredential.FromFile(firebasePath)
+    });
+}
+#endregion
+
+#region Dependency Injection - Services
 builder.Services.AddSingleton<ILoggerServices, LoggerServices>();
 
+// Turn Services
 builder.Services.AddScoped<IInsertTurnsServices, InsertTurnsServices>();
 builder.Services.AddScoped<IUpdateTurnsServices, UpdateTurnsServices>();
 builder.Services.AddScoped<IGetTurnsServices, GetTurnsServices>();
+builder.Services.AddScoped<IGetTurnDTOServices, GetTurnDTOServices>();
+
+// Medic Services
 builder.Services.AddScoped<IInsertMedicServices, InsertMedicServices>();
 builder.Services.AddScoped<IUpdateMedicServices, UpdateMedicServices>();
-builder.Services.AddScoped<IInsertMedicServices, InsertMedicServices>();
 builder.Services.AddScoped<IGetMedicsServices, GetMedicsServices>();
+
+// Time Turn Services
 builder.Services.AddScoped<IInsertTimeTurnServices, InsertTimeTurnServices>();
 builder.Services.AddScoped<IDeleteTimeTurnServices, DeleteTimeTurnServices>();
 builder.Services.AddScoped<IGetTimeTurnsServices, GetTimeTurnsServices>();
-builder.Services.AddSingleton<ILoggerServices, LoggerServices>();
-builder.Services.AddScoped<IGetTurnDTOServices, GetTurnDTOServices>();
+#endregion
+
+#region Dependency Injection - Repositories
 builder.Services.AddScoped<ITimeTurnRepository, TimeTurnRepository>();
 builder.Services.AddScoped<IMedicRepository, MedicRepository>();
 builder.Services.AddScoped<ITurnRepository, TurnsRepository>();
 builder.Services.AddScoped<ITurnDTORepository, TurnDTORepository>();
+#endregion
 
+#region HTTP Client
 builder.Services.AddHttpClient<IFirebaseService, FirebaseService>(httpClient =>
 {
-    httpClient.BaseAddress = new Uri(builder.Configuration["Authentication:TokenUri"]!);
+    var tokenUri = builder.Configuration["Authentication:TokenUri"];
+    if (!string.IsNullOrEmpty(tokenUri))
+    {
+        httpClient.BaseAddress = new Uri(tokenUri);
+    }
 });
+#endregion
 
-builder.Services.AddAutoMapper(cfg =>
+#region AutoMapper
+builder.Services.AddAutoMapper(cfg => { }, typeof(AutoMapperProfiles));
+#endregion
+
+#region Development Tools
+if (builder.Environment.IsDevelopment())
 {
-    cfg.AddProfile<AutoMapperProfiles>();
-});
-builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+    builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+}
+#endregion
 
-builder.Services.AddSignalR().AddJsonProtocol();
-builder.Services.AddHttpClient();
+#region SignalR
+builder.Services.AddSignalR()
+    .AddJsonProtocol();
+#endregion
 
-builder.Host.UseWindowsService();
+#region Windows Service
+builder.Services.AddWindowsService();
+#endregion
 
-var cache = new MemoryCache(new MemoryCacheOptions());
-builder.Services.AddSingleton<IMemoryCache>(cache);
-
-builder.Services.Configure<MemoryCacheOptions>(options =>
+#region Caching
+builder.Services.AddMemoryCache(options =>
 {
     options.ExpirationScanFrequency = TimeSpan.FromDays(7);
 });
+#endregion
 
+#region Response Compression
 builder.Services.AddResponseCompression(options =>
 {
     options.Providers.Add<BrotliCompressionProvider>();
     options.Providers.Add<GzipCompressionProvider>();
-    options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(["image/x-icon"]);
+    options.MimeTypes = ResponseCompressionDefaults.MimeTypes
+        .Concat(["image/x-icon"]);
 });
 
 builder.Services.Configure<BrotliCompressionProviderOptions>(options =>
@@ -138,32 +174,26 @@ builder.Services.Configure<GzipCompressionProviderOptions>(options =>
 {
     options.Level = CompressionLevel.Fastest;
 });
-
-builder.Services.AddAuthentication().AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, jwtOptions =>
-{
-    jwtOptions.Authority = builder.Configuration["Authentication:ValidIssuer"];
-    jwtOptions.Audience = builder.Configuration["Authentication:Audience"];
-    jwtOptions.TokenValidationParameters.ValidIssuer = builder.Configuration["Authentication:ValidIssuer"];
-});
+#endregion
 
 var app = builder.Build();
 
+#region Cache Initialization
 using (var scope = app.Services.CreateScope())
 {
-    var serviceProvider = scope.ServiceProvider;
-
-    var timeTurnsRepository = serviceProvider.GetRequiredService<ITimeTurnRepository>();
-    var medicsRepository = serviceProvider.GetRequiredService<IMedicRepository>();
+    var timeTurnsRepository = scope.ServiceProvider.GetRequiredService<ITimeTurnRepository>();
+    var medicsRepository = scope.ServiceProvider.GetRequiredService<IMedicRepository>();
 
     await timeTurnsRepository.GetCachedTimes();
     await medicsRepository.GetCachedMedics();
 }
+#endregion
 
-IWebHostEnvironment env = app.Environment;
+#region Working Directory
+Directory.SetCurrentDirectory(app.Environment.ContentRootPath);
+#endregion
 
-Directory.SetCurrentDirectory(env.ContentRootPath);
-
-// Configure the HTTP request pipeline.
+#region Middleware Pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
@@ -173,27 +203,45 @@ else
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseStatusCodePagesWithReExecute("/Error/{0}");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
+// Custom cache control middleware
 app.Use(async (context, next) =>
 {
-    context.Response.Headers.CacheControl = "public, max-age=300"; // Permite cachear la respuesta durante 1 hora (3600 segundos)
+    context.Response.Headers.CacheControl = "public, max-age=300";
     await next();
 });
 
+app.UseResponseCompression();
 app.UseHttpsRedirection();
-app.UseStaticFiles();
-app.UseSession();
+
+// Static files with caching
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        const int durationInSeconds = 86400; // 24 horas
+        ctx.Context.Response.Headers[HeaderNames.CacheControl] =
+            $"public,max-age={durationInSeconds}";
+    }
+});
+
+app.UseStaticFiles(); // Default static files
 
 app.UseRouting();
+app.UseSession();
 
-app.MapHub<TurnsTableHub>("/TurnsTableHub");
+// CORS should be before Authentication/Authorization
+app.UseCors(policy => policy
+    .AllowAnyOrigin()
+    .AllowAnyMethod()
+    .AllowAnyHeader());
 
 app.UseAuthentication();
-
 app.UseAuthorization();
+
+app.MapHub<TurnsTableHub>("/TurnsTableHub");
 
 app.MapControllerRoute(
     name: "default",
@@ -202,19 +250,6 @@ app.MapControllerRoute(
 app.MapRazorPages();
 
 app.UseCookiePolicy();
+#endregion
 
-app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
-
-app.UseResponseCompression();
-
-app.UseStaticFiles(new StaticFileOptions
-{
-    OnPrepareResponse = ctx =>
-    {
-        const int durationInSeconds = 86400; // Duración de la caché en segundos (24 horas)
-        ctx.Context.Response.Headers[HeaderNames.CacheControl] =
-            "public,max-age=" + durationInSeconds;
-    }
-});
-
-app.Run();
+await app.RunAsync();
