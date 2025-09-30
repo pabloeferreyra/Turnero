@@ -7,7 +7,24 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\20200807230301_InitialCreate.cs" />
+    <Compile Remove="Migrations\20200807230301_InitialCreate.Designer.cs" />
+    <Compile Remove="Migrations\20200807231943_changename.cs" />
+    <Compile Remove="Migrations\20200807231943_changename.Designer.cs" />
+    <Compile Remove="Migrations\20200807232956_TurnEdit.cs" />
+    <Compile Remove="Migrations\20200807232956_TurnEdit.Designer.cs" />
+    <Compile Remove="Migrations\20200820003534_OsYMotivo.cs" />
+    <Compile Remove="Migrations\20200820003534_OsYMotivo.Designer.cs" />
+    <Compile Remove="Migrations\20230703133944_PostgreSql.cs" />
+    <Compile Remove="Migrations\20230703133944_PostgreSql.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.9">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.9" />
   </ItemGroup>
