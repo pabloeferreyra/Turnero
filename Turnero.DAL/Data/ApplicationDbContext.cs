@@ -24,4 +24,5 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Lifestyle> Lifestyle { get; set; }
     public DbSet<Allergies> Allergies { get; set; }
     public DbSet<ExamsGenHis> ExamsGenHis { get; set; }
+    public DbSet<Visit> Visits { get; set; }
 }

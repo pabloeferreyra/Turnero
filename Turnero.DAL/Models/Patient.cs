@@ -16,4 +16,5 @@ public class Patient : BaseEntity
     [Display(Name = "Número de Afiliado")]
     public string? AffiliateNumber { get; set; }
     public ICollection<Turn>? Turns { get; set; }
+    public ICollection<Visit>? Visits { get; set; }
 }
