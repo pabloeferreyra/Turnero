@@ -12,5 +12,16 @@ self.addEventListener('activate', function (event) {
 
 // Intercepta las solicitudes de red
 self.addEventListener('fetch', function (event) {
-    console.log('Interceptando solicitud: ', event.request.url);
+    try {
+        // No interceptar requests que no sean GET (evita interferir con POST/PUT/DELETE como el login)
+        if (event.request.method !== 'GET') {
+            return; // dejar que el navegador maneje la solicitud normalmente
+        }
+
+        // Siempre devolver la petición de red por defecto (no caché ni respuesta personalizada)
+        event.respondWith(fetch(event.request));
+    }
+    catch (e) {
+        console.error('Service worker fetch error', e);
+    }
 });

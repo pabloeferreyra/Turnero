@@ -1,0 +1,60 @@
+﻿@model PatientDTO
+
+<form method="post" id="CreateForm" autocomplete="on">
+	<div class="modal-body">
+		<div class="form-group">
+			<label asp-for="Name" class="control-label">Nombre</label>
+			<input asp-for="Name" autocomplete="name" id="Name" class="form-control" />
+			<span asp-for="Name" id="clientValidation" class="text-danger"></span>
+		</div>
+		<div class="form-group">
+			<label class="control-label">Dni</label>
+			<input asp-for="Dni" id="Dni" class="form-control" maxlength="8" inputmode="numeric" pattern="\d*" />
+			<span id="dniValidation" class="text-danger"></span>
+		</div>
+		<div class="form-group">
+			<label class="control-label">Fecha de Nacimiento</label>
+			<input asp-for="BirthDate" autocomplete="bday" id="BirthDateCreate" type="date" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" max="@DateTime.Now.ToString("yyyy-MM-dd")" />
+			<span id="birthDateValidation" class="text-danger"></span>
+		</div>
+		<div class="form-group">
+			<label class="control-label">Teléfono</label>
+			<input asp-for="Phone" autocomplete="phone" id="Phone" class="form-control" />
+			<span id="phoneValidation" class="text-danger"></span>
+		</div>
+		<div class="form-group">
+			<label class="control-label">Email</label>
+			<input asp-for="Email" authocomplete="email" id="Email" class="form-control" />
+			<span id="emailValidation" class="text-danger"></span>
+		</div>
+		<div class="form-group">
+			<label class="control-label">Dirección</label>
+			<input asp-for="Address" autocomplete="address" id="Address" class="form-control" />
+			<span id="addressValidation" class="text-danger"></span>
+		</div>
+		<div class="form-group">
+			<label class="control-label">Ciudad</label>
+			<input asp-for="City" autocomplete="address-level2" id="City" class="form-control" />
+			<span id="cityValidation" class="text-danger"></span>
+		</div>
+		<div class="form-group">
+			<label class="control-label">Código Postal</label>
+			<input asp-for="PostalCode" id="PostalCode" class="form-control" maxlength="5" inputmode="numeric" pattern="\d{4,5}" />
+			<span id="postalCodeValidation" class="text-danger"></span>
+		</div>
+		<div class="form-group">
+			<label class="control-label">Obra Social</label>
+			<input asp-for="SocialWork" autocomplete="off" id="SocialWork" class="form-control" />
+			<span id="socialWorkValidation" class="text-danger"></span>
+		</div>
+		<div class="form-group">
+			<label class="control-label">Número de Afiliado</label>
+			<input asp-for="AffiliateNumber" autocomplete="dni" id="AffiliateNumber" class="form-control" />
+			<span id="affiliateNumberValidation" class="text-danger"></span>
+		</div>
+	</div>
+	<div class="modal-footer">
+		<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+		<button type="submit" id="btnCrearPaciente" class="btn btn-primary">Crear</button>
+	</div>
+</form>

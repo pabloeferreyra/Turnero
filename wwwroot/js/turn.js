@@ -1,142 +1,249 @@
-﻿var dt;
+﻿var currentPage = 1;
+var pageSize = -1;
+var recordsTotal = 0;
+var currentData = [];
+
 $(document).ready(function () {
 
-    new DateTime(document.getElementById('DateTurn'), {
-        format: 'DD/MM/YYYY',
-        locale: 'es-ES',
-        disableDays: [0],
+    // initial load
+    loadTable();
+
+    $('#btnSearch').click(function () {
+        currentPage = 1;
+        loadTable();
     });
 
+    $('#pageSize').on('change', function () {
+        pageSize = parseInt($(this).val(), 10);
+        currentPage = 1;
+        loadTable();
+    });
 
-    dt = $('#turns').dataTable({
-        "language": {
-            url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json',
-            "buttons": {
-                "collection": "Exportar"
-            }
-        },
-        "processing": true,
-        "serverSide": true,
-        "bFilter": true,
-        "bDestroy": true,
-        "bJQueryUI": true,
-        "responsive": false,
-        "scrollX": false,
-        "scrollCollapse": false,
-        "ordering": true,
-        "orderMulti": true,
-        "autoWidth": true,
-        "order": [[7, 'asc']],
-        "dom": '<"row"<"col-md-6 col-sm-12"B>><"row table-responsive"rt><"row"<"col-md-6 col-sm-12"i><"col-md-6 ms-auto"p>>',
-        "ajax": {
-            "url": "/Turns/InitializeTurns",
-            "type": "Post",
-            "datatype": "json"
-        },
+    $('#btnExportExcel').on('click', function () {
+        exportToExcel(currentData);
+    });
 
-        "columns": [
-            { "data": "name", "name": "Name", "class": 'col-md-1' },
-            { "data": "dni", "name": "Dni", "class": 'col-md-1' },
-            { "data": "socialWork", "name": "Social Work", "class": 'col-md-1' },
-            { "data": "reason", "name": "Reason", "class": 'col-md-1' },
-            { "data": "medicName", "name": "Medic", "class": 'col-md-1' },
-            { "data": "medicId", "name": "MedicId", "class": 'col-md-1' },
-            { "data": "date", "name": "Date", "class": 'col-md-1' },
-            { "data": "time", "name": "Time", "class": 'col-md-1' },
-            { "data": null, "class": 'col-md-1' },
-        ],
-        "columnDefs": [
-            {
-                "targets": [-1],
-                "data": null,
-                "render": function (data) {
-                    if (data['accessed'] == false && data['isMedic'] == false) {
-                        return '<button onclick="Edit(\'' + data['id'] +'\');" class="btn btn-secondary">Editar</button>' +
-                            '<span id="confirmaccessedSpan_' + data['id'] +'" style="display:none">' +
-                            '<button onclick="Delete(\'' + data['id'] +'\');" class="btn btn-danger">Si</button>' +
-                            '<a href="#" class="btn btn-primary"onclick="ConfirmDelete(\'' + data['id'] +'\', false)">No</a>'+
-                            '</span >' +
-                            '<span id="accessedSpan_' + data['id'] +'">' +
-                                '<a href="#" class="btn btn-danger"onclick="ConfirmDelete(\'' + data['id'] +'\', true)">Eliminar</a>' +
-                                '</span>';
-                    }
-                    else if (data['accessed'] == false && data['isMedic'] == true) {
-                        return '<span id="confirmaccessedSpan_' + data['id'] +'" style = "display:none">' +
-                            '<button onclick = "Accessed(\'' + data['id'] +'\')" class="btn btn-danger"> Si</button>' +
-                            '<a href="#" class="btn btn-primary" onclick="ConfirmAccess(\'' + data['id'] +'\', false)">No</a>' +
-                                '</span>' +
-                            '<span id="accessedSpan_'+data['id']+'">' +
-                            '<a href="#" class="btn btn-primary" onclick="ConfirmAccess(\''+data['id']+'\', true)">Ingreso</a>'+
-                            '</span> ';
-                    }
+    $('#btnExportPdf').on('click', function () {
+        exportToPdf(currentData);
+    });
 
-                    return '';
-                }
-            },
-            {
-                "target": 5,
-                "visible": false,
-                "searchable": true
-            }
-        ],
-        "createdRow": function (row, data, dataIndex) {
-            if (data['accessed'] == true) {
-                $(row).addClass('Red');
-            }
-        },
-        lengthMenu: [
-            [-1, 25, 50],
-            ['Todo','25 filas', '50 filas']
-        ],
-        buttons: [
-            {
-                extend: 'collection',
-                className: 'btn btn-primary',
-                buttons: [
-                    {
-                        extend: 'excelHtml5',
-                        title: "Turnos",
-
-                        exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 6, 7]
-                        }
-                    },
-                    {
-                        extend: 'pdfHtml5',
-                        download: 'open',
-                        orientation: 'landscape',
-                        pageSize: 'A4',
-                        title: "Turnos",
-                        exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 6, 7]
-                        }
-                    },
-                ]
-            },
-            'pageLength',
-            {
-                text: 'Recarga',
-                className: 'btn btn-primary',
-                action: function (dt) {
-                    reset();
-                }
-            }
-        ]
-        });
-
-    oTable = $('#turns').DataTable();
-    $('#btnSearch').click(function () {
-        oTable.columns(5).search($('#Medics').val().trim());
-        oTable.columns(6).search($('#DateTurn').val().trim());
-        oTable.draw();
+    // create modal
+    $(document).on('click', '#createTurn', function (event) {
+        CreateView();
+        $('#Create').modal('toggle');
     });
 
 });
 
 function reset() {
-    dt.api().ajax.reload();
+    // kept for compatibility with other scripts (signalR etc.)
+    loadTable();
 }
 
+function loadTable() {
+    var medics = $('#Medics').val();
+    var dateTurn = $('#DateTurn').val();
+
+    var form = $('#__AjaxAntiForgeryForm');
+    var token = $('input[name="__RequestVerificationToken"]', form).val();
+
+    // server-side paging parameters
+    var draw = 1;
+    var start = (currentPage - 1) * (pageSize === -1 ? 0 : pageSize);
+    var length = pageSize === -1 ? -1 : pageSize;
+
+    // columns names expected by server
+    var columnsLower = {
+        'columns[0][name]': 'Name',
+        'columns[1][name]': 'Dni',
+        'columns[2][name]': 'SocialWork',
+        'columns[3][name]': 'Reason',
+        'columns[4][name]': 'Medic',
+        'columns[5][name]': 'MedicId',
+        'columns[6][name]': 'Date',
+        'columns[7][name]': 'Time'
+    };
+
+    var dataToSend = {
+        __RequestVerificationToken: token,
+        draw: draw,
+        start: start,
+        length: length,
+        'order[0][column]': 7,
+        'order[0][dir]': 'asc'
+    };
+
+    // attach columns names (lowercase)
+    for (var k in columnsLower) dataToSend[k] = columnsLower[k];
+
+    // attach filters (server expects 'Columns[5][search][value]' with capital C in some places)
+    dataToSend['Columns[5][search][value]'] = medics || '';
+    dataToSend['columns[5][search][value]'] = medics || '';
+    dataToSend['Columns[6][search][value]'] = dateTurn || '';
+    dataToSend['columns[6][search][value]'] = dateTurn || '';
+
+    console.debug('Loading turns, request payload:', dataToSend);
+
+    $.ajax({
+        type: 'POST',
+        url: '/Turns/InitializeTurns',
+        data: dataToSend,
+        success: function (result) {
+            console.debug('InitializeTurns response:', result);
+            // try to find data array
+            var data = result && (result.data || result.Data || result.items || result.records || []);
+            if (!data || data.length === 0) {
+                // if server returned recordsTotal > 0 but no data, try fallbacks
+                if (result && result.recordsTotal && result.recordsTotal > 0) {
+                    console.warn('Server reports records but returned no data. Check controller paging implementation.');
+                }
+            }
+
+            currentData = data || [];
+            recordsTotal = result && (result.recordsTotal || result.recordsFiltered || currentData.length) || 0;
+
+            // if length == -1 (all) set pageSize accordingly
+            if (length === -1) pageSize = recordsTotal;
+
+            renderTable();
+        },
+        error: function (xhr) {
+            console.error('Error loading turns', xhr);
+            Swal.fire({ position: 'top-end', icon: 'error', title: 'Error cargando turnos', showConfirmButton: false, timer: 1200 });
+        }
+    });
+}
+
+function renderTable() {
+    var tbody = $('#turns-body');
+    tbody.empty();
+
+    if (!currentData || currentData.length === 0) {
+        tbody.append('<tr><td colspan="9" class="text-center">No hay registros</td></tr>');
+        renderPagination();
+        return;
+    }
+
+    // currentData is assumed to be the page returned by server
+    currentData.forEach(function (d) {
+        var actions = '';
+        if (d.accessed == false && d.isMedic == false) {
+            actions = '<button onclick="Edit(\'' + d.id + '\');" class="btn btn-secondary btn-sm me-1">Editar</button>' +
+                '<span id="confirmaccessedSpan_' + d.id + '" style="display:none">' +
+                '<button onclick="Delete(\'' + d.id + '\');" class="btn btn-danger btn-sm me-1">Si</button>' +
+                '<a href="#" class="btn btn-primary btn-sm" onclick="ConfirmDelete(\'' + d.id + '\', false)">No</a>' +
+                '</span>' +
+                '<span id="accessedSpan_' + d.id + '">' +
+                '<a href="#" class="btn btn-danger btn-sm" onclick="ConfirmDelete(\'' + d.id + '\', true)">Eliminar</a>' +
+                '</span>';
+        }
+        else if (d.accessed == false && d.isMedic == true) {
+            actions = '<span id="confirmaccessedSpan_' + d.id + '" style="display:none">' +
+                '<button onclick="Accessed(\'' + d.id + '\')" class="btn btn-danger btn-sm me-1"> Si</button>' +
+                '<a href="#" class="btn btn-primary btn-sm" onclick="ConfirmAccess(\'' + d.id + '\', false)">No</a>' +
+                '</span>' +
+                '<span id="accessedSpan_' + d.id + '">' +
+                '<a href="#" class="btn btn-primary btn-sm" onclick="ConfirmAccess(\'' + d.id + '\', true)">Ingreso</a>' +
+                '</span> ';
+        }
+
+        var colClass = (d.accessed == true) ? ' class="Red odd"' : '';
+
+        var tr = '<tr>' +
+            '<td' + colClass + '>' + escapeHtml(d.name || '') + '</td>' +
+            '<td' + colClass + '>' + escapeHtml(d.dni || '') + '</td>' +
+            '<td' + colClass + '>' + escapeHtml(d.socialWork || '') + '</td>' +
+            '<td' + colClass + '>' + escapeHtml(d.reason || '') + '</td>' +
+            '<td' + colClass + '>' + escapeHtml(d.medicName || '') + '</td>' +
+            '<td ' + colClass + 'style="display:none">' + (d.medicId || '') + '</td>' +
+            '<td' + colClass + '>' + escapeHtml(d.date || '') + '</td>' +
+            '<td' + colClass + '>' + escapeHtml(d.time || '') + '</td>' +
+            '<td' + colClass + '>' + actions + '</td>' +
+            '</tr>';
+
+        tbody.append(tr);
+    });
+
+    renderPagination();
+}
+
+function renderPagination() {
+    var pagination = $('#turns-pagination');
+    pagination.empty();
+
+    if (pageSize === -1 || pageSize === 0) return; // no pagination when showing all
+
+    var totalPages = Math.ceil(recordsTotal / pageSize) || 1;
+    var startPage = Math.max(1, currentPage - 2);
+    var endPage = Math.min(totalPages, currentPage + 2);
+
+    if (currentPage > 1) {
+        pagination.append('<li class="page-item"><a class="page-link" href="#" onclick="goPage(' + (currentPage - 1) + ');return false;">Anterior</a></li>');
+    }
+
+    for (var p = startPage; p <= endPage; p++) {
+        var active = p === currentPage ? ' active' : '';
+        pagination.append('<li class="page-item' + active + '"><a class="page-link" href="#" onclick="goPage(' + p + ');return false;">' + p + '</a></li>');
+    }
+
+    if (currentPage < totalPages) {
+        pagination.append('<li class="page-item"><a class="page-link" href="#" onclick="goPage(' + (currentPage + 1) + ');return false;">Siguiente</a></li>');
+    }
+}
+
+function goPage(p) {
+    currentPage = p;
+    loadTable();
+}
+
+function escapeHtml(text) {
+    return $('<div/>').text(text).html();
+}
+
+// Export helpers: use SheetJS (xlsx) and pdfMake (already present in layout)
+function exportToExcel(data) {
+    if (!data || data.length === 0) return;
+    var ws_data = [];
+    ws_data.push(["Nombre", "Dni", "Obra Social", "Motivo", "Médico", "Fecha", "Hora"]);
+    data.forEach(function (d) {
+        ws_data.push([d.name, d.dni, d.socialWork, d.reason, d.medicName, d.date, d.time]);
+    });
+
+    /* global XLSX */
+    var wb = XLSX.utils.book_new();
+    var ws = XLSX.utils.aoa_to_sheet(ws_data);
+    XLSX.utils.book_append_sheet(wb, ws, "Turnos");
+    XLSX.writeFile(wb, 'turnos.xls');
+}
+
+function exportToPdf(data) {
+    if (!data || data.length === 0) return;
+    var body = [];
+    body.push(["Nombre", "Dni", "Obra Social", "Motivo", "Médico", "Fecha", "Hora"]);
+    data.forEach(function (d) {
+        body.push([d.name, d.dni, d.socialWork, d.reason, d.medicName, d.date, d.time]);
+    });
+
+    var docDefinition = {
+        content: [
+            { text: 'Turnos', style: 'header' },
+            {
+                table: {
+                    headerRows: 1,
+                    widths: ['*', 'auto', '*', '*', '*', 'auto', 'auto'],
+                    body: body
+                }
+            }
+        ],
+        styles: {
+            header: { fontSize: 18, bold: true, margin: [0, 0, 0, 10] }
+        }
+    };
+
+    pdfMake.createPdf(docDefinition).open();
+}
+
+//-----------------------------------------------------  turnos  -----------------------------------------------------//
 function ConfirmAccess(uniqueId, isAccessedClicked) {
     var accessedSpan = 'accessedSpan_' + uniqueId;
     var confirmaccessedSpan = 'confirmaccessedSpan_' + uniqueId;
@@ -161,15 +268,6 @@ function Accessed(id) {
             id: id
         },
         success: function (result) {
-            if (result.trim().length == 0) {
-                Swal.fire({
-                    position: 'top-end',
-                    icon: 'info',
-                    title: 'no quedan turnos!',
-                    showConfirmButton: false,
-                    timer: 1200
-                });
-            }
             Swal.fire({
                 position: 'top-end',
                 icon: 'success',
@@ -177,7 +275,7 @@ function Accessed(id) {
                 showConfirmButton: false,
                 timer: 1200
             });
-            return reset();
+            return loadTable();
         },
         error: function (req, status, error) {
         }
@@ -186,8 +284,8 @@ function Accessed(id) {
 
 function Call(name, medicName) {
     $.ajax({
-        type: "POST",
-        url: "/Turns/Call",
+        type: 'POST',
+        url: '/Turns/Call',
         data: {
             Patient: name,
             MedicCaller: medicName
@@ -200,8 +298,6 @@ function Call(name, medicName) {
                 showConfirmButton: false,
                 timer: 1200
             });
-        },
-        error: function (req, status, error) {
         }
     });
 }
@@ -210,8 +306,8 @@ function Delete(id) {
     var form = $('#__AjaxAntiForgeryForm');
     var token = $('input[name="__RequestVerificationToken"]', form).val();
     $.ajax({
-        type: "DELETE",
-        url: "/Turns/Delete",
+        type: 'DELETE',
+        url: '/Turns/Delete',
         data: {
             __RequestVerificationToken: token,
             id: id
@@ -224,9 +320,7 @@ function Delete(id) {
                 showConfirmButton: false,
                 timer: 1200
             });
-            return reset();
-        },
-        error: function (req, status, error) {
+            return loadTable();
         }
     });
 }
@@ -244,32 +338,25 @@ function ConfirmDelete(uniqueId, isAccessedClicked) {
     }
 }
 
-$("#createTurn").on('click', function (event) {
-    CreateView();
-    $("#Create").modal('toggle');
-});
-
 function CreateView() {
     $.ajax({
-        type: "GET",
-        url: "/Turns/Create",
+        type: 'GET',
+        url: '/Turns/Create',
         success: function (data) {
             $("#CreateFormContent").html(data);
         }
-    })
+    });
 }
 
 function Edit(id) {
     $.ajax({
-        type: "GET",
-        url: "/Turns/Edit",
-        data: {
-            id: id
-        },
+        type: 'GET',
+        url: '/Turns/Edit',
+        data: { id: id },
         success: function (data) {
             $("#EditFormContent").html(data);
-            $("#Edit").modal('toggle');
+            $('#Edit').modal('toggle');
         }
-    })
+    });
 }
 

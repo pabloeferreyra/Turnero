@@ -1,21 +1,21 @@
 ﻿using Moq;
 using Turnero.DAL.Models;
-using Turnero.SL.Services.Interfaces;
 using Turnero.SL.Services.Repositories;
 using Turnero.SL.Services;
 using Xunit;
+using Turnero.SL.Services.TurnsServices;
 
 namespace Turnero.Test;
 
 public class InsertTimeTurnServicesTests
 {
-    private readonly Mock<ILoggerServices> _loggerMock;
+    private readonly Mock<LoggerService> _loggerMock;
     private readonly Mock<ITimeTurnRepository> _timeTurnRepositoryMock;
     private readonly InsertTimeTurnServices _insertTimeTurnServices;
 
     public InsertTimeTurnServicesTests()
     {
-        _loggerMock = new Mock<ILoggerServices>();
+        _loggerMock = new Mock<LoggerService>();
         _timeTurnRepositoryMock = new Mock<ITimeTurnRepository>();
         _insertTimeTurnServices = new InsertTimeTurnServices(_loggerMock.Object, _timeTurnRepositoryMock.Object);
     }
@@ -43,7 +43,7 @@ public class InsertTimeTurnServicesTests
         await _insertTimeTurnServices.Create(timeTurn);
 
         // Assert
-        _loggerMock.Verify(logger => logger.Info(It.IsAny<string>()), Times.Never);
+        _loggerMock.Verify(logger => logger.Log(It.IsAny<string>()), Times.Never);
     }
 
     [Fact]
@@ -57,6 +57,6 @@ public class InsertTimeTurnServicesTests
         await _insertTimeTurnServices.Create(timeTurn);
 
         // Assert
-        _loggerMock.Verify(logger => logger.Error(It.IsAny<string>(), It.IsAny<Exception>()), Times.Never);
+        _loggerMock.Verify(logger => logger.Log(It.IsAny<string>()), Times.Never);
     }
 }

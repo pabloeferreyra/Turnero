@@ -1,0 +1,33 @@
+﻿@using Turnero.DAL.Models
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
+<div class="d-flex align-items-center mb-2">
+	<div class="ms-auto d-flex align-items-center">
+		<label class="me-2 mb-0">Mostrar:</label>
+		<select id="pageSize" class="form-select form-select-sm" style="width: auto">
+			<option value="25">25 filas</option>
+			<option value="50">50 filas</option>
+			<option value="-1" selected>Todo</option>
+		</select>
+	</div>
+</div>
+<table id="patients" class="table table-responsive">
+	<thead>
+		<tr>
+			<th>Nombre</th>
+			<th>Dni</th>
+			<th>Fecha de Nacimiento</th>
+			<th>Obra Social</th>
+			<th>Número de Afiliado</th>
+			<th>Acción</th>
+		</tr>
+	</thead>
+	<tbody id="patients-body">
+	</tbody>
+</table>
+<nav>
+	<ul id="patients-pagination" class="pagination">
+	</ul>
+</nav>

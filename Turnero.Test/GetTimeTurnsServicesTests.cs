@@ -1,25 +1,21 @@
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Turnero.DAL.Models;
 using Turnero.SL.Services;
-using Turnero.SL.Services.Interfaces;
 using Turnero.SL.Services.Repositories;
+using Turnero.SL.Services.TurnsServices;
 using Xunit;
 
 namespace Turnero.Test;
 
 public class GetTimeTurnsServicesTests
 {
-    private readonly Mock<ILoggerServices> _loggerMock;
+    private readonly Mock<LoggerService> _loggerMock;
     private readonly Mock<ITimeTurnRepository> _timeTurnRepositoryMock;
     private readonly GetTimeTurnsServices _getTimeTurnsServices;
 
     public GetTimeTurnsServicesTests()
     {
-        _loggerMock = new Mock<ILoggerServices>();
+        _loggerMock = new Mock<LoggerService>();
         _timeTurnRepositoryMock = new Mock<ITimeTurnRepository>();
         _getTimeTurnsServices = new GetTimeTurnsServices(_loggerMock.Object, _timeTurnRepositoryMock.Object);
     }

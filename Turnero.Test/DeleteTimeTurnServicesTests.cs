@@ -1,21 +1,21 @@
 ﻿using Moq;
-using Turnero.SL.Services.Interfaces;
 using Turnero.SL.Services.Repositories;
 using Turnero.SL.Services;
 using Turnero.DAL.Models;
 using Xunit;
+using Turnero.SL.Services.TurnsServices;
 
 namespace Turnero.Test;
 
 public class DeleteTimeTurnServicesTests
 {
-    private readonly Mock<ILoggerServices> _loggerMock;
+    private readonly Mock<LoggerService> _loggerMock;
     private readonly Mock<ITimeTurnRepository> _timeTurnRepositoryMock;
     private readonly DeleteTimeTurnServices _deleteTimeTurnServices;
 
     public DeleteTimeTurnServicesTests()
     {
-        _loggerMock = new Mock<ILoggerServices>();
+        _loggerMock = new Mock<LoggerService>();
         _timeTurnRepositoryMock = new Mock<ITimeTurnRepository>();
         _deleteTimeTurnServices = new DeleteTimeTurnServices(_timeTurnRepositoryMock.Object);
     }
@@ -47,7 +47,7 @@ public class DeleteTimeTurnServicesTests
         _deleteTimeTurnServices.Delete(timeTurn);
 
         // Assert
-        _loggerMock.Verify(logger => logger.Info(It.IsAny<string>()), Times.Never);
+        _loggerMock.Verify(logger => logger.Log(It.IsAny<string>()), Times.Never);
     }
 
     [Fact]
@@ -61,6 +61,6 @@ public class DeleteTimeTurnServicesTests
         _deleteTimeTurnServices.Delete(timeTurn);
 
         // Assert
-        _loggerMock.Verify(logger => logger.Error(It.IsAny<string>(), It.IsAny<Exception>()), Times.Never);
+        _loggerMock.Verify(logger => logger.Log(It.IsAny<string>()));
     }
 }

@@ -1,24 +1,25 @@
-﻿namespace Turnero.SL.Services;
+﻿namespace Turnero.SL.Services.TurnsServices;
 
-public class InsertTimeTurnServices(ILoggerServices logger,
+public class InsertTimeTurnServices(LoggerService logger,
                               ITimeTurnRepository timeTurnRepository) : IInsertTimeTurnServices
 {
-    private readonly ILoggerServices _logger = logger;
+    private readonly LoggerService _logger = logger;
     private readonly ITimeTurnRepository _timeTurnRepository = timeTurnRepository;
 
     public async Task Create(TimeTurn timeTurnViewModel)
     {
         try
         {
-            //_ = Task.Run(async () =>
-            //{
-            //_logger.Debug($"Horario {timeTurnViewModel.Id} creado");
-            //});
             await _timeTurnRepository.CreateTT(timeTurnViewModel);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            //_logger.Error(ex.Message, ex);
+            _logger.Log(ex.Message);
         }
     }
+}
+
+public interface IInsertTimeTurnServices 
+{ 
+    Task Create(TimeTurn timeTurnViewModel); 
 }

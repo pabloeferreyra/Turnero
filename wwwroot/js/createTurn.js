@@ -3,22 +3,6 @@ var time = "";
 
 $(document).ready(function () {
 
-    function getYesterdayDate() {
-        return new Date(new Date().getTime() - 24 * 60 * 60 * 1000);
-    }
-
-    new DateTime(document.getElementById('DateTurnCreate'), {
-        format: 'DD/MM/YYYY',
-        i18n: {
-            previous: 'Anterior',
-            next: 'Siguiente',
-            months: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
-            weekdays: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sab']
-        },
-        disableDays: [0],
-        minDate: getYesterdayDate()
-    });
-
     var tdate = new Date();
     var dd = tdate.getDate(); //yields day
     var MM = tdate.getMonth() + 1; //yields month
@@ -40,8 +24,16 @@ $(document).ready(function () {
     if (MM < 10) {
         MM = '0' + MM;
     }
-    currentDate = dd + "/" + MM + "/" + yyyy;
+
+    var isoDate = yyyy + "-" + MM + "-" + dd;
+    currentDate = isoDate;
     time = h + ":" + m;
+
+    var $dateInput = $('#DateTurnCreate');
+    if ($dateInput.length) {
+        $dateInput.val(isoDate);
+        $dateInput.attr('min', isoDate);
+    }
 });
 
 //-----------------------------------------------------  turnos  -----------------------------------------------------//
@@ -99,6 +91,25 @@ $("#timeTurnCreate").blur(function () {
         $("#btnCrearTurno").prop('disabled', false);
     }
 });
+function validateDate($input, $btn) {
+    var val = $input.val();
+    if (!val) { $btn.prop('disabled', false); return true; }
+    var d = new Date(val + 'T00:00:00');
+    var today = new Date(); today.setHours(0, 0, 0, 0);
+    var day = d.getDay(); // 0 Sun, 6 Sat
+    if (d < today) {
+        Swal.fire({ position: 'top-end', icon: 'info', title: 'No puede seleccionar fechas anteriores a hoy.', showConfirmButton: false, timer: 1200 });
+        $("#btnCrearTurno").prop('disabled', true);
+        return false;
+    }
+    if (day === 0 || day === 6) {
+        Swal.fire({ position: 'top-end', icon: 'info', title: 'No puede seleccionar sábados o domingos.', showConfirmButton: false, timer: 1200 });
+        $("#btnCrearTurno").prop('disabled', true);
+        return false;
+    }
+    $("#btnCrearTurno").prop('disabled', false);
+    return true;
+}
 
 $("#btnCrearTurno").on('click', function (event) {
     event.preventDefault();
@@ -128,4 +139,27 @@ function Create() {
         },
     });
 }
-    //-----------------------------------------------------  turnos  -----------------------------------------------------//
+
+(function () {
+    function todayString() {
+        var d = new Date();
+        var yyyy = d.getFullYear();
+        var mm = (d.getMonth() + 1).toString().padStart(2, '0');
+        var dd = d.getDate().toString().padStart(2, '0');
+        return yyyy + '-' + mm + '-' + dd;
+    }
+
+    var $input = $('#DateTurnCreate');
+    var $btn = $('#btnCrearTurno');
+
+    // asegurar atributo min
+    if ($input.length) {
+        $input.attr('min', todayString());
+    }
+
+    // vincular eventos para validar la fecha usando la función validateDate existente
+    $(document).on('change input', '#DateTurnCreate', function () { validateDate($input, $btn); });
+
+    // validación inicial si existe el input
+    $(function () { if ($input.length) validateDate($input, $btn); });
+})();

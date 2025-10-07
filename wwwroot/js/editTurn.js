@@ -3,22 +3,6 @@ var time = "";
 
 $(document).ready(function () {
 
-    function getYesterdayDate() {
-        return new Date(new Date().getTime() - 24 * 60 * 60 * 1000);
-    }
-
-    new DateTime(document.getElementById('DateTurnEdit'), {
-        format: 'DD/MM/YYYY',
-        i18n: {
-            previous: 'Anterior',
-            next: 'Siguiente',
-            months: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
-            weekdays: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sab']
-        },
-        disableDays: [0],
-        minDate: getYesterdayDate()
-    });
-
     var tdate = new Date();
     var dd = tdate.getDate(); //yields day
     var MM = tdate.getMonth() + 1; //yields month

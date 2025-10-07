@@ -1,8 +1,8 @@
-﻿namespace Turnero.SL.Services;
+﻿namespace Turnero.SL.Services.MedicServices;
 
-public class UpdateMedicServices(ILoggerServices logger, IMedicRepository medicRepository) : IUpdateMedicServices
+public class UpdateMedicServices(LoggerService logger, IMedicRepository medicRepository) : IUpdateMedicServices
 {
-    private readonly ILoggerServices _logger = logger;
+    private readonly LoggerService _logger = logger;
     private readonly IMedicRepository _medicRepository = medicRepository;
 
     public async Task<bool> Update(Medic medic)
@@ -14,7 +14,7 @@ public class UpdateMedicServices(ILoggerServices logger, IMedicRepository medicR
         }
         catch (DbUpdateConcurrencyException ex)
         {
-            _logger.Error(ex.Message, ex);
+            _logger.Log(ex.Message);
             return false;
         }
     }
@@ -27,7 +27,13 @@ public class UpdateMedicServices(ILoggerServices logger, IMedicRepository medicR
         }
         catch (DbUpdateConcurrencyException ex)
         {
-            _logger.Error(ex.Message, ex);
+            _logger.Log(ex.Message);
         }
     }
+}
+
+public interface IUpdateMedicServices
+{
+    Task<bool> Update(Medic medic);
+    void Delete(Medic medic);
 }

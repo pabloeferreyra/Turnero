@@ -1,9 +1,9 @@
-﻿namespace Turnero.SL.Services;
+﻿namespace Turnero.SL.Services.TurnsServices;
 
-public class GetTimeTurnsServices(ILoggerServices logger,
+public class GetTimeTurnsServices(LoggerService logger,
                             ITimeTurnRepository timeTurnRepository) : IGetTimeTurnsServices
 {
-    private readonly ILoggerServices _logger = logger;
+    private readonly LoggerService _logger = logger;
     private readonly ITimeTurnRepository _timeTurnRepository = timeTurnRepository;
 
     public async Task<List<TimeTurn>> GetTimeTurns()
@@ -12,9 +12,9 @@ public class GetTimeTurnsServices(ILoggerServices logger,
         {
             return await _timeTurnRepository.GetList();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            //_logger.Error(ex.Message, ex);
+            _logger.Log(ex.Message);
             return [];
         }
     }
@@ -23,15 +23,11 @@ public class GetTimeTurnsServices(ILoggerServices logger,
     {
         try
         {
-            //_ = Task.Run(async () =>
-            //{
-            //    _logger.Debug("Tiempos obtenidos");
-            //});
             return _timeTurnRepository.GetQueryable();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            //_logger.Error(ex.Message, ex);
+            _logger.Log(ex.Message);
             return Enumerable.Empty<TimeTurn>().AsQueryable();
         }
     }
@@ -40,16 +36,12 @@ public class GetTimeTurnsServices(ILoggerServices logger,
     {
         try
         {
-            //_ = Task.Run(async () =>
-            //{
-            //    _logger.Info($"Tiempo {id} obtenido");
-            //});
             var result = await _timeTurnRepository.GetbyId(id);
             return result ?? throw new InvalidOperationException("No se encontró el TimeTurn solicitado.");
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            //_logger.Error(ex.Message, ex);
+            _logger.Log(ex.Message);
             throw;
         }
     }
@@ -60,9 +52,9 @@ public class GetTimeTurnsServices(ILoggerServices logger,
         {
             return _timeTurnRepository.Exists(id);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            //_logger.Error(ex.Message, ex);
+            _logger.Log(ex.Message);
             return false;
         }
     }
@@ -74,10 +66,19 @@ public class GetTimeTurnsServices(ILoggerServices logger,
             var result = await _timeTurnRepository.GetCachedTimes();
             return result ?? [];
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            //_logger.Error(ex.Message, ex);
+            _logger.Log(ex.Message);
             return [];
         }
     }
+}
+
+public interface IGetTimeTurnsServices
+{
+    Task<List<TimeTurn>> GetTimeTurns();
+    IQueryable<TimeTurn> GetTimeTurnsQ();
+    Task<TimeTurn> GetTimeTurn(Guid id);
+    bool TimeTurnViewModelExists(Guid id);
+    Task<List<TimeTurn>> GetCachedTimes();
 }

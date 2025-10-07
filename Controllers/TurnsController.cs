@@ -61,7 +61,15 @@ public class TurnsController(UserManager<IdentityUser> userManager,
         pageSize = length != null ? int.Parse(length) : 0;
         skip = start != null ? int.Parse(start) : 0;
         var medic = isMedic ?? Request.Form["Columns[5][search][value]"].FirstOrDefault();
-        var dateTurn = Request.Form["Columns[6][search][value]"].FirstOrDefault();
+
+        // FIX: Convertir el string a DateTime antes de formatear
+        var dateTurnStr = Request.Form["Columns[6][search][value]"].FirstOrDefault();
+        string dateTurn = null;
+        if (!string.IsNullOrEmpty(dateTurnStr) && DateTime.TryParse(dateTurnStr, out var dt))
+        {
+            dateTurn = dt.ToString("dd/MM/yyyy");
+        }
+
         var sortColumn = Request.Form["columns[" + Request.Form["order[0][column]"].FirstOrDefault() + "][name]"].FirstOrDefault();
         var sortColumnDirection = Request.Form["order[0][dir]"].FirstOrDefault();
         var defa = DateTime.Today.ToString("dd/MM/yyyy");
@@ -182,7 +190,7 @@ public class TurnsController(UserManager<IdentityUser> userManager,
     {
         try
         {
-            turn.Reason = turn.Reason.TrimEnd('\"');
+            turn.Reason = string.IsNullOrWhiteSpace(turn.Reason) ? string.Empty : turn.Reason.TrimEnd('\"');
             var t = turn.Adapt<Turn>();
             await insertTurns.CreateTurnAsync(t);
             var medic = await getMedics.GetMedicById(turn.MedicId);

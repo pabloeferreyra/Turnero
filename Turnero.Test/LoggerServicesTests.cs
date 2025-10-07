@@ -1,6 +1,4 @@
-﻿using Moq;
-using System.Runtime.InteropServices;
-using Turnero.SL.Services.Interfaces;
+﻿using System.Runtime.InteropServices;
 using Turnero.SL.Services;
 using Xunit;
 
@@ -8,11 +6,11 @@ namespace Turnero.Test;
 
 public class LoggerServicesTests
 {
-    private readonly LoggerServices _loggerServices;
+    private readonly LoggerService _loggerServices;
 
     public LoggerServicesTests()
     {
-        _loggerServices = new LoggerServices();
+        _loggerServices = new LoggerService();
     }
 
     [Fact]
@@ -23,7 +21,7 @@ public class LoggerServicesTests
         var expectedMessage = DateTime.Now + ": " + infoMessage;
 
         // Act
-        _loggerServices.Info(infoMessage);
+        _loggerServices.Log(infoMessage);
 
         // Assert
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -46,7 +44,7 @@ public class LoggerServicesTests
         var expectedMessage = DateTime.Now + ": " + debugMessage;
 
         // Act
-        _loggerServices.Debug(debugMessage);
+        _loggerServices.Log(debugMessage);
 
         // Assert
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -70,7 +68,7 @@ public class LoggerServicesTests
         var expectedMessage = DateTime.Now + ": " + errorMessage + " - " + exception;
 
         // Act
-        _loggerServices.Error(errorMessage, exception);
+        _loggerServices.Log(errorMessage);
 
         // Assert
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))

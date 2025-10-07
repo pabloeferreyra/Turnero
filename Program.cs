@@ -93,9 +93,9 @@ if (File.Exists(firebasePath))
 }
 #endregion
 
-#region Dependency Injection - Services
-builder.Services.AddSingleton<ILoggerServices, LoggerServices>();
+builder.Services.AddScoped<LoggerService>();
 
+#region Dependency Injection - Services
 // Turn Services
 builder.Services.AddScoped<IInsertTurnsServices, InsertTurnsServices>();
 builder.Services.AddScoped<IUpdateTurnsServices, UpdateTurnsServices>();
@@ -111,6 +111,21 @@ builder.Services.AddScoped<IGetMedicsServices, GetMedicsServices>();
 builder.Services.AddScoped<IInsertTimeTurnServices, InsertTimeTurnServices>();
 builder.Services.AddScoped<IDeleteTimeTurnServices, DeleteTimeTurnServices>();
 builder.Services.AddScoped<IGetTimeTurnsServices, GetTimeTurnsServices>();
+
+// Patient Services
+builder.Services.AddScoped<IInsertPatientService, InsertPatientService>();
+builder.Services.AddScoped<IGetPatientService, GetPatientService>();
+builder.Services.AddScoped<IUpdatePatientService, UpdatePatientService>();
+
+//History Services
+builder.Services.AddScoped<IInsertHistoryService, InsertHistoryService>();
+builder.Services.AddScoped<IGetHistoryService, GetHistoryService>();
+builder.Services.AddScoped<IUpdateHistoryService, UpdateHistoryService>();
+
+// Visit Services
+builder.Services.AddScoped<IGetVisitService, GetVisitService>();
+builder.Services.AddScoped<IInsertVisitService, InsertVisitService>();
+
 #endregion
 
 #region Dependency Injection - Repositories
@@ -118,6 +133,9 @@ builder.Services.AddScoped<ITimeTurnRepository, TimeTurnRepository>();
 builder.Services.AddScoped<IMedicRepository, MedicRepository>();
 builder.Services.AddScoped<ITurnRepository, TurnsRepository>();
 builder.Services.AddScoped<ITurnDTORepository, TurnDTORepository>();
+builder.Services.AddScoped<IPatientRepository, PatientRepository>();
+builder.Services.AddScoped<IHistoryRepository, HistoryRepository>();
+builder.Services.AddScoped<IVisitRepository, VisitRepository>();
 #endregion
 
 #region HTTP Client

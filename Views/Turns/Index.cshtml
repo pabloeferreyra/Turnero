@@ -1,25 +1,16 @@
 ﻿@model TurnDTO;
-
-@using Microsoft.AspNetCore.Identity;
-@using Turnero.DAL.Models;
-@using Turnero.Utilities.Utilities
-
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
 @{
 
-    ViewData["Title"] = "Turnos - Turnero";
-    if (ViewBag.Date == null)
-        ViewBag.Date = String.Format("{0:dd/MM/yyyy}", DateTime.Now);
-    else
-        String.Format("{0:dd/M/yyyy}", DateTime.Now);
+    ViewData["Title"] = "Turnos ";
 }
 
 
 <div class="back container-fluid">
     <div class="form-group row">
         <div class="col-lg-2 col-md-2 col-sm-12">
-            <input id="DateTurn" name="dateTurn" type="text" class="form-control" placeholder="Fecha" value="@ViewBag.Date" data-date-format="dd/MM/yyyy" />
+            <input id="DateTurn" name="dateTurn" type="date" class="form-control" placeholder="Fecha" value="@DateTime.Now.ToString("yyyy-MM-dd")" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
         </div>
         <div class="col-lg-2 col-md-5 col-sm-12">
             @if(User.IsInRole(RolesConstants.Ingreso))
@@ -90,6 +81,39 @@
 
 
 @section scripts{
+    <script>
+        (function(){
+            function todayString(){
+                var d = new Date();
+                var yyyy = d.getFullYear();
+                var mm = (d.getMonth()+1).toString().padStart(2,'0');
+                var dd = d.getDate().toString().padStart(2,'0');
+                return yyyy + '-' + mm + '-' + dd;
+            }
+
+            var $input = $('#DateTurn');
+
+            if ($input.length){
+                $input.attr('min', todayString());
+            }
+
+            $input.on('change input', function(){
+                var val = $(this).val();
+                if (!val) return;
+                var d = new Date(val + 'T00:00:00');
+                var today = new Date(); today.setHours(0,0,0,0);
+                var day = d.getDay();
+                if (d < today){
+                    Swal.fire({ position: 'top-end', icon: 'info', title: 'No puede seleccionar fechas anteriores a hoy.', showConfirmButton: false, timer: 1200 });
+                    $(this).val(todayString());
+                } else if (day === 0 || day === 6){
+                    Swal.fire({ position: 'top-end', icon: 'info', title: 'No puede seleccionar sábados o domingos.', showConfirmButton: false, timer: 1200 });
+                    $(this).val(todayString());
+                }
+            });
+        })();
+    </script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
     <script src="~/js/signalR.js"></script>
     <script src="~/js/turn.js"></script>

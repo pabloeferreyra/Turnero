@@ -1,21 +1,21 @@
 ﻿using Moq;
-using Turnero.SL.Services.Interfaces;
 using Turnero.SL.Services.Repositories;
 using Turnero.SL.Services;
 using Turnero.DAL.Models;
 using Xunit;
+using Turnero.SL.Services.MedicServices;
 
 namespace Turnero.Test;
 
 public class InsertMedicServicesTests
 {
-    private readonly Mock<ILoggerServices> _loggerMock;
+    private readonly Mock<LoggerService> _loggerMock;
     private readonly Mock<IMedicRepository> _medicRepositoryMock;
     private readonly InsertMedicServices _insertMedicServices;
 
     public InsertMedicServicesTests()
     {
-        _loggerMock = new Mock<ILoggerServices>();
+        _loggerMock = new Mock<LoggerService>();
         _medicRepositoryMock = new Mock<IMedicRepository>();
         _insertMedicServices = new InsertMedicServices(_loggerMock.Object, _medicRepositoryMock.Object);
     }
@@ -43,7 +43,7 @@ public class InsertMedicServicesTests
         await _insertMedicServices.Create(medic);
 
         // Assert
-        _loggerMock.Verify(logger => logger.Info(It.IsAny<string>()), Times.Never);
+        _loggerMock.Verify(logger => logger.Log(It.IsAny<string>()), Times.Never);
     }
 
     [Fact]
@@ -57,6 +57,6 @@ public class InsertMedicServicesTests
         await _insertMedicServices.Create(medic);
 
         // Assert
-        _loggerMock.Verify(logger => logger.Error(It.IsAny<string>(), It.IsAny<Exception>()), Times.Never);
+        _loggerMock.Verify(logger => logger.Log(It.IsAny<string>()), Times.Never);
     }
 }

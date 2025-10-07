@@ -1,21 +1,21 @@
 ﻿using Moq;
 using Turnero.DAL.Models;
-using Turnero.SL.Services.Interfaces;
 using Turnero.SL.Services.Repositories;
 using Turnero.SL.Services;
 using Xunit;
+using Turnero.SL.Services.MedicServices;
 
 namespace Turnero.Test;
 
 public class GetMedicsServicesTests
 {
-    private readonly Mock<ILoggerServices> _loggerMock;
+    private readonly Mock<LoggerService> _loggerMock;
     private readonly Mock<IMedicRepository> _medicRepositoryMock;
     private readonly GetMedicsServices _getMedicsServices;
 
     public GetMedicsServicesTests()
     {
-        _loggerMock = new Mock<ILoggerServices>();
+        _loggerMock = new Mock<LoggerService>();
         _medicRepositoryMock = new Mock<IMedicRepository>();
         _getMedicsServices = new GetMedicsServices(_loggerMock.Object, _medicRepositoryMock.Object);
     }

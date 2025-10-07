@@ -1,4 +1,4 @@
-﻿namespace Turnero.SL.Services;
+﻿namespace Turnero.SL.Services.TurnsServices;
 
 public class DeleteTimeTurnServices(ITimeTurnRepository timeTurnRepository) : IDeleteTimeTurnServices
 {
@@ -15,3 +15,9 @@ public class DeleteTimeTurnServices(ITimeTurnRepository timeTurnRepository) : ID
         }
     }
 }
+
+public interface IDeleteTimeTurnServices
+{
+    void Delete(TimeTurn timeTurn);
+}
+

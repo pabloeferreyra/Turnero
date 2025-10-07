@@ -1,25 +1,21 @@
-﻿namespace Turnero.SL.Services;
+﻿namespace Turnero.SL.Services.MedicServices;
 
-public class GetMedicsServices(ILoggerServices logger, IMedicRepository medicRepository) : IGetMedicsServices
+public class GetMedicsServices(LoggerService logger, IMedicRepository medicRepository) : IGetMedicsServices
 {
-    private readonly ILoggerServices _logger = logger;
+    private readonly LoggerService _logger = logger;
     private readonly IMedicRepository _medicRepository = medicRepository;
 
     public async Task<List<MedicDto>> GetMedicsDto()
     {
         try
         {
-            //_ = Task.Run(async () =>
-            //{
-            //_logger.Debug("Medicos traidos correctamente");
-            //});
             var med = await _medicRepository.GetListDto();
 
             return med;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            //_logger.Error(ex.Message, ex);
+            _logger.Log(ex.Message);
             return [];
         }
     }
@@ -28,17 +24,13 @@ public class GetMedicsServices(ILoggerServices logger, IMedicRepository medicRep
     {
         try
         {
-            //_ = Task.Run(async () =>
-            //{
-            //_logger.Debug("Medicos traidos correctamente");
-            //});
             var med = await _medicRepository.GetList();
 
             return med;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            ////_logger.Error(ex.Message, ex);
+            _logger.Log(ex.Message);
             return [];
         }
     }
@@ -47,17 +39,13 @@ public class GetMedicsServices(ILoggerServices logger, IMedicRepository medicRep
     {
         try
         {
-            //_ = Task.Run(async () =>
-            //{
-            //_logger.Debug("Medico traido correctamente");
-            //});
             Medic med = await _medicRepository.GetById(id);
 
             return med;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            //_logger.Error(ex.Message, ex);
+            _logger.Log(ex.Message);
             return new Medic();
         }
     }
@@ -66,17 +54,13 @@ public class GetMedicsServices(ILoggerServices logger, IMedicRepository medicRep
     {
         try
         {
-            //_ = Task.Run(async () =>
-            //{
-            //_logger.Debug("Medico traido correctamente por usuario");
-            //});
             Medic? med = await _medicRepository.GetByUserId(id);
 
             return med;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            //_logger.Error(ex.Message, ex);
+            _logger.Log(ex.Message);
             return new Medic();
         }
     }
@@ -87,9 +71,9 @@ public class GetMedicsServices(ILoggerServices logger, IMedicRepository medicRep
         {
             return _medicRepository.Exists(id);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            //_logger.Error(ex.Message, ex);
+            _logger.Log(ex.Message);
             return false;
         }
     }
@@ -101,10 +85,20 @@ public class GetMedicsServices(ILoggerServices logger, IMedicRepository medicRep
             var result = await _medicRepository.GetCachedMedics();
             return result ?? [];
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            //_logger.Error(ex.Message, ex);
+            _logger.Log(ex.Message);
             return [];
         }
     }
+}
+
+public interface IGetMedicsServices
+{
+    Task<List<MedicDto>> GetMedicsDto();
+    Task<List<Medic>> GetMedics();
+    Task<Medic> GetMedicById(Guid id);
+    Task<Medic?> GetMedicByUserId(string id);
+    bool ExistMedic(Guid id);
+    Task<List<MedicDto>> GetCachedMedics();
 }

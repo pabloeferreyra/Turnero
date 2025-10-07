@@ -1,6 +1,4 @@
-﻿using Mapster;
-
-namespace Turnero.SL.Services.Repositories;
+﻿namespace Turnero.SL.Services.Repositories;
 
 public class MedicRepository(ApplicationDbContext context, IMemoryCache cache) : RepositoryBase<Medic>(context, cache), IMedicRepository
 {
