@@ -15,7 +15,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
         builder.Entity<Patient>()
             .Property(p => p.BirthDate)
-            .HasColumnType("date");
+            .HasColumnType("date")
+            .HasDefaultValueSql("getdate()");
     }
 
     public DbSet<Turn> Turns { get; set; }

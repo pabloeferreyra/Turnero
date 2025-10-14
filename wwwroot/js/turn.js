@@ -5,7 +5,6 @@ var currentData = [];
 
 $(document).ready(function () {
 
-    // initial load
     loadTable();
 
     $('#btnSearch').click(function () {
@@ -27,7 +26,6 @@ $(document).ready(function () {
         exportToPdf(currentData);
     });
 
-    // create modal
     $(document).on('click', '#createTurn', function (event) {
         CreateView();
         $('#Create').modal('toggle');
@@ -36,7 +34,6 @@ $(document).ready(function () {
 });
 
 function reset() {
-    // kept for compatibility with other scripts (signalR etc.)
     loadTable();
 }
 
@@ -47,12 +44,10 @@ function loadTable() {
     var form = $('#__AjaxAntiForgeryForm');
     var token = $('input[name="__RequestVerificationToken"]', form).val();
 
-    // server-side paging parameters
     var draw = 1;
     var start = (currentPage - 1) * (pageSize === -1 ? 0 : pageSize);
     var length = pageSize === -1 ? -1 : pageSize;
 
-    // columns names expected by server
     var columnsLower = {
         'columns[0][name]': 'Name',
         'columns[1][name]': 'Dni',
@@ -73,10 +68,8 @@ function loadTable() {
         'order[0][dir]': 'asc'
     };
 
-    // attach columns names (lowercase)
     for (var k in columnsLower) dataToSend[k] = columnsLower[k];
 
-    // attach filters (server expects 'Columns[5][search][value]' with capital C in some places)
     dataToSend['Columns[5][search][value]'] = medics || '';
     dataToSend['columns[5][search][value]'] = medics || '';
     dataToSend['Columns[6][search][value]'] = dateTurn || '';
@@ -90,10 +83,8 @@ function loadTable() {
         data: dataToSend,
         success: function (result) {
             console.debug('InitializeTurns response:', result);
-            // try to find data array
             var data = result && (result.data || result.Data || result.items || result.records || []);
             if (!data || data.length === 0) {
-                // if server returned recordsTotal > 0 but no data, try fallbacks
                 if (result && result.recordsTotal && result.recordsTotal > 0) {
                     console.warn('Server reports records but returned no data. Check controller paging implementation.');
                 }
@@ -102,7 +93,6 @@ function loadTable() {
             currentData = data || [];
             recordsTotal = result && (result.recordsTotal || result.recordsFiltered || currentData.length) || 0;
 
-            // if length == -1 (all) set pageSize accordingly
             if (length === -1) pageSize = recordsTotal;
 
             renderTable();
@@ -124,27 +114,26 @@ function renderTable() {
         return;
     }
 
-    // currentData is assumed to be the page returned by server
     currentData.forEach(function (d) {
         var actions = '';
         if (d.accessed == false && d.isMedic == false) {
             actions = '<button onclick="Edit(\'' + d.id + '\');" class="btn btn-secondary btn-sm me-1">Editar</button>' +
-                '<span id="confirmaccessedSpan_' + d.id + '" style="display:none">' +
+                '<div id="confirmaccessedSpan_' + d.id + '" style="display:none"class="btn-group" role="group">' +
                 '<button onclick="Delete(\'' + d.id + '\');" class="btn btn-danger btn-sm me-1">Si</button>' +
-                '<a href="#" class="btn btn-primary btn-sm" onclick="ConfirmDelete(\'' + d.id + '\', false)">No</a>' +
-                '</span>' +
-                '<span id="accessedSpan_' + d.id + '">' +
-                '<a href="#" class="btn btn-danger btn-sm" onclick="ConfirmDelete(\'' + d.id + '\', true)">Eliminar</a>' +
-                '</span>';
+                '<button class="btn btn-primary btn-sm" onclick="ConfirmDelete(\'' + d.id + '\', false)">No</button>' +
+                '</div>' +
+                '<div id="accessedSpan_' + d.id + '"class="btn-group" role="group">' +
+                '<button class="btn btn-danger btn-sm" onclick="ConfirmDelete(\'' + d.id + '\', true)">Eliminar</button>'+
+                '</div>';
         }
         else if (d.accessed == false && d.isMedic == true) {
-            actions = '<span id="confirmaccessedSpan_' + d.id + '" style="display:none">' +
+            actions = '<div id="confirmaccessedSpan_' + d.id + '" style="display:none"class="btn-group" role="group">' +
                 '<button onclick="Accessed(\'' + d.id + '\')" class="btn btn-danger btn-sm me-1"> Si</button>' +
-                '<a href="#" class="btn btn-primary btn-sm" onclick="ConfirmAccess(\'' + d.id + '\', false)">No</a>' +
-                '</span>' +
-                '<span id="accessedSpan_' + d.id + '">' +
-                '<a href="#" class="btn btn-primary btn-sm" onclick="ConfirmAccess(\'' + d.id + '\', true)">Ingreso</a>' +
-                '</span> ';
+                '<button class="btn btn-primary btn-sm" onclick="ConfirmAccess(\'' + d.id + '\', false)">No</button>' +
+                '</div>' +
+                '<div id="accessedSpan_' + d.id + '"class="btn-group" role="group">' +
+                '<button href="#" class="btn btn-primary btn-sm" onclick="ConfirmAccess(\'' + d.id + '\', true)">Ingreso</button>' +
+                '</div> ';
         }
 
         var colClass = (d.accessed == true) ? ' class="Red odd"' : '';
@@ -158,7 +147,7 @@ function renderTable() {
             '<td ' + colClass + 'style="display:none">' + (d.medicId || '') + '</td>' +
             '<td' + colClass + '>' + escapeHtml(d.date || '') + '</td>' +
             '<td' + colClass + '>' + escapeHtml(d.time || '') + '</td>' +
-            '<td' + colClass + '>' + actions + '</td>' +
+            '<td' + colClass + '><div class="btn-group" role="group">' + actions + '</div></td>' +
             '</tr>';
 
         tbody.append(tr);
@@ -171,7 +160,7 @@ function renderPagination() {
     var pagination = $('#turns-pagination');
     pagination.empty();
 
-    if (pageSize === -1 || pageSize === 0) return; // no pagination when showing all
+    if (pageSize === -1 || pageSize === 0) return;
 
     var totalPages = Math.ceil(recordsTotal / pageSize) || 1;
     var startPage = Math.max(1, currentPage - 2);
@@ -200,7 +189,6 @@ function escapeHtml(text) {
     return $('<div/>').text(text).html();
 }
 
-// Export helpers: use SheetJS (xlsx) and pdfMake (already present in layout)
 function exportToExcel(data) {
     if (!data || data.length === 0) return;
     var ws_data = [];

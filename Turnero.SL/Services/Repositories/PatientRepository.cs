@@ -15,19 +15,24 @@ public class PatientRepository(ApplicationDbContext context, IMemoryCache cache)
     }
     public async Task<Patient> GetById(Guid id)
     {
-        return await FindByCondition(p => p.Id == id).SingleOrDefaultAsync()
+        return await FindByCondition(p => p.Id == id).Include(p => p.ContactInfo).SingleOrDefaultAsync()
             ?? throw new InvalidOperationException("No se encontró el paciente con el id especificado.");
     }
-    public bool Exists(Guid id)
+    public bool Exists(string dni, string name)
     {
-        return FindByCondition(p => p.Id == id).Any();
+        return FindByCondition(p => p.Dni == dni && p.Name == name).Any();
     }
     public async Task NewPatient(Patient patient)
     {
-        if (!string.IsNullOrEmpty(patient.Name))
+        if (!Exists(patient.Dni, patient.Name))
         {
-            await CreateAsync(patient);
+            if (!string.IsNullOrEmpty(patient.Name))
+            {
+                await CreateAsync(patient);
+                return;
+            }
         }
+        throw new InvalidOperationException();
     }
     public void DeletePatient(Patient patient)
     {
@@ -37,10 +42,13 @@ public class PatientRepository(ApplicationDbContext context, IMemoryCache cache)
     {
         await UpdateAsync(patient);
     }
-    public async Task<List<PatientDTO>> SearchByNameOrDni(string search)
+    public async Task<IQueryable<PatientDTO>> SearchByNameOrDni(string search)
     {
-        var patients = await FindByCondition(p => p.Name != null && p.Name.Contains(search) || p.Dni.Contains(search)).ToListAsync();
-        return patients.Adapt<List<PatientDTO>>();
+        var patients = new List<Patient>();
+        if (search == null)
+            return GetAll();
+        patients = await FindByCondition(p => p.Name != null && p.Name.Contains(search) || p.Dni.Contains(search)).ToListAsync();
+        return patients.Adapt<List<PatientDTO>>().AsQueryable();
     }
 
 }
@@ -50,9 +58,9 @@ public interface IPatientRepository
     Task<List<PatientDTO>> GetList();
     IQueryable<PatientDTO> GetAll();
     Task<Patient> GetById(Guid id);
-    bool Exists(Guid id);
+    bool Exists(string dni, string name);
     Task NewPatient(Patient patient);
     void DeletePatient(Patient patient);
     Task UpdatePatient(Patient patient);
-    Task<List<PatientDTO>> SearchByNameOrDni(string search);
+    Task<IQueryable<PatientDTO>> SearchByNameOrDni(string search);
 }

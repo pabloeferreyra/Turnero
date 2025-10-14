@@ -1,6 +1,4 @@
-﻿using Microsoft.JSInterop.Infrastructure;
-
-namespace Turnero.Controllers;
+﻿namespace Turnero.Controllers;
 
 public class PatientsController(UserManager<IdentityUser> userManager, 
     IInsertPatientService insertPatient,
@@ -16,8 +14,7 @@ public class PatientsController(UserManager<IdentityUser> userManager,
     [HttpPost]
     public async Task<IActionResult> InitializePatients()
     {
-        var patients = getPatient.GetAllPatients();
-        _ = SetTable(patients, out string draw, out int pageSize, out int skip, out List<PatientDTO> data, out int recordsTotal);
+        _ = SetTable(out string draw, out int pageSize, out int skip, out List<PatientDTO> data, out int recordsTotal);
         data = SetPage(pageSize, skip, data);
         var json = new {
             draw,
@@ -28,43 +25,28 @@ public class PatientsController(UserManager<IdentityUser> userManager,
         return await Task.FromResult<IActionResult>(Ok(json));
     }
 
-    private IQueryable<PatientDTO> SetTable(IQueryable<PatientDTO> patients, out string draw, out int pageSize, out int skip, out List<PatientDTO> data, out int recordsTotal)
+    private IQueryable<PatientDTO> SetTable(out string draw, out int pageSize, out int skip, out List<PatientDTO> data, out int recordsTotal)
     {
         draw = Request.Form["draw"].FirstOrDefault();
         var start = Request.Form["start"].FirstOrDefault();
         var length = Request.Form["length"].FirstOrDefault();
-        var nameSearch = Request.Form["Columns[1][search][value]"].FirstOrDefault();
-        var dniSearch = Request.Form["Columns[2][search][value]"].FirstOrDefault();
-
+        var search = Request.Form["Columns[1][search][value]"].FirstOrDefault();
+        var patients = getPatient.SearchPatients(search).Result;
         pageSize = length != null ? int.Parse(length) : 0;
         skip = start != null ? int.Parse(start) : 0;
 
         var sortColumn = Request.Form["columns[" + Request.Form["order[0][column]"].FirstOrDefault() + "][name]"].FirstOrDefault();
         var sortColumnDirection = Request.Form["order[0][dir]"].FirstOrDefault();
 
-        
-
         if (!(string.IsNullOrEmpty(sortColumn) || string.IsNullOrEmpty(sortColumnDirection)))
         {
             data = [.. patients.OrderBy(sortColumn + " " + sortColumnDirection)];
-        }
-
-        if(!string.IsNullOrEmpty(nameSearch) && string.IsNullOrEmpty(dniSearch))
-        {
-            data = [.. patients.Where(m => m.Name.Contains(nameSearch))];
-        }
-        else if(!string.IsNullOrEmpty(dniSearch) && string.IsNullOrEmpty(nameSearch))
-        {
-            data = [.. patients.Where(m => m.Dni.ToString().Contains(dniSearch))];
-        }
-        else if(!string.IsNullOrEmpty(nameSearch) && !string.IsNullOrEmpty(dniSearch))
-        {
-            data = [.. patients.Where(m => m.Name.Contains(nameSearch) && m.Dni.ToString().Contains(dniSearch))];
         }
         else
         {
             data = [.. patients];
         }
+    
         recordsTotal = data.Count;
         return patients;
     }
@@ -82,24 +64,28 @@ public class PatientsController(UserManager<IdentityUser> userManager,
         return data;
     }
 
-
-    public async Task<List<PatientDTO>> Search(string? Name, int? Dni)
-    {
-        
-        string search = $"{Name} {Dni}".Trim();
-        List<PatientDTO> patients = await getPatient.SearchPatients(search);
-        return patients;
-
-    }
     [HttpGet]
     public IActionResult Create()
     {
         return PartialView("_Create");
     }
 
+    [HttpGet]
+    public IActionResult Details(Guid? id)
+    {
+        if (id == null)
+            return NotFound();
+        var patient = getPatient.GetPatientById(id.Value).Result;
+        if(patient == null)
+        {
+            ViewBag.ErrorMessage = $"Patient with Id = {id} cannot be found";
+            return NotFound();
+        }
+        return View("Details", patient);
+    }
+
     [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<StatusCodeResult> Create(Patient patient)
+    public async Task<StatusCodeResult> Create([FromBody]Patient patient)
     {
         try
         {
@@ -108,6 +94,39 @@ public class PatientsController(UserManager<IdentityUser> userManager,
                 return BadRequest();
             }
             await insertPatient.InsertPatient(patient);
+            return Ok();
+        }
+        catch (Exception)
+        {
+            return Conflict();
+        }
+    }
+    [HttpGet]
+    public async Task<IActionResult> Edit(Guid? id)
+    {
+        if (id == null)
+            return NotFound();
+
+        var patient = await getPatient.GetPatientById(id.Value);
+        if(patient == null)
+        {
+            ViewBag.ErrorMessage = $"Patient with Id = {id} cannot be found";
+            return NotFound();
+        }
+        return PartialView("_Edit", patient);
+    }
+
+    [HttpPut]
+    [ValidateAntiForgeryToken]
+    public async Task<StatusCodeResult> Edit(Patient patient)
+    {
+        try
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+            await updatePatient.UpdatePatient(patient);
             return Ok();
         }
         catch (Exception)

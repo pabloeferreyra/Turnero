@@ -1,4 +1,4 @@
-﻿@model List<PatientDTO>
+﻿@model PatientDTO
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
 @{
@@ -7,11 +7,8 @@
 
  <div class="back container-fluid">
 	<div class="form-group row">
-		<div class="col-lg-3 col-md-4 col-sm-12">
-			<input id="Name" name="Name" type="text" class="form-control" placeholder="Nombre" value="@ViewBag.FirstName" />
-		</div>
-		<div class="col-lg-2 col-md-4 col-sm-12">
-			<input id="Dni" name="Dni" type="number" class="form-control" placeholder="DNI" value="@ViewBag.Dni" />
+		<div class="col-lg-8 col-md-8 col-sm-12">
+			<input id="searchBox" name="NameOrDni" type="text" class="form-control" placeholder="Nombre o Dni" />
 		</div>
 		<div class="col-lg-2 col-md-6 col-sm-12">
 			<button class="form-control btn btn-primary" id="btnSearch">Buscar</button>
@@ -29,7 +26,7 @@
 	</div>
 	<!-- Modal -->
 	<div class="modal modal-lg fade" id="Create" role="dialog">
-		<div class="modal-dialog Bmodal-xl modal-dialog-centered">
+		<div class="modal-dialog modal-lg modal-dialog-centered">
 			<!-- Modal content-->
 			<div class="modal-content">
 				<div class="modal-header">
@@ -40,6 +37,19 @@
 			</div>
 		</div>
 	</div>
+	<div class="modal modal-lg fade" id="Edit" role="dialog">
+		<div class="modal-dialog modal-lg modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Editar @Html.DisplayFor(model => model.Name)</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div id="EditFormContent">
+				</div>
+			</div>
+
+		</div>
+	</div>
 </div>
 <div class="back contianer-fluid" id="PatientsPartial">
 	<partial name="_Table" />
@@ -47,7 +57,7 @@
 
 @section Scripts {
     <script src="~/js/patients.js" asp-append-version="true"></script>
-    <script src="~/js/createPatient.js" asp-append-version="true"></script>
+    <script src="~/js/visits.js" asp-append-version="true"></script>
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }

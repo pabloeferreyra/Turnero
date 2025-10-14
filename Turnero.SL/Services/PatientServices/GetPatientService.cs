@@ -47,7 +47,7 @@ public class GetPatientService(LoggerService logger, IPatientRepository patientR
             throw new Exception("An error occurred while retrieving the patient.");
         }
     }
-    public async Task<List<PatientDTO>> SearchPatients(string search)
+    public async Task<IQueryable<PatientDTO>> SearchPatients(string search)
     {
         try
         {
@@ -66,5 +66,5 @@ public interface IGetPatientService
     Task<List<PatientDTO>> GetPatients();
     IQueryable<PatientDTO> GetAllPatients();
     Task<Patient> GetPatientById(Guid id);
-    Task<List<PatientDTO>> SearchPatients(string search);
+    Task<IQueryable<PatientDTO>> SearchPatients(string search);
 }

@@ -53,14 +53,26 @@ $(document).on('click', '#btnCrearPaciente', function (e) {
 function Create() {
     var form = $('__AjaxAntiForgeryForm');
     var token = $('input[name="__RequestVerificationToken"]', form).val();
-    let formData = $("#CreateForm").serialize();
+    const Patient = {
+        Name: $('#Name').val(),
+        Dni: $('#Dni').val(),
+        BirthDate: $('#BirthDate').val(),
+        SocialWork: $('#SocialWork').val(),
+        AffiliateNumber: $('#AffiliateNumber').val(),
+        ContactInfo: {
+            Phone: $('#Phone').val(),
+            Email: $('#Email').val(),
+            Address: $('#Address').val(),
+            City: $('#City').val(),
+            PostalCode: $('#PostalCode').val()
+        }
+    };
     $.ajax({
         type: "POST",
         url: "/Patients/Create",
-        data: formData,
-        headers: { "RequestVerificationToken": token },
-        contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-        success: function (response) {
+        data: JSON.stringify(Patient),
+        contentType: "application/json; charset=UTF-8",
+        success: function () {
             Swal.fire({
                 position: 'top-end',
                 icon: 'success',
@@ -71,7 +83,7 @@ function Create() {
                 $('#Create').modal('toggle'); 
             });
         },
-        error: function (xhr, status, error) {
+        error: function () {
             Swal.fire({
                 icon: 'error',
                 title: 'Error',

@@ -8,6 +8,18 @@ public class VisitRepository(ApplicationDbContext context, IMemoryCache cache) :
             .Include(v => v.Patient)
             .ToListAsync();
     }
+
+    public async Task<IQueryable<Visit>> SearchVisits(Guid patientId)
+    {
+        var visits = new List<Visit>();
+        if (patientId == Guid.Empty)
+            return FindAll().Include(v => v.Patient).Include(v => v.Medic).AsQueryable();
+        visits = await FindByCondition(v => v.PatientId == patientId)
+            .Include(v => v.Patient)
+            .Include(v => v.Medic)
+            .ToListAsync();
+        return visits.AsQueryable();
+    }
     public async Task<List<Visit>> GetVisitsByPatient(Guid patientId)
     {
         return await FindByCondition(v => v.PatientId == patientId)
@@ -179,6 +191,8 @@ public interface IVisitRepository
 {
     Task<List<Visit>> GetVisitsByMedicAndDate(Guid medicId, DateTime date);
     Task<List<Visit>> GetVisitsByPatient(Guid patientId);
+
+    Task<IQueryable<Visit>> SearchVisits(Guid patientId);
     Task CreateVisit(Visit visit);
     Task UpdateVisit(Visit visit);
     void DeleteVisit(Visit visit);

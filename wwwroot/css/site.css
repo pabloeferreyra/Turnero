@@ -41,6 +41,10 @@ input[type="password"] {
     border-radius: 1.5rem;
 }
 
+.btn-link, .btn-link:hover {
+    color: #000 !important;
+}
+
 .btn-primary:hover, .btn-primary:focus, .dropdown-item:focus {
     color: #fff;
     background-color: #0B5066;

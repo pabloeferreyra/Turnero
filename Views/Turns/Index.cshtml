@@ -9,10 +9,10 @@
 
 <div class="back container-fluid">
     <div class="form-group row">
-        <div class="col-lg-2 col-md-2 col-sm-12">
+        <div class="col-md-2 col-sm-12">
             <input id="DateTurn" name="dateTurn" type="date" class="form-control" placeholder="Fecha" value="@DateTime.Now.ToString("yyyy-MM-dd")" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
         </div>
-        <div class="col-lg-2 col-md-5 col-sm-12">
+        <div class="col-md-3 col-sm-12">
             @if(User.IsInRole(RolesConstants.Ingreso))
             {
             <select id="Medics" title="Medico" class="form-control" asp-items="@ViewBag.Medics">
@@ -25,12 +25,12 @@
                 </select>
             }
         </div>
-        <div class="col-lg-2 col-md-2 col-sm-12">
+        <div class="col-md-2 col-sm-12">
             <button class="form-control btn btn-primary" id="btnSearch">Buscar</button>
         </div>
         @{
             if (SignInManager.IsSignedIn(User)) {
-                <div class="col-lg-2 col-md-3 col-sm-12">
+                <div class="col-md-3 col-sm-12">
                     <button type="button" id="createTurn" class="form-control btn btn-secondary">Nuevo Turno</button>
                 </div>
             }
@@ -57,7 +57,7 @@
         </div>
     </div>
     
-     <div class="modal modal-lg fade" id="Edit" role="dialog">
+    <div class="modal modal-lg fade" id="Edit" role="dialog">
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
