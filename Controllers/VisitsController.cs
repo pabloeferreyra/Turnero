@@ -3,7 +3,8 @@
 public class VisitsController(UserManager<IdentityUser> userManager,
     IGetVisitService getVisit,
     IInsertVisitService insertVisit,
-    ILogger<VisitsController> logger) : Controller
+    ILogger<VisitsController> logger,
+    IGetMedicsServices getMedics) : Controller
 {
 
     [HttpGet]
@@ -17,6 +18,42 @@ public class VisitsController(UserManager<IdentityUser> userManager,
         // Pass a Visit model so the Razor partial has a non-null Model
         var model = new Visit { PatientId = id.Value };
         return PartialView("_CreateVisit", model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<StatusCodeResult> Create([FromBody]Visit visit)
+    {
+        string isMedic = await CheckMedic();
+        var medicId = Guid.TryParse(isMedic, out var mid) ? mid : (Guid?)null;
+        if (medicId != null)
+        {
+            visit.Medic = await getMedics.GetMedicById((Guid)medicId);
+            visit.MedicId = (Guid)medicId;
+        }
+        if (visit == null || visit.PatientId == Guid.Empty)
+        {
+            return BadRequest();
+        }
+        try
+        {
+            try
+            { 
+                await insertVisit.Create(visit);
+                logger.LogInformation("Visit created successfully for patient {PatientId}", visit.PatientId);
+                return Ok();
+            }
+            catch
+            {
+                logger.LogWarning("Failed to create visit for patient {PatientId}", visit.PatientId);
+                return StatusCode(500);
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error creating visit for patient {PatientId}", visit.PatientId);
+            return StatusCode(500);
+        }
     }
 
     [HttpGet]
@@ -193,5 +230,12 @@ public class VisitsController(UserManager<IdentityUser> userManager,
         if (obj == null || string.IsNullOrWhiteSpace(propName)) return null;
         var prop = obj.GetType().GetProperty(propName);
         return prop?.GetValue(obj);
+    }
+
+    private async Task<string> CheckMedic()
+    {
+        var user = this.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+        var isMedic = await getMedics.GetMedicByUserId(user);
+        return isMedic?.Id.ToString();
     }
 }
