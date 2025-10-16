@@ -10,13 +10,14 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         base.OnModelCreating(builder);
 
         builder.Entity<Turn>()
-            .Property(b => b.DateTurn)
-            .HasDefaultValueSql("getdate()");
+            .Property(b => b.DateTurn);
 
         builder.Entity<Patient>()
             .Property(p => p.BirthDate)
-            .HasColumnType("date")
-            .HasDefaultValueSql("getdate()");
+            .HasColumnType("date");
+        builder.Entity<Visit>()
+            .Property(p => p.VisitDate)
+            .HasColumnType("date");
     }
 
     public DbSet<Turn> Turns { get; set; }

@@ -1,4 +1,6 @@
-﻿namespace Turnero.Controllers;
+﻿using Microsoft.AspNetCore.Antiforgery;
+
+namespace Turnero.Controllers;
 
 public class VisitsController(UserManager<IdentityUser> userManager,
     IGetVisitService getVisit,
@@ -17,6 +19,10 @@ public class VisitsController(UserManager<IdentityUser> userManager,
         ViewData["PatientId"] = id.ToString();
         // Pass a Visit model so the Razor partial has a non-null Model
         var model = new Visit { PatientId = id.Value };
+        var token = HttpContext.RequestServices.GetRequiredService<IAntiforgery>()
+                .GetAndStoreTokens(HttpContext)
+                .RequestToken;
+        ViewData["RequestVerificationToken"] = token;
         return PartialView("_CreateVisit", model);
     }
 
@@ -28,7 +34,6 @@ public class VisitsController(UserManager<IdentityUser> userManager,
         var medicId = Guid.TryParse(isMedic, out var mid) ? mid : (Guid?)null;
         if (medicId != null)
         {
-            visit.Medic = await getMedics.GetMedicById((Guid)medicId);
             visit.MedicId = (Guid)medicId;
         }
         if (visit == null || visit.PatientId == Guid.Empty)

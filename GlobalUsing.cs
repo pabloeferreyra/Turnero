@@ -42,8 +42,3 @@ global using Turnero.SL.Services.Repositories;
 global using Turnero.SL.Services.TurnsServices;
 global using Turnero.SL.Services.VisitServices;
 global using Turnero.Utilities.Utilities;
-global using Google.Apis.Util;
-global using System.Net.NetworkInformation;
-global using Microsoft.AspNetCore.Identity;
-global using Turnero.DAL.Models;
-global using Turnero.Utilities.Utilities;

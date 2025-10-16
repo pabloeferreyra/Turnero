@@ -18,7 +18,7 @@ self.addEventListener('fetch', function (event) {
             return; // dejar que el navegador maneje la solicitud normalmente
         }
 
-        // Siempre devolver la petición de red por defecto (no caché ni respuesta personalizada)
+        // Siempre devolver la peticiÃ³n de red por defecto (no cachÃ© ni respuesta personalizada)
         event.respondWith(fetch(event.request));
     }
     catch (e) {

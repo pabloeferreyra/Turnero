@@ -56,9 +56,10 @@
 </div>
 
 @section Scripts {
-    <script src="~/js/patients.js" asp-append-version="true"></script>
-    <script src="~/js/visits.js" asp-append-version="true"></script>
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+	<script src="~/js/patients.js" asp-append-version="true"></script>
+	<script src="~/js/visits.js" asp-append-version="true"></script>
+	<script src="~/js/createVisit.js" asp-append-version="true"></script>
+	@{
+		await Html.RenderPartialAsync("_ValidationScriptsPartial");
+	}
 }

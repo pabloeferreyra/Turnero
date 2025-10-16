@@ -1,31 +1,39 @@
 ﻿@model Visit
 
-<form id="CreateVisitForm" autocomplete="on">
-	<div class="modal-body row">
-		<input type="hidden" asp-for="PatientId" id="PatientId" />
-		<div class="form-group col-md-6 col-sm-12">
-			<label asp-for="VisitDate" class="control-label">Fecha</label>
-			<input asp-for="VisitDate" autocomplete="off" id="VisitDate" type="date" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" max="@DateTime.Now.ToString("yyyy-MM-dd")" />
-			<span asp-for="VisitDate" id="dateValidation" class="text-danger"></span>
-		</div>
-		<div class="form-group col-12">
-			<label asp-for="Reason" class="control-label">Motivo</label>
-			<textarea asp-for="Reason" id="Reason" class="form-control" rows="3"></textarea>
-			<span id="ReasonValidation" class="text-danger"></span>
-		</div>
-		<div class="form-group col-12">
-			<label asp-for="Diagnosis" class="control-label">Diagnostico</label>
-			<textarea asp-for="Diagnosis" id="Diagnosis" class="form-control" rows="3"></textarea>
-			<span id="DiagnosisValidation" class="text-danger"></span>
-		</div>
-		<div class="form-group col-12">
-			<label asp-for="Treatment" class="control-label">Tratamiento</label>
-			<textarea asp-for="Treatment" id="Treatment" class="form-control" rows="3"></textarea>
-			<span id="TreatmentValidation" class="text-danger"></span>
-		</div>
-	</div>
-	<div class="modal-footer">
-		<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-		<button type="submit" id="btnCreateVisit" class="btn btn-primary">Crear</button>
-	</div>
+<form method="post" id="CreateVisitForm" autocomplete="on">
+    <input type="hidden" name="__RequestVerificationToken" value="@ViewData["RequestVerificationToken"]" />
+
+    <div class="modal-body row">
+        <input type="hidden" asp-for="PatientId" id="PatientId" />
+
+        <div class="form-group col-md-6 col-sm-12">
+            <label asp-for="VisitDate" class="control-label">Fecha</label>
+            <input asp-for="VisitDate" autocomplete="off" id="VisitDate" type="date" class="form-control"
+                   value="@DateTime.Now.ToString("yyyy-MM-dd")" max="@DateTime.Now.ToString("yyyy-MM-dd")" />
+            <span asp-for="VisitDate" id="dateValidation" class="text-danger"></span>
+        </div>
+
+        <div class="form-group col-12">
+            <label asp-for="Reason" class="control-label">Motivo</label>
+            <textarea asp-for="Reason" id="Reason" class="form-control" rows="3"></textarea>
+            <span id="ReasonValidation" class="text-danger"></span>
+        </div>
+
+        <div class="form-group col-12">
+            <label asp-for="Diagnosis" class="control-label">Diagnóstico</label>
+            <textarea asp-for="Diagnosis" id="Diagnosis" class="form-control" rows="3"></textarea>
+            <span id="DiagnosisValidation" class="text-danger"></span>
+        </div>
+
+        <div class="form-group col-12">
+            <label asp-for="Treatment" class="control-label">Tratamiento</label>
+            <textarea asp-for="Treatment" id="Treatment" class="form-control" rows="3"></textarea>
+            <span id="TreatmentValidation" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        <button type="button" id="btnCreateVisit" class="btn btn-primary">Crear</button>
+    </div>
 </form>

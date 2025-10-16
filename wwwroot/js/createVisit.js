@@ -1,88 +1,133 @@
-﻿var currentDate = "";
+﻿let currentDate = "";
 
 $(document).ready(function () {
+    const tdate = new Date();
+    const dd = String(tdate.getDate()).padStart(2, '0');
+    const MM = String(tdate.getMonth() + 1).padStart(2, '0');
+    const yyyy = tdate.getFullYear();
+    currentDate = `${yyyy}-${MM}-${dd}`;
 
-    var tdate = new Date();
-    var dd = tdate.getDate(); 
-    var MM = tdate.getMonth() + 1; 
-    var yyyy = tdate.getFullYear(); 
-    if (dd < 10) {
-        dd = '0' + dd;
-    }
-
-    if (MM < 10) {
-        MM = '0' + MM;
-    }
-
-    var isoDate = yyyy + "-" + MM + "-" + dd;
-    currentDate = isoDate;
-    var $dateInput = $('#VisitDate');
+    const $dateInput = $('#VisitDate');
     if ($dateInput.length) {
-        $dateInput.val(isoDate);
+        $dateInput.val(currentDate);
+        $dateInput.attr('max', currentDate);
     }
 });
 
 function validateDate($input, $btn) {
-    var val = $input.val();
-    if (!val) { $btn.prop('disabled', false); return true; }
-    var d = new Date(val + 'T00:00:00');
-    var today = new Date(); today.setHours(0, 0, 0, 0);
-    if (d > today) {
-        Swal.fire({ position: 'top-end', icon: 'info', title: 'No puede seleccionar fechas posteriores a hoy.', showConfirmButton: false, timer: 1200 });
-        $("#btnCreateVisit").prop('disabled', true);
+    const val = $input.val();
+    if (!val) {
+        $btn.prop('disabled', false);
+        return true;
+    }
+
+    const selected = new Date(`${val}T00:00:00`);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (selected > today) {
+        Swal.fire({
+            position: 'top-end',
+            icon: 'info',
+            title: 'No puede seleccionar fechas posteriores a hoy.',
+            showConfirmButton: false,
+            timer: 1200
+        });
+        $btn.prop('disabled', true);
         return false;
     }
 
-    $("#btnCreateVisit").prop('disabled', false);
+    $btn.prop('disabled', false);
     return true;
 }
 
-$("#btnCreateVisit").on('click', function (event) {
-    event.preventDefault();
-    console.log('create click');
-    /*Create();*/
-});
+function initCreateVisitForm() {
+    const $form = $('#CreateVisitForm');
+    const $btn = $('#btnCreateVisit');
+    const $dateInput = $('#VisitDate');
 
-function Create() {
-    var token = $('input[name="__RequestVerificationToken"]', '#__AjaxAntiForgeryForm').val();
-    var obj = $("#CreateVisitForm").serializeArray().reduce(function(a,b){ a[b.name]=b.value; return a; }, {});
-    $.ajax({
-        type: "POST",
-        url: "/Visits/Create",
-        contentType: 'application/json; charset=UTF-8',
-        data: JSON.stringify(obj),
-        headers: { 'RequestVerificationToken': token },
-        success: function () {
-            $("#CreateVisit").modal('toggle');
-            reset();
-            Swal.fire({
-                position: 'top-end',
-                icon: 'success',
-                title: 'Visita creada correctamente.',
-                showConfirmButton: false,
-                timer: 600
-            });
-        },
+    if (!$form.length || !$btn.length) return;
+
+    validateDate($dateInput, $btn);
+
+    $dateInput.on('input change', function () {
+        validateDate($dateInput, $btn);
+    });
+
+    $btn.off('click').on('click', function (e) {
+        e.preventDefault();
+
+        if (!validateDate($dateInput, $btn)) return;
+
+        const formData = $form.serializeArray().reduce((acc, field) => {
+            acc[field.name] = field.value;
+            return acc;
+        }, {});
+
+        const token = $form.find('input[name="__RequestVerificationToken"]').val();
+
+        $.ajax({
+            type: 'POST',
+            url: '/Visits/Create',
+            contentType: 'application/json; charset=UTF-8',
+            data: JSON.stringify(formData),
+            headers: { 'RequestVerificationToken': token },
+            success: function () {
+                $('#CreateVisit').modal('hide');
+                $form[0].reset();
+                $('#VisitDate').val(currentDate);
+
+                Swal.fire({
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'Visita creada correctamente.',
+                    showConfirmButton: false,
+                    timer: 600
+                });
+
+                if (typeof window.reloadVisitsTable === 'function') {
+                    window.reloadVisitsTable();
+                } else {
+                    console.warn('reloadVisitsTable no definido — verifica que visits.js esté cargado antes.');
+                }
+            },
+            error: function (xhr) {
+                let message = 'Error creando visita';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    message = xhr.responseJSON.message;
+                }
+                console.error('Error creando visita:', xhr);
+                Swal.fire({
+                    position: 'top-end',
+                    icon: 'error',
+                    title: message,
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        });
     });
 }
 
-(function () {
-    function todayString() {
-        var d = new Date();
-        var yyyy = d.getFullYear();
-        var mm = (d.getMonth() + 1).toString().padStart(2, '0');
-        var dd = d.getDate().toString().padStart(2, '0');
-        return yyyy + '-' + mm + '-' + dd;
-    }
-
-    var $input = $('#VisitDate');
-    var $btn = $('#btnCreateVisit');
-
-    if ($input.length) {
-        $input.attr('max', todayString());
-    }
-
-    $(document).on('change input', '#VisitDate', function () { validateDate($input, $btn); });
-
-    $(function () { if ($input.length) validateDate($input, $btn); });
-})();
+function CreateVisitView(patientId) {
+    $.ajax({
+        type: 'GET',
+        url: '/Visits/Create',
+        data: { id: patientId },
+        success: function (data) {
+            $('#CreateVisitFormContent').html(data);
+            $('#CreateVisit').modal('show');
+            initCreateVisitForm();
+        },
+        error: function (xhr, status, err) {
+            console.error('Error cargando modal de visita', status, err, xhr?.responseText);
+            Swal.fire({
+                position: 'top-end',
+                icon: 'error',
+                title: 'Error al cargar el formulario de visita.',
+                showConfirmButton: false,
+                timer: 1200
+            });
+        }
+    });
+}
