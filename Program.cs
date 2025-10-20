@@ -17,7 +17,7 @@ builder.Configuration.AddUserSecrets<Program>();
 #endregion
 
 #region Database Configuration
-AppSettings.ConnectionString = builder.Configuration.GetConnectionString("LocalConnection");
+AppSettings.ConnectionString = builder.Configuration.GetConnectionString("PostgresConnection");
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
         options.UseNpgsql(AppSettings.ConnectionString));
 
