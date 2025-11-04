@@ -1,115 +1,77 @@
-var currentDate = "";
-var time = "";
+document.addEventListener("turns:editLoaded", function () {
 
-$(document).ready(function () {
-
-    var tdate = new Date();
-    var dd = tdate.getDate(); //yields day
-    var MM = tdate.getMonth() + 1; //yields month
-    var yyyy = tdate.getFullYear(); //yields year
-    var h = tdate.getHours();
-    var m = tdate.getMinutes();
-    if (h < 10) {
-        h = '0' + h;
-    }
-
-    if (m < 10) {
-        m = '0' + m;
-    }
-
-    if (dd < 10) {
-        dd = '0' + dd;
-    }
-
-    if (MM < 10) {
-        MM = '0' + MM;
-    }
-    currentDate = dd + "/" + MM + "/" + yyyy;
-    time = h + ":" + m;
-});
-//-----------------------------------------------------  turnos  -----------------------------------------------------//
-$("#clientName").blur(function () {
-    if ($("#clientName").val() == '') {
-        $("#clientValidation").text('Requerido');
-        Swal.fire({
-            position: 'top-end',
-            icon: 'info',
-            title: 'Por favor ingrese nombre de cliente.',
-            showConfirmButton: false,
-            timer: 600
-        });
-        $("#btnCrearTurno").prop('disabled', true);
-    }
-    else {
-        $("#clientValidation").text('');
-        $("#btnCrearTurno").prop('disabled', false);
-    }
-});
-
-$("#dniCliente").blur(function () {
-    if ($("#dniCliente").val().length < 6) {
-        $("#dniValidation").text('El DNI debe tener por lo menos 6 (seis) caracteres.');
-        Swal.fire({
-            position: 'top-end',
-            icon: 'info',
-            title: 'El DNI debe tener por lo menos 6 (seis) caracteres.',
-            showConfirmButton: false,
-            timer: 600
-        });
-        $("#btnCrearTurno").prop('disabled', true);
-    }
-    else {
-        $("#clientValidation").text('');
-        $("#dniValidation").text('');
-        $("#btnCrearTurno").prop('disabled', false);
-    }
-});
-
-$("#timeTurn").blur(function () {
-    if ($("#timeTurn :selected").text() <= time && ($("#DateTurnEdit").val() == currentDate)) {
-        $("#timeValidation").text('Requerido.');
-        Swal.fire({
-            position: 'top-end',
-            icon: 'info',
-            title: 'La hora no puede ser anterior.',
-            showConfirmButton: false,
-            timer: 600
-        });
-        $("#btnCrearTurno").prop('disabled', true);
-    }
-    else {
-        $("#timeValidation").text('');
-    }
-});
-//-----------------------------------------------------  turnos  -----------------------------------------------------//
-
-
-$("#btnEditarTurno").on('click', function (event) {
-    event.preventDefault();
-    EditTurn();
-});
-
-
-function EditTurn() {
-    var form = $('#__AjaxAntiForgeryForm');
-    var token = $('input[name="__RequestVerificationToken"]', form).val();
-    let formData = $("#EditForm").serialize();
-    $.ajax({
-        type: "PUT",
-        url: "/Turns/Edit",
-        contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
-        header: token,
-        data: formData,
-        success: function () {
-            $("#Edit").modal('toggle');
-            reset();
-            Swal.fire({
-                position: 'top-end',
-                icon: 'success',
-                title: 'Turno editado correctamente.',
-                showConfirmButton: false,
-                timer: 600
-            });
-        },
+    AppUtils.initFlatpickr("#DateTurnEdit", {
+        minToday: true,
+        blockSundays: true
     });
+
+    AppUtils.FormValidationRules("#btnEditarTurno", {
+        clientName: { required: true },
+        dniCliente: { required: true, minLength: 6 },
+        DateTurnEdit: { required: true },
+        TimeIdEdit: { required: true }
+    });
+
+    // permitir solo números DNI
+    $(document).on("input", "#DniEdit", function () {
+        this.value = this.value.replace(/\D+/g, "");
+    });
+
+    // validación especial time > ahora si es hoy
+    $(document).on('change', '#TimeIdEdit', function () {
+        const $btn = $('#btnEditarTurno');
+
+        const iso = $('#DateTurnEdit').val().trim();
+        if (!iso) return;
+
+        const now = new Date();
+        const todayISO = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+        if (iso !== todayISO) return;
+
+        const text = this.options[this.selectedIndex].text.trim();
+        if (!text) return;
+
+        const [hh, mm] = text.split(":").map(Number);
+        const picked = hh * 60 + mm;
+        const nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+        if (picked <= nowMinutes) {
+            $btn.prop('disabled', true);
+            AppUtils.showToast("info", "La hora debe ser posterior al ahora.");
+        }
+    });
+
+    // blur crossfire → validar 1 solo campo
+    $(document).on('blur', '#clientName, #DniEdit, #DateTurnEdit, #TimeIdEdit', function () {
+        AppUtils.validateField(`#${this.id}`);
+    });
+
+    $(document).on('click', '#btnEditarTurno', async function (ev) {
+        ev.preventDefault();
+        if (!AppUtils.validateAll()) return;
+        await EditTurn();
+    });
+});
+
+
+async function EditTurn() {
+    const form = document.querySelector("#EditForm");
+    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+    const data = new FormData(form);
+
+    const response = await fetch("/Turns/Edit", {
+        method: "PUT",
+        headers: { "RequestVerificationToken": token },
+        body: data
+    });
+
+    if (!response.ok) {
+        AppUtils.showToast("error", "No se pudo editar el turno.");
+        return;
+    }
+
+    $("#Edit").modal("toggle");
+    reset?.();
+    AppUtils.showToast("success", "Turno editado correctamente.", 600);
 }

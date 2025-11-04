@@ -2,16 +2,19 @@
 
 <form method="post" id="CreateForm">
     <div class="modal-body row">
+
         <div class="form-group col-md-4 col-sm-12">
             <label asp-for="Name" class="control-label">Nombre</label>
             <input asp-for="Name" id="Name" class="form-control" />
-            <span asp-for="Name" id="clientValidation" class="text-danger"></span>
+            <span id="clientValidation" class="text-danger"></span>
         </div>
+
         <div class="form-group col-md-4 col-sm-12">
             <label class="control-label">Dni</label>
             <input asp-for="Dni" id="Dni" class="form-control" />
             <span id="dniValidation" class="text-danger"></span>
         </div>
+
         <div class="form-group col-md-4 col-sm-12">
             <label class="control-label">Medico</label>
             <select asp-for="MedicId" id="medicIdCreate"
@@ -20,82 +23,41 @@
                 <option value="" selected>== Seleccione un profesional ==</option>
             </select>
         </div>
+
         <div class="form-group col-md-4 col-sm-12">
             <label class="control-label">Fecha</label>
-            <input asp-for="Date" id="DateTurnCreate" type="date" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+            <input asp-for="Date" id="DateTurnCreate" type="text" class="form-control" />
         </div>
+
         <div class="form-group col-md-4 col-sm-12">
             <label class="control-label">Hora</label>
-            <select asp-for="Time" id="timeTurnCreate"
+            <select asp-for="TimeId" id="timeTurnCreate"
                     class="form-control"
                     asp-items="@ViewBag.Time">
                 <option value="" selected>== Seleccione un horario ==</option>
             </select>
             <span id="timeValidation" class="text-danger"></span>
         </div>
+
         <div class="form-group col-md-6 col-sm-12">
             <label class="control-label">Obra Social</label>
             <input asp-for="SocialWork" id="socialWorkCreate" class="form-control" />
         </div>
+
         <div class="form-group col-md-6 col-sm-12">
             <label class="control-label">Motivo</label>
             <input asp-for="Reason" id="reasonCreate" class="form-control" />
         </div>
+
     </div>
+
     <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
         <button type="submit" id="btnCrearTurno" class="btn btn-primary">Crear</button>
-
     </div>
 </form>
 
-<script>
-    (function(){
-        function todayString(){
-            var d = new Date();
-            var yyyy = d.getFullYear();
-            var mm = (d.getMonth()+1).toString().padStart(2,'0');
-            var dd = d.getDate().toString().padStart(2,'0');
-            return yyyy + '-' + mm + '-' + dd;
-        }
 
-        var $input = $('#DateTurnCreate');
-        var $btn = $('#btnCrearTurno');
-
-        // ensure min attribute
-        if ($input.length){
-            $input.attr('min', todayString());
-        }
-
-        function validateDate($input, $btn){
-            var val = $input.val();
-            if (!val) { $btn.prop('disabled', false); return true; }
-            var d = new Date(val + 'T00:00:00');
-            var today = new Date(); today.setHours(0,0,0,0);
-            var day = d.getDay(); // 0 Sun, 6 Sat
-            if (d < today){
-                Swal.fire({ position: 'top-end', icon: 'info', title: 'No puede seleccionar fechas anteriores a hoy.', showConfirmButton: false, timer: 1200 });
-                $btn.prop('disabled', true);
-                return false;
-            }
-            if (day === 0 || day === 6){
-                Swal.fire({ position: 'top-end', icon: 'info', title: 'No puede seleccionar sábados o domingos.', showConfirmButton: false, timer: 1200 });
-                $btn.prop('disabled', true);
-                return false;
-            }
-            $btn.prop('disabled', false);
-            return true;
-        }
-
-        $(document).on('change input', '#DateTurnCreate', function(){ validateDate($input, $btn); });
-
-        // validate initial value
-        $(function(){ if ($input.length) validateDate($input, $btn); });
-    })();
-
-</script>
-
-<script src="~/js/createTurn.js"></script>
 
 @section Scripts {
     @{

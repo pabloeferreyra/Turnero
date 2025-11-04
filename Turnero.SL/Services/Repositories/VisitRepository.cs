@@ -2,6 +2,13 @@
 
 public class VisitRepository(ApplicationDbContext context, IMemoryCache cache) : RepositoryBase<Visit>(context, cache), IVisitRepository
 {
+    public async Task<Visit?> Get(Guid? id) 
+    { 
+        return await FindByCondition(v => v.Id == id)
+            .Include(v => v.Patient)
+            .Include(v => v.Medic)
+            .SingleOrDefaultAsync();
+    }
     public async Task<List<Visit>> GetVisitsByMedicAndDate(Guid medicId, DateTime date)
     {
         return await FindByCondition(v => v.MedicId == medicId && v.VisitDate.Date == date.Date)
@@ -189,6 +196,7 @@ public class VisitRepository(ApplicationDbContext context, IMemoryCache cache) :
 
 public interface IVisitRepository
 {
+    Task<Visit?> Get(Guid? id);
     Task<List<Visit>> GetVisitsByMedicAndDate(Guid medicId, DateTime date);
     Task<List<Visit>> GetVisitsByPatient(Guid patientId);
 

@@ -18,7 +18,7 @@
 		</div>
 		<div class="form-group col-md-4 col-sm-12">
 			<label class="control-label">Fecha de Nacimiento</label>
-			<input asp-for="BirthDate" autocomplete="bday" id="BirthDateEdit" type="date" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" max="@DateTime.Now.ToString("yyyy-MM-dd")" />
+			<input asp-for="BirthDate" autocomplete="bday" id="BirthDateEdit" type="text" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" max="@DateTime.Now.ToString("yyyy-MM-dd")" />
 			<span id="birthDateValidation" class="text-danger"></span>
 		</div>
 		<div class="form-group col-md-6 col-sm-12">

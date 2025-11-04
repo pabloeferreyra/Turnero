@@ -1,5 +1,5 @@
 ﻿@model TurnDTO
-<form id="EditForm" method="post">
+<form id="EditForm">
     <div class="modal-body row">
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         <input type="hidden" asp-for="Id" />
@@ -10,7 +10,7 @@
         </div>
         <div class="form-group col-md-4 col-sm-12">
             <label asp-for="Dni" class="control-label"></label>
-            <input asp-for="Dni" class="form-control" />
+            <input asp-for="Dni" id="DniEdit" type="number" class="form-control" />
             <span asp-validation-for="Dni" class="text-danger"></span>
         </div>
         <div class="form-group col-md-4 col-sm-12">
@@ -20,8 +20,8 @@
                     asp-items="@ViewBag.Medics"></select>
         </div>
         <div class="form-group col-md-4 col-sm-12">
-            <label asp-for="Date" class="control-label"></label>
-            <input asp-for="Date" id="DateTurnEdit" type="text" class="form-control" value="@String.Format("{0:yyyy-MM-dd}",Model.Date)" data-date-format="dd/MM/yyyy" />
+            <label asp-label-for="Date" class="control-label"></label>
+            <input asp-for="Date" id="DateTurnEdit" type="text" class="form-control" value="@String.Format("{0:dd/MM/yyyy}", Model.Date)" />
             <span asp-validation-for="Date" class="text-danger"></span>
         </div>
         <div class="form-group col-md-4 col-sm-12">
@@ -44,8 +44,6 @@
         <button type="submit" id="btnEditarTurno" class="btn btn-primary">Guardar</button>
     </div>
 </form>
-
-<script src="~/js/editTurn.js"></script>
 
 @section scripts{
     

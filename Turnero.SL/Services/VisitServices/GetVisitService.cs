@@ -17,6 +17,18 @@ public class GetVisitService(LoggerService logger, IVisitRepository visitReposit
             throw new Exception("An error occurred while searching for visits.");
         }
     }
+    public async Task<Visit?> Get(Guid? id)
+    {
+        try
+        {
+            return await _visitRepository.Get(id);
+        }
+        catch (Exception ex)
+        {
+            _logger.Log(ex.Message);
+            return null;
+        }
+    }
     public async Task<List<Visit>> GetVisitsByMedicAndDate(Guid medicId, DateTime date)
     {
         try
@@ -322,6 +334,7 @@ public class GetVisitService(LoggerService logger, IVisitRepository visitReposit
 
 public interface IGetVisitService
 {
+    Task<Visit?> Get(Guid? id);
     Task<List<Visit>> GetVisitsByMedicAndDate(Guid medicId, DateTime date);
     Task<List<Visit>> GetVisitsByPatient(Guid patientId);
     Task<IQueryable<Visit>> SearchVisits(Guid patientId);

@@ -1,3 +1,6 @@
+using System.Text.Json.Serialization;
+using Turnero;
+
 var builder = WebApplication.CreateBuilder(args);
 
 MapsterConfig.RegisterMappings();
@@ -14,6 +17,25 @@ static string GetFirebasePath(string secretsFolder) =>
 
 #region Configuration
 builder.Configuration.AddUserSecrets<Program>();
+#endregion
+
+#region validations
+builder.Host.UseDefaultServiceProvider(options =>
+{
+    options.ValidateScopes = true;
+    options.ValidateOnBuild = true;
+});
+
+// Diagnóstico adicional (solo en desarrollo)
+if (builder.Environment.IsDevelopment())
+{
+    builder.Logging.AddConsole();
+    builder.Logging.AddDebug();
+
+    // Validación manual para servicios críticos
+    builder.Services.AddHostedService<DependencyDiagnosticsHostedService>();
+}
+
 #endregion
 
 #region Database Configuration
@@ -81,7 +103,11 @@ builder.Services.AddControllersWithViews(options =>
 }).AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
-})  
+})
+.AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+})
 .AddXmlSerializerFormatters();
 
 builder.Services.AddRazorPages();
@@ -130,6 +156,11 @@ builder.Services.AddScoped<IUpdateHistoryService, UpdateHistoryService>();
 builder.Services.AddScoped<IGetVisitService, GetVisitService>();
 builder.Services.AddScoped<IInsertVisitService, InsertVisitService>();
 
+//Allergies Services
+builder.Services.AddScoped<IGetAllergiesServices, GetAllergiesServices>();
+builder.Services.AddScoped<IInsertAllergiesServices, InsertAllergiesServices>();
+builder.Services.AddScoped<IUpdateAllergiesServices, UpdateAllergiesServices>();
+builder.Services.AddScoped<IDeleteAllergiesServices, DeleteAllergiesServices>();
 #endregion
 
 #region Dependency Injection - Repositories
@@ -140,6 +171,7 @@ builder.Services.AddScoped<ITurnDTORepository, TurnDTORepository>();
 builder.Services.AddScoped<IPatientRepository, PatientRepository>();
 builder.Services.AddScoped<IHistoryRepository, HistoryRepository>();
 builder.Services.AddScoped<IVisitRepository, VisitRepository>();
+builder.Services.AddScoped<IAllergiesRepository, AllergiesRepository>();
 #endregion
 
 #region HTTP Client

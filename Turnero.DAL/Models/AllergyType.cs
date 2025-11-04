@@ -2,9 +2,9 @@
 
 public enum AllergyType
 {
-    Food,
-    Drug,
-    Environmental,
-    Insect,
-    Other
+    Comida,
+    Medicina,
+    Ambiental,
+    Insecto,
+    Otra
 }

@@ -22,7 +22,8 @@ public class TurnsRepository(ApplicationDbContext context, IMemoryCache cache) :
     public async Task<TurnDTO> GetDTOById(Guid id)
     {
         var turn = await FindByCondition(m => m.Id == id).SingleOrDefaultAsync();
-        return turn.Adapt<TurnDTO>()
+        var dto = turn.Adapt<TurnDTO>();
+        return dto
             ?? throw new InvalidOperationException("No se encontró el turno con el id especificado."); 
     }
 

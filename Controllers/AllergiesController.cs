@@ -1,85 +1,97 @@
-﻿namespace Turnero.Controllers;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
 
-[Authorize(Roles = RolesConstants.Medico)]
-public class VisitsController(IGetVisitService getVisit,
-    IInsertVisitService insertVisit,
-    ILogger<VisitsController> logger,
-    IGetMedicsServices getMedics) : Controller
+namespace Turnero.Controllers;
+
+public class AllergiesController(IInsertAllergiesServices insertAllergies, 
+    //IUpdateAllergiesServices updateAllergies, 
+    //IDeleteAllergiesServices deleteAllergies,
+    IGetAllergiesServices getAllergies,
+    ILogger<AllergiesController> logger) : Controller
 {
+
     [HttpGet]
-    public IActionResult Details(Guid? id)
+    public async Task<IActionResult> Details(Guid? id)
     {
-        if(id == null || id == Guid.Empty)
-        {
-            return BadRequest("Visit ID is required.");
-        }
-        ViewData["VisitId"] = id.ToString();
-        var Details = getVisit.Get(id.Value).Result;
+        if (id == null || id == Guid.Empty)
+            return BadRequest("Allergy ID is required.");
+        ViewData["AllergyId"] = id.ToString();
+        var Details = await getAllergies.Get(id.Value);
         return PartialView("_Details", Details);
     }
 
     [HttpGet]
     public IActionResult Create(Guid? id)
     {
-        if(id == null || id == Guid.Empty)
-        {
+        if (id == null || id == Guid.Empty)
             return BadRequest("Patient ID is required.");
-        }
         ViewData["PatientId"] = id.ToString();
-        // Pass a Visit model so the Razor partial has a non-null Model
-        var model = new Visit { PatientId = id.Value };
+        var model = new Allergies { PatientId = id.Value };
         var token = HttpContext.RequestServices.GetRequiredService<IAntiforgery>()
-                .GetAndStoreTokens(HttpContext)
-                .RequestToken;
+            .GetAndStoreTokens(HttpContext)
+            .RequestToken;
         ViewData["RequestVerificationToken"] = token;
-        return PartialView("_CreateVisit", model);
+        ViewBag.Occurrency = Enum.GetValues<Occurrency>()
+            .Select(a => new SelectListItem
+            {
+                Value = ((int)a).ToString(),
+                Text = a.ToString()
+            }).ToList();
+        ViewBag.Severity = Enum.GetValues<Severity>()
+            .Select(a => new SelectListItem
+            {
+                Value = ((int)a).ToString(),
+                Text = a.ToString()
+            }).ToList();
+        ViewBag.Type = Enum.GetValues<AllergyType>()
+            .Select(a => new SelectListItem
+            {
+                Value = ((int)a).ToString(),
+                Text = a.ToString()
+            }).ToList();
+        return PartialView("_CreateAllergies", model);
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<StatusCodeResult> Create([FromBody]Visit visit)
+    public async Task<StatusCodeResult> Create([FromBody]Allergies allergy)
     {
-        string isMedic = await CheckMedic();
-        var medicId = Guid.TryParse(isMedic, out var mid) ? mid : (Guid?)null;
-        if (medicId != null)
-        {
-            visit.MedicId = (Guid)medicId;
-        }
-        if (visit == null || visit.PatientId == Guid.Empty)
+        if(allergy == null || allergy.PatientId == Guid.Empty)
         {
             return BadRequest();
         }
         try
-        { 
-            await insertVisit.Create(visit);
-            logger.LogInformation("Visit created successfully for patient {PatientId}", visit.PatientId);
+        {
+            await insertAllergies.InsertAllergy(allergy);
+            logger.LogInformation("Allergy created successfully for patient {PatientId}", allergy.PatientId);
             return Ok();
         }
         catch
         {
-            logger.LogWarning("Failed to create visit for patient {PatientId}", visit.PatientId);
+            logger.LogWarning("Failed to create allergy for patient {PatientId}", allergy.PatientId);
             return StatusCode(500);
         }
-
     }
 
     [HttpGet]
-    public IActionResult GetVisits(Guid id)
+    public IActionResult GetAllergies(Guid id)
     {
-        logger.LogInformation("GetVisits called for patient {PatientId}", id);
+        logger.LogInformation("GetAllergies called for patient {patientId}", id);
         ViewData["PatientId"] = id.ToString();
-        return PartialView("_VisitsTable");
+        return PartialView("_AllergiesTable");
     }
 
     [HttpPost]
-    public async Task<IActionResult> InitializeVisits(Guid? patientId)
+    public async Task<IActionResult> InitializeAllergies(Guid? patientId)
     {
-        logger.LogInformation("InitializeVisits called. Request path: {Path}. Query patientId: {QueryPatientId}", Request.Path, patientId?.ToString() ?? "null");
+        logger.LogInformation("Initializing allergies for patient {PatientId}", patientId);
+        if (patientId == Guid.Empty)
+        {
+            return BadRequest("Patient ID is required.");
+        }
         try
         {
             var (draw, pageSize, skip, data, recordsTotal) = await SetTableAsync(patientId);
             data = SetPage(pageSize, skip, data);
-
             var json = new
             {
                 draw,
@@ -87,19 +99,18 @@ public class VisitsController(IGetVisitService getVisit,
                 recordsTotal,
                 data
             };
-
-            logger.LogInformation("InitializeVisits returning Ok with {Count} items (patientId: {PatientId})", data?.Count ?? 0, patientId?.ToString() ?? "null");
+            logger.LogInformation("InitializeAllergies returning Ok with {Count} items (patientId: {PatientId})", data?.Count ?? 0, patientId?.ToString() ?? "null");
             return Ok(json);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "InitializeVisits failed");
-            return StatusCode(500, new { error = ex.Message });
+            logger.LogError(ex, "InitializeAllergies failed");
+            return StatusCode(500, new {error = ex.Message });
         }
     }
 
     #region private
-    private async Task<(string draw, int pageSize, int skip, List<Visit> data, int recordsTotal)> SetTableAsync(Guid? patientIdFromQuery = null)
+    private async Task<(string draw, int pageSize, int skip, List<Allergies> data, int recordsTotal)> SetTableAsync(Guid? patientIdFromQuery = null)
     {
         var draw = Request.Form["draw"].FirstOrDefault() ?? "1";
         var start = Request.Form["start"].FirstOrDefault();
@@ -188,14 +199,14 @@ public class VisitsController(IGetVisitService getVisit,
 
         searchCandidate ??= string.Empty;
 
-        IQueryable<Visit> visitsQueryable = Enumerable.Empty<Visit>().AsQueryable();
+        IQueryable<Allergies> allergiesQueryable = Enumerable.Empty<Allergies>().AsQueryable();
         if (Guid.TryParse(searchCandidate, out var patientGuid))
         {
-            var result = await getVisit.SearchVisits(patientGuid);
-            visitsQueryable = result ?? Enumerable.Empty<Visit>().AsQueryable();
+            var result = await getAllergies.GetAllergies(patientGuid);
+            allergiesQueryable = result ?? Enumerable.Empty<Allergies>().AsQueryable();
         }
 
-        var list = visitsQueryable.ToList();
+        var list = allergiesQueryable.ToList();
 
         var orderColumnIndex = Request.Form["order[0][column]"].FirstOrDefault();
         var sortColumn = !string.IsNullOrEmpty(orderColumnIndex)
@@ -224,7 +235,7 @@ public class VisitsController(IGetVisitService getVisit,
         return (draw, pageSize, skip, list, recordsTotal);
     }
 
-    private static List<Visit> SetPage(int pageSize, int skip, List<Visit> data)
+    private static List<Allergies> SetPage(int pageSize, int skip, List<Allergies> data)
     {
         if (data == null) return [];
         if (pageSize == -1) return data;
@@ -238,13 +249,6 @@ public class VisitsController(IGetVisitService getVisit,
         if (obj == null || string.IsNullOrWhiteSpace(propName)) return null;
         var prop = obj.GetType().GetProperty(propName);
         return prop?.GetValue(obj);
-    }
-
-    private async Task<string> CheckMedic()
-    {
-        var user = this.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-        var isMedic = await getMedics.GetMedicByUserId(user);
-        return isMedic?.Id.ToString();
     }
     #endregion
 }

@@ -10,7 +10,7 @@
 <div class="back container-fluid">
     <div class="form-group row">
         <div class="col-md-2 col-sm-12">
-            <input id="DateTurn" name="dateTurn" type="date" class="form-control" placeholder="Fecha" value="@DateTime.Now.ToString("yyyy-MM-dd")" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+            <input id="DateTurn" type="text" class="form-control" placeholder="Selecciona una fecha" />
         </div>
         <div class="col-md-3 col-sm-12">
             @if(User.IsInRole(RolesConstants.Ingreso))
@@ -81,42 +81,12 @@
 
 
 @section scripts{
-    <script>
-        (function(){
-            function todayString(){
-                var d = new Date();
-                var yyyy = d.getFullYear();
-                var mm = (d.getMonth()+1).toString().padStart(2,'0');
-                var dd = d.getDate().toString().padStart(2,'0');
-                return yyyy + '-' + mm + '-' + dd;
-            }
-
-            var $input = $('#DateTurn');
-
-            if ($input.length){
-                $input.attr('min', todayString());
-            }
-
-            $input.on('change input', function(){
-                var val = $(this).val();
-                if (!val) return;
-                var d = new Date(val + 'T00:00:00');
-                var today = new Date(); today.setHours(0,0,0,0);
-                var day = d.getDay();
-                if (d < today){
-                    Swal.fire({ position: 'top-end', icon: 'info', title: 'No puede seleccionar fechas anteriores a hoy.', showConfirmButton: false, timer: 1200 });
-                    $(this).val(todayString());
-                } else if (day === 0 || day === 6){
-                    Swal.fire({ position: 'top-end', icon: 'info', title: 'No puede seleccionar sábados o domingos.', showConfirmButton: false, timer: 1200 });
-                    $(this).val(todayString());
-                }
-            });
-        })();
-    </script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
     <script src="~/js/signalR.js"></script>
     <script src="~/js/turn.js"></script>
+    <script src="~/js/editTurn.js"></script>
+    <script src="~/js/createTurn.js"></script>
+    
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }

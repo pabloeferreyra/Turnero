@@ -2,12 +2,12 @@
 
 public enum Severity
 {
-    None,
-    Low,
-    UpperLow,
-    Medium,
-    UpperMedium,
-    Severe,
-    Critical,
+    Ninguna,
+    Minima,
+    Baja,
+    Media,
+    Alta,
+    Severa,
+    Critica,
     Fatal
 }

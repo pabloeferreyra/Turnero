@@ -1,0 +1,43 @@
+﻿@model Visit
+@{
+	ViewData["Title"] = "Visita del " + Model.VisitDate.ToString("dd/MM/yyyy");
+}
+<div class="modal-body container-fluid">
+	<div class="row">
+		<div class="col-12">
+			<h3>Visita del @Model.VisitDate.ToString("dd/MM/yyyy")</h3>
+		</div>
+		<hr />
+		<div class="col-5">
+			<h5>Médico:</h5>
+		</div>
+		<div class="col-7">
+			<p>@Model.Medic.Name</p>
+		</div>
+		<hr />
+		<div class="col-12">
+			<h5>Motivo:</h5>
+		</div>
+		<div class="col-12">
+			<p>@Model.Reason</p>
+		</div>
+		<hr />
+		<div class="col-12">
+			<h5>Diagnóstico:</h5>
+		</div>
+		<div class="col-12">
+			<p>@Model.Diagnosis</p>
+		</div>
+		<hr />
+		<div class="col-12">
+		</div>
+		<h5>Tratamiento:</h5>
+		<div class="col-12">
+			<p>@Model.Treatment</p>
+		</div>
+	</div>
+</div>
+
+<div class="modal-footer">
+	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+</div>

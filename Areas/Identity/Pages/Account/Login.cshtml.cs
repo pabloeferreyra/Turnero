@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication;
-namespace Turnero.Areas.Identity.Pages.Account;
+﻿namespace Turnero.Areas.Identity.Pages.Account;
 
 [AllowAnonymous]
 public class LoginModel(SignInManager<IdentityUser> signInManager,

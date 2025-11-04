@@ -1,71 +1,53 @@
-/// <reference path="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js" />
+/// <reference path="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/9.0.6/signalr.min.js" />
 /// <reference path="../js/turn.js" />
+
+// connection
 const connection = new signalR.HubConnectionBuilder()
     .withUrl("/TurnsTableHub")
     .configureLogging(signalR.LogLevel.Information)
     .build();
 
-function formatDate(date) {
-    var day = date.getDate();
-    var month = date.getMonth() + 1; // Los meses en JavaScript van de 0 a 11
-    var year = date.getFullYear();
+// helpers
+const todayISO_DDMMYYYY = () => {
+    const now = new Date();
+    return now.toLocaleDateString("es-AR"); // dd/mm/yyyy
+};
 
+// unified notification
+function notifyIfForToday(user, message, dateStr) {
+    const today = todayISO_DDMMYYYY();
+    if (dateStr !== today) return;
 
-    return day + '/' + month + '/' + year;
-}
-
-connection.on("UpdateTableDirected", function (user, message, date) {
     if (!("Notification" in window)) {
-        Swal.fire({
-            position: 'top-end',
-            icon: 'info',
-            title: "Este navegador no soporta notificaciones web",
-            showConfirmButton: false,
-            timer: 500
-        });
-    } else if (Notification.permission === "granted") {
-        var options = {
+        AppUtils.showToast("info", "Este navegador no soporta notificaciones web");
+        return;
+    }
+
+    const doNotify = () =>
+        new Notification(`${user} Hay nuevos turnos`, {
             body: message,
             icon: "/favicon.ico"
-        };
-        var currentDate = new Date();
-        currentDate = formatDate(currentDate);
-        if (date === currentDate) {
-            new Notification(user + " Hay nuevos turnos", options);
-        }
-    } else {
-        Notification.requestPermission(function (permission) {
-            if (permission === "granted") {
-                var options = {
-                    body: message,
-                    icon: "/favicon.ico"
-                };
-                var currentDate = new Date();
-                currentDate = formatDate(currentDate);
-                if (date === currentDate) {
-                    new Notification(user + " Hay nuevos turnos", options);
-                }
-            }
         });
-    }
-    reset();
-})
 
-connection.on("UpdateTable", function (message) {
-    reset();
+    if (Notification.permission === "granted") {
+        doNotify();
+    } else if (Notification.permission !== "denied") {
+        Notification.requestPermission().then(p => p === "granted" && doNotify());
+    }
+}
+
+// server -> this client only
+connection.on("UpdateTableDirected", (user, message, date) => {
+    notifyIfForToday(user, message, date);
+    reset?.();
 });
 
+// server -> everyone
+connection.on("UpdateTable", () => {
+    reset?.();
+});
+
+// connect
 connection.start()
-    .then(function () {
-        Swal.fire({
-            position: 'top-end',
-            text: "Conexion Exitosa",
-            color: "#fff",
-            background: "#28a745",
-            showConfirmButton: false,
-            timer: 200
-        });
-    })
-    .catch(function (err) {
-        return console.error(err.toString());
-    });
+    .then(() => AppUtils.showToast("success", "SignalR conectado", 300))
+    .catch(err => console.error(err));

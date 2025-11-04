@@ -1,106 +1,146 @@
-﻿@model Patient
-@{
-	ViewData["Title"] = "Paciente " + Model.Name;
-}
-<input type="hidden" name="patientId" id="patientId" value="@Model.Id" />
-<div class="back container-fluid">
-	<div class="row">
-		<div class="col-md-4 col-sm-12 btn-group" role="group">
-			<button onclick='EditView(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Id)))' class="btn btn-sm btn-primary me-1">Editar</button>
-			<button onclick='CreateVisitView(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Id)))' class="btn btn-sm btn-secondary me-1">Ingresar Visita</button>
-		</div>
-	</div>
-	<hr />
-	<div class="row">
-		<div class="col-md-4 col-sm-12 row">
-			<h5 class="col-md-2 col-sm-12">Nombre</h5>
-			<p class="col-md-10 col-sm-12">@Html.DisplayFor(model => model.Name)</p>
-		</div>
-		<div class="col-md-4 col-sm-12 row">
-			<h5 class="col-md-2 col-sm-12">Dni</h5>
-			<p class="col-md-10 col-sm-12">@Html.DisplayFor(model => model.Dni)</p>
-		</div>
-		<div class="col-md-4 col-sm-12 row">
-			<h5 class="col-md-7 col-sm-12">Fecha de Nacimiento</h5>
-			<p class="col-md-5 col-sm-12">@Html.DisplayFor(model => model.BirthDate)</p>
-		</div>
-		<hr />
-		<div class="col-md-4 col-sm-12 row">
-			<h5 class="col-md-3 col-sm-12">Teléfono</h5>
-			<p class="col-md-9 col-sm-12">@Html.DisplayFor(model => model.ContactInfo.Phone)</p>
-		</div>
-		<div class="col-md-4 col-sm-12 row">
-			<h5 class="col-md-2 col-sm-12">Email</h5>
-			<p class="col-md-10 col-sm-12">@Html.DisplayTextFor(model => model.ContactInfo.Email)</p>
-		</div>
-		<div class="col-md-4 col-sm-12 row">
-			<h5 class="col-md-3 col-sm-12">Dirección</h5>
-			<p class="col-md-9 col-sm-12">@Html.DisplayFor(model => model.ContactInfo.Address)</p>
-		</div>
-		<div class="col-md-4 col-sm-12 row">
-			<h5 class="col-md-2 col-sm-12">Ciudad</h5>
-			<p class="col-md-10 col-sm-12">@Html.DisplayFor(model => model.ContactInfo.City)</p>
-		</div>
-		<div class="col-md-4 col-sm-12 row">
-			<h5 class="col-md-4 col-sm-12">Código Postal</h5>
-			<p class="col-md-8 col-sm-12">@Html.DisplayFor(model => model.ContactInfo.PostalCode)</p>
-		</div>
-		<hr />
-		<div class="col-md-4 col-sm-12 row">
-			<h5 class="col-md-4 col-sm-12">Obra Social</h5>
-			<p class="col-md-8 col-sm-12">@Html.DisplayFor(model => model.SocialWork)</p>
-		</div>
-		<div class="col-md-4 col-sm-12 row">
-			<h5 class="col-md-5 col-sm-12">Número de Afiliado</h5>
-			<p class="col-md-7 col-sm-12">@Html.DisplayFor(model => model.AffiliateNumber)</p>
-		</div>
-	</div>
-	<div class="modal modal-lg fade" id="Edit" role="dialog">
-		<div class="modal-dialog modal-lg modal-dialog-centered">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title">Editar @Html.DisplayFor(model => model.Name)</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-				</div>
-				<div id="EditFormContent">
-				</div>
-			</div>
-
-		</div>
-	</div>
-	<div class="modal modal-lg fade" id="CreateVisit" role="dialog">
-		<div class="modal-dialog modal-lg modal-dialog-centered">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title">Ingresar visita</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-				</div>
-				<div id="CreateVisitFormContent">
-				</div>
-			</div>
-		</div>
-	</div>
-</div>
-<div class="back container-fluid">
-	<ul class="nav nav-tabs" role="tablist" id="myTabs">
-		<li class="nav-item">
-			<button type="button" class="nav-link" id="visitsTab" data-url='@Url.Action("GetVisits", "Visits", new { id = Model.Id })'>Visitas</button>
-		</li>
-		<li class="nav-item">
-			<a class="nav-link" data-url="@Url.Action("GetTab2")">Tab 2</a>
-		</li>
-	</ul>
-
-	<div class="tab-content" id="myTabContent">
-		<div id="tabContent"></div>
-	</div>
-</div>
-
-@section Scripts {
-	<script src="~/js/patients.js" asp-append-version="true"></script>
-	<script src="~/js/visits.js" asp-append-version="true"></script>
-	<script src="~/js/createVisit.js" asp-append-version="true"></script>
+﻿	@model Patient
 	@{
-		await Html.RenderPartialAsync("_ValidationScriptsPartial");
+		ViewData["Title"] = "Paciente " + Model.Name;
 	}
-}
+	<input type="hidden" name="patientId" id="patientId" value="@Model.Id" />
+	<div class="back container-fluid">
+		<div class="row">
+			<div class="col-md-4 col-sm-12 btn-group" role="group">
+				<button onclick='EditView(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Id)))' class="btn btn-sm btn-primary me-1">Editar</button>
+				
+				
+			</div>
+		</div>
+		<hr />
+		<div class="row">
+			<div class="col-md-4 col-sm-12 row">
+				<h5 class="col-md-2 col-sm-12">Nombre</h5>
+				<p class="col-md-10 col-sm-12">@Html.DisplayFor(model => model.Name)</p>
+			</div>
+			<div class="col-md-4 col-sm-12 row">
+				<h5 class="col-md-2 col-sm-12">Dni</h5>
+				<p class="col-md-10 col-sm-12">@Html.DisplayFor(model => model.Dni)</p>
+			</div>
+			<div class="col-md-4 col-sm-12 row">
+				<h5 class="col-md-7 col-sm-12">Fecha de Nacimiento</h5>
+				<p class="col-md-5 col-sm-12">@Html.DisplayFor(model => model.BirthDate)</p>
+			</div>
+			<hr />
+			<div class="col-md-4 col-sm-12 row">
+				<h5 class="col-md-3 col-sm-12">Teléfono</h5>
+				<p class="col-md-9 col-sm-12">@Html.DisplayFor(model => model.ContactInfo.Phone)</p>
+			</div>
+			<div class="col-md-4 col-sm-12 row">
+				<h5 class="col-md-2 col-sm-12">Email</h5>
+				<p class="col-md-10 col-sm-12">@Html.DisplayTextFor(model => model.ContactInfo.Email)</p>
+			</div>
+			<div class="col-md-4 col-sm-12 row">
+				<h5 class="col-md-3 col-sm-12">Dirección</h5>
+				<p class="col-md-9 col-sm-12">@Html.DisplayFor(model => model.ContactInfo.Address)</p>
+			</div>
+			<div class="col-md-4 col-sm-12 row">
+				<h5 class="col-md-2 col-sm-12">Ciudad</h5>
+				<p class="col-md-10 col-sm-12">@Html.DisplayFor(model => model.ContactInfo.City)</p>
+			</div>
+			<div class="col-md-4 col-sm-12 row">
+				<h5 class="col-md-4 col-sm-12">Código Postal</h5>
+				<p class="col-md-8 col-sm-12">@Html.DisplayFor(model => model.ContactInfo.PostalCode)</p>
+			</div>
+			<hr />
+			<div class="col-md-4 col-sm-12 row">
+				<h5 class="col-md-4 col-sm-12">Obra Social</h5>
+				<p class="col-md-8 col-sm-12">@Html.DisplayFor(model => model.SocialWork)</p>
+			</div>
+			<div class="col-md-4 col-sm-12 row">
+				<h5 class="col-md-5 col-sm-12">Número de Afiliado</h5>
+				<p class="col-md-7 col-sm-12">@Html.DisplayFor(model => model.AffiliateNumber)</p>
+			</div>
+		</div>
+		<div class="modal modal-lg fade" id="Edit" role="dialog">
+			<div class="modal-dialog modal-lg modal-dialog-centered">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title">Editar @Html.DisplayFor(model => model.Name)</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div id="EditFormContent">
+					</div>
+				</div>
+
+			</div>
+		</div>
+		<div class="modal modal-lg fade" id="CreateVisit" role="dialog">
+			<div class="modal-dialog modal-lg modal-dialog-centered">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title">Ingresar visita</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div id="CreateVisitFormContent">
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="modal modal-lg fade" id="CreateAllergy" role="dialog">
+			<div class="modal-dialog modal-lg modal-dialog-centered">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title">Crear alergia</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div id="CreateAllergyFormContent">
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="modal modal-lg fade" id="VisitDetail" role="dialog">
+			<div class="modal-dialog modal-lg modal-dialog-centered">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title">Detalle de visita</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div id="VisitDetailContent">
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<ul class="nav nav-tabs" role="tablist" id="myTabs">
+				<li class="nav-item">
+					<button type="button" class="nav-link" id="visitsTab" data-url='@Url.Action("GetVisits", "Visits", new { id = Model.Id })'>Visitas</button>
+				</li>
+				<li class="nav-item">
+					<button type="button" class="nav-link" id="allergiesTab" data-url='@Url.Action("GetAllergies", "Allergies", new { id = Model.Id })'>Alergias</button>
+				</li>
+			</ul>
+
+			<div class="tab-content" id="myTabContent">
+				
+			<div class="col-md-4 col-sm-12 btn-group" role="group">
+				<ul class="navbar-nav me-auto">
+					<li class="nav-item dropdown">
+						<a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Crear</a>
+						<ul class="dropdown-menu">
+							<li><button onclick='CreateVisitView(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Id)))' class="btn btn-sm btn-secondary me-1">Visita</button></li>
+							<li><button onclick='CreateAllergyView(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Id)))' class="btn btn-sm btn-secondary me-1">Alergia</button></li>
+						</ul>
+					</li>
+				</ul>
+			</div>
+			
+				<div id="tabContent"></div>
+			</div>
+			
+		</div>
+
+	@section Scripts {
+		<script src="~/js/patients.js" asp-append-version="true"></script>
+		<script src="~/js/visits.js" asp-append-version="true"></script>
+		<script src="~/js/createVisit.js" asp-append-version="true"></script>
+		<script src="~/js/allergies.js" asp-append-version="true"></script>
+		<script src="~/js/createAllergy.js" asp-append-version="true"></script>
+		@{
+			await Html.RenderPartialAsync("_ValidationScriptsPartial");
+		}
+	}

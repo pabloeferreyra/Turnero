@@ -1,245 +1,161 @@
 ﻿(function () {
     'use strict';
 
-    var currentPage = 1;
-    var pageSize = parseInt($('#pageSize').val(), 10) || 25;
-    var recordsTotal = 0;
-    var currentData = [];
-    var sortState = { index: 0, asc: true };
+    const KEY = "visits";
+    const TABLE = "#visits";
+    const TBODY = "#visits-body";
+    const PAGINATION = "#visits-pagination";
+    const PAGEINFO = "#pageInfo";
+    const PAGE_SIZE_SEL = "#pageSize";
 
-    var columnsMap = [
-        'VisitDate',  
-        'Medic',       
-        'Reason'       
-    ];
+    const URL = "/Visits/InitializeVisits";
 
-    $(document).ready(function () {
-        loadDataVisits();
+    const columnsMap = ['VisitDate', 'Medic', 'Reason'];
 
-        $('#pageSize').off('change.visits').on('change.visits', function () {
-            var val = parseInt($(this).val(), 10);
-            if (!isNaN(val)) pageSize = val;
-            currentPage = 1;
-            loadDataVisits();
-        });
-
-        $(document).on('click', '#visits thead .sort-btn', function (ev) {
-            ev.preventDefault();
-            var idx = parseInt($(this).data('index'), 10);
-            if (isNaN(idx)) idx = 0;
-            if (sortState.index === idx) sortState.asc = !sortState.asc;
-            else { sortState.index = idx; sortState.asc = true; }
-            updateHeaderVisuals();
-            currentPage = 1;
-            loadDataVisits();
-        });
-
-        $(document).on('click', '#visits-body .btn-edit-visit', function () {
-            var id = $(this).data('id');
-            EditVisit(id);
-        });
-        $(document).on('click', '#visits-body .btn-delete-visit', function () {
-            var id = $(this).data('id');
-            DeleteVisit(id);
-        });
+    // init state + pageSize change
+    AppUtils.Pagination.init(KEY, {
+        pageSizeSelector: PAGE_SIZE_SEL,
+        onChange: loadData
     });
 
-    function updateHeaderVisuals() {
-        var $buttons = $('#visits thead .sort-btn');
-        $buttons.each(function (i, el) {
-            var $b = $(el);
-            var idx = parseInt($b.data('index'), 10);
-            $b.removeClass('active');
-            $b.attr('aria-sort', 'none');
-            $b.find('.sort-indicator').text('');
-            if (idx === sortState.index) {
-                $b.addClass('active');
-                $b.attr('aria-sort', sortState.asc ? 'ascending' : 'descending');
-                $b.find('.sort-indicator').text(sortState.asc ? '▲' : '▼');
-            }
-        });
-    }
+    // header sorting
+    AppUtils.Sort.attachHeaderSorting(TABLE, KEY, loadData);
+
+    $(document).on('click', `${TBODY} .btn-visit-detail`, function () {
+        const id = $(this).data('id');
+        if (id) VisitDetail(id);
+    });
+
+    // si el tab ya está activo → cargar
+    const $visitsTab = $('#visitsTab');
+    if ($visitsTab.hasClass('active')) loadData();
+
+    // cuando se clickea el tab
+    $visitsTab.off('click.visits').on('click.visits', function () {
+        const url = $(this).data('url');
+        if (!url) return;
+
+        if (!$(TABLE).length) {
+            $('#tabContent').load(url, function () { loadData(); });
+        } else {
+            loadData();
+        }
+    });
 
     function resolvePatientId() {
-        var pid = $('#patientId').val() || $('#PatientId').val() || '';
-        return pid || '';
+        return $('#patientId').val() || $('#PatientId').val() || '';
     }
 
-    function loadDataVisits() {
-        var patientId = resolvePatientId();
+    // =============== core loader ===============
+    function loadData() {
+        const patientId = resolvePatientId();
         if (!patientId) {
-            console.warn('loadDataVisits: patientId no encontrado en DOM.');
             renderEmpty();
             return;
         }
 
-        var draw = 1;
-        var start = (currentPage - 1) * (pageSize === -1 ? 0 : pageSize);
-        var length = pageSize === -1 ? -1 : pageSize;
-        var orderColIndex = (sortState.index !== null && !isNaN(sortState.index)) ? sortState.index : 0;
-        var orderDir = sortState.asc ? 'asc' : 'desc';
+        const st = AppUtils.Pagination.getState(KEY);
 
-        var dataToSend = {
-            draw: draw,
-            start: start,
-            length: length,
-            'order[0][column]': orderColIndex,
-            'order[0][dir]': orderDir,
-            patientId: patientId
+        const order = AppUtils.Pagination.getOrder(KEY);
+
+        const payload = {
+            draw: 1,
+            start: (st.currentPage - 1) * st.pageSize,
+            length: st.pageSize === -1 ? -1 : st.pageSize,
+            patientId,
+            'order[0][column]': order.column,
+            'order[0][dir]': order.dir
         };
 
-        for (var i = 0; i < columnsMap.length; i++) {
-            dataToSend['columns[' + i + '][name]'] = columnsMap[i];
-        }
+        columnsMap.forEach((n, i) => payload[`columns[${i}][name]`] = n);
 
-        $.ajax({
-            type: 'POST',
-            url: '/Visits/InitializeVisits',
-            data: dataToSend,
-            traditional: true,
-            dataType: 'json',
-            success: function (response) {
-                var data = response && (response.data || response.Data || response.items || response.Items || []);
-                currentData = data || [];
-                recordsTotal = (response && (response.recordsTotal || response.recordsFiltered)) || currentData.length || 0;
-
-                if (length === -1) pageSize = recordsTotal;
-
-                renderTable();
-                updateHeaderVisuals();
-            },
-            error: function (xhr, status, err) {
-                console.error('Error loading visits:', status, err, xhr && xhr.responseText);
-                $('#visits-body').html('<tr><td colspan="4" class="text-center text-danger">Error al cargar los datos.</td></tr>');
-                $('#visits-pagination').empty();
-                $('#pageInfo').text('Mostrando 0 de 0 visitas');
-            }
-        });
+        AppUtils.reloadTable(URL, payload, render);
     }
 
-    function renderTable() {
-        var $tbody = $('#visits-body');
-        $tbody.empty();
+    // =============== render ===============
+    function render(response) {
+        const data = response?.data || response?.Data || [];
+        const total = response?.recordsTotal || response?.recordsFiltered || data.length || 0;
 
-        if (!currentData || currentData.length === 0) {
-            $tbody.html('<tr><td colspan="4" class="text-center">No hay visitas para mostrar.</td></tr>');
-            renderPagination();
-            updatePageInfo();
+        AppUtils.Pagination.setRecordsTotal(KEY, total);
+
+        const $tbody = $(TBODY).empty();
+
+        if (!data.length) {
+            renderEmpty();
             return;
         }
 
-        currentData.forEach(function (item) {
-            var dateRaw = item.VisitDate || item.visitDate || item.date || '';
-            var date = '';
+        data.forEach(item => {
+            const dateRaw = item.VisitDate || item.visitDate || '';
+            let date = '';
             if (dateRaw) {
-                var dt = new Date(dateRaw);
-                if (!isNaN(dt)) date = dt.toLocaleDateString('es-AR');
-                else date = dateRaw;
+                const dt = new Date(dateRaw);
+                date = !isNaN(dt) ? dt.toLocaleDateString('es-AR') : dateRaw;
             }
 
-            var medicObj = item.Medic || item.medic || item.medico || null;
-            var medicName = '';
-            if (medicObj) {
-                if (typeof medicObj === 'string') medicName = medicObj;
-                else medicName = medicObj.name || medicObj.Name || medicObj.fullName || '';
-            }
+            const medicObj = item.Medic || item.medic || {};
+            const medicName = typeof medicObj === 'string'
+                ? medicObj
+                : (medicObj.name || medicObj.Name || '');
 
-            var reason = item.Reason || item.reason || '';
-            var actionsMarkup = '<button class="btn btn-sm btn-primary btn-edit-visit me-1" data-id="' + (item.id || item.Id || '') + '">Editar</button>' +
-                '<button class="btn btn-sm btn-danger btn-delete-visit" data-id="' + (item.id || item.Id || '') + '">Eliminar</button>';
+            const reason = item.Reason || item.reason || '';
+            const id = item.Id || item.id || '';
 
-            var row = '<tr>' +
-                '<td>' + escapeHtml(date) + '</td>' +
-                '<td>' + escapeHtml(medicName) + '</td>' +
-                '<td>' + escapeHtml(reason) + '</td>' +
-                '<td>' + actionsMarkup + '</td>' +
-                '</tr>';
-
-            $tbody.append(row);
+            $tbody.append(`
+                <tr>
+                    <td>${escapeHtml(date)}</td>
+                    <td>${escapeHtml(medicName)}</td>
+                    <td>${escapeHtml(reason)}</td>
+                    <td><button class="btn btn-sm btn-primary btn-visit-detail" data-id="${id}">Detalle</button></td>
+                </tr>
+            `);
         });
 
-        renderPagination();
+        AppUtils.Pagination.renderWithState(PAGINATION, KEY, loadData);
         updatePageInfo();
     }
 
-    function renderPagination() {
-        var $pagination = $('#visits-pagination');
-        $pagination.empty();
-
-        if (pageSize === -1 || pageSize === 0) return;
-
-        var totalPages = Math.max(1, Math.ceil(recordsTotal / pageSize));
-        var startPage = Math.max(1, currentPage - 2);
-        var endPage = Math.min(totalPages, currentPage + 2);
-
-        function appendPage(p, text, active) {
-            var li = $('<li>').addClass('page-item' + (active ? ' active' : ''));
-            var a = $('<a href="#" class="page-link">').text(text).attr('data-page', p);
-            a.on('click', function (e) {
-                e.preventDefault();
-                var np = parseInt($(this).data('page'), 10);
-                if (!isNaN(np) && np >= 1) {
-                    currentPage = np;
-                    loadDataVisits();
-                }
-            });
-            li.append(a);
-            $pagination.append(li);
-        }
-
-        if (currentPage > 1) appendPage(currentPage - 1, 'Anterior', false);
-        for (var p = startPage; p <= endPage; p++) appendPage(p, p, p === currentPage);
-        if (currentPage < totalPages) appendPage(currentPage + 1, 'Siguiente', false);
-    }
-
     function updatePageInfo() {
-        var start = recordsTotal === 0 ? 0 : ((currentPage - 1) * (pageSize === -1 ? recordsTotal : pageSize)) + 1;
-        var end = pageSize === -1 ? recordsTotal : Math.min(recordsTotal, currentPage * pageSize);
-        var $pageInfo = $('#pageInfo');
-        if ($pageInfo.length) $pageInfo.text('Mostrando ' + start + ' - ' + end + ' de ' + recordsTotal + ' visitas');
+        const st = AppUtils.Pagination.getState(KEY);
+        const total = st.recordsTotal;
+        const page = st.currentPage;
+        const size = st.pageSize;
+
+        const start = total === 0 ? 0 : ((page - 1) * size) + 1;
+        const end = Math.min(total, page * size);
+
+        $(PAGEINFO).text(`Mostrando ${start} - ${end} de ${total} visitas`);
     }
 
     function renderEmpty() {
-        $('#visits-body').html('<tr><td colspan="4" class="text-center">No hay visitas para mostrar.</td></tr>');
-        $('#visits-pagination').empty();
-        $('#pageInfo').text('');
+        $(TBODY).html('<tr><td colspan="4" class="text-center">No hay visitas para mostrar.</td></tr>');
+        $(PAGINATION).empty();
+        $(PAGEINFO).text('');
     }
 
     function escapeHtml(s) {
-        if (s === null || s === undefined) return '';
-        return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        return s ? String(s)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;") : '';
     }
 
-    window.EditVisit = function (id) {
+    // global
+    window.VisitDetail = function (id) {
         $.ajax({
             type: 'GET',
-            url: '/Visits/Edit',
-            data: { id: id },
+            url: '/Visits/Details',
+            data: { id },
             success: function (html) {
-                $('#EditVisitFormContent').html(html);
-                $('#EditVisit').modal('toggle');
+                $('#VisitDetailContent').html(html);
+                $('#VisitDetail').modal('show');
             }
         });
     };
 
-    window.DeleteVisit = function (id) {
-        $.ajax({
-            type: 'POST',
-            url: '/Visits/Delete',
-            data: { id: id },
-            success: function () {
-                Swal.fire({ position: 'top-end', icon: 'info', title: 'Visita eliminada', showConfirmButton: false, timer: 1200 });
-                loadDataVisits();
-            },
-            error: function (xhr) {
-                Swal.fire({ position: 'top-end', icon: 'error', title: 'No se pudo eliminar', showConfirmButton: false, timer: 1200 });
-            }
-        });
-    };
-
-    window.reloadVisitsTable = function () {
-        loadDataVisits();
-    };
+    window.reloadVisitsTable = loadData;
 
 })();

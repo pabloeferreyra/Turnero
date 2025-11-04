@@ -41,4 +41,8 @@ global using Turnero.SL.Services.PatientServices;
 global using Turnero.SL.Services.Repositories;
 global using Turnero.SL.Services.TurnsServices;
 global using Turnero.SL.Services.VisitServices;
+global using Turnero.SL.Services.AllergiesServices;
 global using Turnero.Utilities.Utilities;
+global using Microsoft.AspNetCore.Authentication;
+global using Microsoft.AspNetCore.Antiforgery;
+global using System.Threading;
