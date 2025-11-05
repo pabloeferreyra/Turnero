@@ -39,15 +39,15 @@ function notifyIfForToday(user, message, dateStr) {
 // server -> this client only
 connection.on("UpdateTableDirected", (user, message, date) => {
     notifyIfForToday(user, message, date);
-    reset?.();
+    window.reloadTurnsTable();
 });
 
 // server -> everyone
 connection.on("UpdateTable", () => {
-    reset?.();
+    window.reloadTurnsTable();
 });
 
 // connect
 connection.start()
-    .then(() => AppUtils.showToast("success", "SignalR conectado", 300))
+    .then()
     .catch(err => console.error(err));

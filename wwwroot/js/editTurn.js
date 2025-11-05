@@ -42,11 +42,6 @@ document.addEventListener("turns:editLoaded", function () {
         }
     });
 
-    // blur crossfire → validar 1 solo campo
-    $(document).on('blur', '#clientName, #DniEdit, #DateTurnEdit, #TimeIdEdit', function () {
-        AppUtils.validateField(`#${this.id}`);
-    });
-
     $(document).on('click', '#btnEditarTurno', async function (ev) {
         ev.preventDefault();
         if (!AppUtils.validateAll()) return;
@@ -72,6 +67,6 @@ async function EditTurn() {
     }
 
     $("#Edit").modal("toggle");
-    reset?.();
     AppUtils.showToast("success", "Turno editado correctamente.", 600);
+    if (window.turns_loadData) window.turns_loadData();
 }

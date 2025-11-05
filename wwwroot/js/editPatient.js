@@ -1,50 +1,31 @@
-﻿document.addEventListener("patients:editLoaded", function () {
+﻿document.addEventListener("patients:editLoaded", () => {
 
-    AppUtils.initFlatpickr("#BirthDateEdit", { maxToday: true });
+    // si tu form tiene un datepicker, activalo acá
+    AppUtils.initFlatpickr("#BirthDateEdit", { maxToday: true, blockSundays: false });
 
-    $(document).on("input", "#PhoneEdit, #DniEdit, #PostalCodeEdit, #AffiliateNumberEdit", function () {
-        this.value = this.value.replace(/\D+/g, "");
-    });
+    // botón guardar
+    $(document).off("click.patientsEdit", "#btnEditarPaciente")
+        .on("click.patientsEdit", "#btnEditarPaciente", async function (e) {
+            e.preventDefault();
 
-    AppUtils.FormValidationRules("#btnEditarPaciente", {
-        Name: { required: true },
-        PhoneEdit: { minLength: 6 },
-        BirthDateEdit: { required: true }
-    });
+            const form = document.querySelector("#EditForm");
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            const data = new FormData(form);
 
-    $(document).on("click", "#btnEditarPaciente", async function (e) {
-        e.preventDefault();
+            const r = await fetch("/Patients/Edit", {
+                method: "PUT",
+                headers: { "RequestVerificationToken": token },
+                body: data
+            });
 
-        if (!AppUtils.validateAll()) return;
+            if (!r.ok) {
+                AppUtils.showToast("error", "No se pudo editar el paciente.");
+                return;
+            }
 
-        await EditPatientSubmit();
-    });
-});
+            $("#Edit").modal("hide");
+            AppUtils.showToast("success", "Paciente editado correctamente.", 600);
 
-
-async function EditPatientSubmit() {
-    const form = document.querySelector("#EditForm");
-    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
-    const data = new FormData(form);
-
-    try {
-        const resp = await fetch("/Patients/Edit", {
-            method: "PUT",
-            headers: { "RequestVerificationToken": token },
-            body: data
+            if (window.patients_loadData) window.patients_loadData();
         });
-
-        if (!resp.ok) throw new Error();
-
-        $("#Edit").modal("toggle");
-
-        AppUtils.showToast("success", "Paciente editado.", 900);
-
-        if (typeof window.reloadPatientsTable === "function") {
-            window.reloadPatientsTable();
-        }
-
-    } catch {
-        AppUtils.showToast("error", "Error editando paciente");
-    }
-}
+});

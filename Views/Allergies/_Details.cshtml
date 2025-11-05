@@ -1,0 +1,60 @@
+﻿@model Allergies
+@{
+	ViewData["Title"] = "Detalles de Alergia";
+}
+<div class="modal-body container-fluid">
+	<div class="row">
+		<div class="col-12">
+			<h3>Detalles de Alergia</h3>
+		</div>
+		<hr />
+		<div class="col-5">
+			<h5>Nombre:</h5>
+		</div>
+		<div class="col-7">
+			<p>@Model.Name</p>
+		</div>
+		<hr />
+		<div class="col-5">
+			<h5>Inicio:</h5>
+		</div>
+		<div class="col-7">
+			<p>@Model.Begin.ToString("dd/MM/yyyy")</p>
+		</div>
+		<hr />
+		<div class="col-5">
+			<h5>Fin:</h5>
+		</div>
+		<div class="col-7">
+			<p>@(Model.End.HasValue ? Model.End.Value.ToString("dd/MM/yyyy") : "N/A")</p>
+		</div>
+		<hr />
+		<div class="col-5">
+			<h5>Severidad:</h5>
+		</div>
+		<div class="col-7">
+			<p>@Model.Severity</p>
+		</div>
+		<hr />
+		<div class="col-5">
+			<h5>Tipo:</h5>
+		</div>
+		<div class="col-7">
+			<p>@Model.Type</p>
+		</div>
+		<hr />
+		<div class="col-5">
+			<h5>Descripción:</h5>
+		</div>
+		<div class="col-7">
+			<p>@Model.Description</p>
+		</div>
+		<hr />
+		<div class="col-5">
+			<h5>Observaciones:</h5>
+		</div>
+		<div class="col-7">
+			<p>@Model.Comments</p>
+		</div>
+	</div>
+</div>

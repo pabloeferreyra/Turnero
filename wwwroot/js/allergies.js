@@ -1,6 +1,4 @@
-﻿// allergies.js — migrado full a AppUtils unified state
-
-(function () {
+﻿(function () {
     'use strict';
 
     const key = "allergies";
@@ -20,6 +18,16 @@
 
         $tab.off('click.allergies').on('click.allergies', function () {
 
+            // visual tabs
+            $('#myTabs .nav-link').removeClass('active');
+            $(this).addClass('active');
+
+            // limpiar sort visual del tab “visits”
+            $('#visits thead .sort-btn')
+                .removeClass('active')
+                .attr('aria-sort', 'none')
+                .find('.sort-indicator').text('');
+
             const url = $(this).data('url');
             if (!url) return;
 
@@ -32,8 +40,6 @@
             }
         });
 
-        if ($tab.hasClass('active')) loadData();
-
         $(document).on('click.allergies', '#allergies-body .btn-allergy-detail', function () {
             const id = $(this).data('id');
             if (id) AllergyDetail(id);
@@ -42,6 +48,18 @@
 
     function resolvePatientId() {
         return $('#patientId').val() || $('#PatientId').val() || '';
+    }
+
+    function AllergyDetail(id) {
+        $.ajax({
+            type: 'GET',
+            url: '/Allergies/Details',
+            data: { id },
+            success: function (html) {
+                $('#AllergyDetailContent').html(html);
+                $('#AllergyDetail').modal('toggle');
+            }
+        });
     }
 
     function loadData() {
@@ -63,12 +81,11 @@
             length,
             'order[0][column]': order.column,
             'order[0][dir]': order.dir,
-            patientId: pid,
-            'columns[0][name]': 'Name',
-            'columns[1][name]': 'Begin',
-            'columns[2][name]': 'End',
-            'columns[3][name]': 'Severity'
+            patientId: pid
         };
+
+        const columnsMap = ['Name', 'Begin', 'End', 'Severity'];
+        columnsMap.forEach((name, i) => payload[`columns[${i}][name]`] = name);
 
         $.ajax({
             type: "POST",
@@ -101,11 +118,11 @@
         }
 
         for (const item of rows) {
-            const id = item.Id ?? item.id ?? '';
-            const name = item.Name ?? item.name ?? '';
-            const begin = format(item.Begin);
-            const end = format(item.End);
-            const severity = item.Severity ?? item.severity ?? '';
+            const id = item.id;
+            const name = item.name;
+            const begin = toDisplayDate(item.begin);
+            const end = toDisplayDate(item.end);
+            const severity = item.severity;
 
             $tbody.append(`
                 <tr>
@@ -119,7 +136,7 @@
         }
     }
 
-    function format(raw) {
+    function toDisplayDate(raw) {
         if (!raw) return "";
         const d = new Date(raw);
         return !isNaN(d) ? d.toLocaleDateString('es-AR') : raw;

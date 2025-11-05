@@ -125,16 +125,22 @@ AppUtils.isPastISODate = function (iso) {
 };
 
 AppUtils.validateField = function (selector) {
-    const fn = FormValidationRules[selector];
-    if (!fn) return true;
-    const el = document.querySelector(selector);
-    if (!el) return true;
-    return fn(el, { err: msg => AppUtils.showToast("info", msg) });
+    if (typeof window.FormValidationRules === 'object' && window.FormValidationRules !== null) {
+        const fn = window.FormValidationRules[selector];
+        if (!fn) return true;
+        const el = document.querySelector(selector);
+        if (!el) return true;
+        return fn(el, { err: msg => AppUtils.showToast("info", msg) });
+    }
+    return true;
 };
 
 AppUtils.validateAll = function () {
-    for (const selector in FormValidationRules) {
-        if (!AppUtils.validateField(selector)) return false;
+    if (typeof window.FormValidationRules === 'object' && window.FormValidationRules !== null) {
+        for (const selector in window.FormValidationRules) {
+            if (!AppUtils.validateField(selector)) return false;
+        }
+        return true;
     }
     return true;
 };
