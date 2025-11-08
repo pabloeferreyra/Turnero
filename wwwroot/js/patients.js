@@ -26,19 +26,19 @@
             clearTimeout(searchTimer);
 
             searchTimer = setTimeout(() => {
-                AppUtils.Pagination.goTo("patients", 1, loadData);
-            }, 320);
+                AppUtils.Pagination.goTo(key, 1, loadData);
+            }, 250);
         });
 
         $(document).on("keydown", "#searchBox", function (e) {
             if (e.key === "Enter") {
                 e.preventDefault();
-                AppUtils.Pagination.goTo("patients", 1, loadData);
+                AppUtils.Pagination.goTo(key, 1, loadData);
             }
         });
 
         $(document).on("click", "#btnSearch", function () {
-            AppUtils.Pagination.goTo("patients", 1, loadData);
+            AppUtils.Pagination.goTo(key, 1, loadData);
         });
 
         // editar

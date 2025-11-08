@@ -315,6 +315,17 @@ AppUtils.Pagination.attach = function (paginationSelector, loadFunc, getPageFunc
     if (currentPage < totalPages) addPage(currentPage + 1, 'Siguiente', false);
 };
 
+AppUtils.ddmmyyyy_to_iso = function (s) {
+    if (!s) return null;
+    if (s.includes(" ")) {
+        s = s.split(" ")[0];
+    }
+    if (s.includes("-")) {
+        return s;
+    }
+    const [d, m, y] = s.split("/");
+    return `${y}-${m}-${d}`;
+}
 
 AppUtils.initFlatpickr = function (selector, opts) {
 
@@ -343,6 +354,9 @@ AppUtils.initFlatpickr = function (selector, opts) {
         base.disable = [
             function (date) { return (date.getDay() === 0); }
         ];
+    }
+    if (opts && opts.defaultDate === true) {
+        base.defaultDate = opts.defaultValue;
     }
 
     flatpickr(selector, base);

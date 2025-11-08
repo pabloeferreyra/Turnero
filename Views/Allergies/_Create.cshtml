@@ -4,6 +4,7 @@
 	<input type="hidden" name="__RequestVerificationToken" value="@ViewData["RequestVerificationToken"]" />
 	<div class="modal-body row">
 		<input type="hidden" asp-for="PatientId" id="PatientId" />
+		<input type="hidden" asp-for="Id" id="Id" />
 		<div class="form-group col-md-6 col-sm-12">
 			<label asp-for="Name" class="control-label">Nombre</label>
 			<input asp-for="Name" id="Name" class="form-control"/>
@@ -15,14 +16,34 @@
 		</div>
 		<div class="form-group col-6">
 			<label asp-for="Begin">Inicio</label>
-			<input asp-for="Begin" id="Begin" type="text" class="form-control"
-				   value="@DateTime.Now.ToString("yyyy-MM-dd")" max="@DateTime.Now.ToString("yyyy-MM-dd")" />
+			@{
+				if(Model.Begin != DateTime.MinValue)
+				{
+					<input asp-for="Begin" id="Begin" type="text" class="form-control"
+							value="@Model.Begin" max="@DateTime.Now.ToString("yyyy-MM-dd")" />
+				}
+				else
+				{
+					<input asp-for="Begin" id="Begin" type="text" class="form-control"
+							value="@DateTime.Now.ToString("yyyy-MM-dd")" max="@DateTime.Now.ToString("yyyy-MM-dd")" />
+				}
+			}
 			<span asp-for="Begin" id="beginValidation" class="text-danger"></span>
 		</div>
 		<div class="form-group col-6">
 			<label asp-for="End">Fin</label>
-			<input asp-for="End" id="End" type="text" class="form-control"
-				   value="@DateTime.Now.ToString("yyyy-MM-dd")" max="@DateTime.Now.ToString("yyyy-MM-dd")" />
+			@{
+				if(Model.End != DateTime.MinValue)
+				{
+					<input asp-for="End" id="End" type="text" class="form-control"
+						   value="@Model.End" max="@DateTime.Now.ToString("yyyy-MM-dd")" />
+				}
+				else
+				{
+					<input asp-for="End" id="End" type="text" class="form-control"
+						   value="@DateTime.Now.ToString("yyyy-MM-dd")" max="@DateTime.Now.ToString("yyyy-MM-dd")" />
+				}
+			}
 			<span asp-for="End" id="endValidation" class="text-danger"></span>
 		</div>
 		<div class="form-group col-12">
@@ -47,6 +68,12 @@
 
 	<div class="modal-footer">
 		<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-		<button type="button" id="btnCreateAllergy" class="btn btn-primary">Crear</button>
+		@{
+			if(Model.Id == new Guid()) {
+				<button type="button" id="btnCreateAllergy" class="btn btn-primary">Crear</button>
+			}else {
+				<button type="button" id="btnEditAllergy" class="btn btn-primary">Editar</button>
+			}
+		}
 	</div>
 </form>

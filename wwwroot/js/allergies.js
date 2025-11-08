@@ -14,6 +14,10 @@
 
         AppUtils.Sort.attachHeaderSorting("#allergies", key, loadData);
 
+        window._reloadData = loadData;
+
+        loadData();
+
         const $tab = $('#allergiesTab');
 
         $tab.off('click.allergies').on('click.allergies', function () {
@@ -44,13 +48,75 @@
             const id = $(this).data('id');
             if (id) AllergyDetail(id);
         });
+
+        $(document).on('click.allergies', '#allergies-body .btn-allergy-edit', function () {
+            const id = $(this).data('id');
+            if (id) AllergyEdit(id);
+        });
+
+        $(document).on('click.allergies', '#allergies-body .btn-delete', function () {
+            const id = $(this).data('id');
+            const $cell = $(this).closest('td');
+            const $btn = $(this);
+
+            if (!id) return;
+
+            $btn.addClass('btn-fade-out');
+
+            setTimeout(() => {
+                $cell.html(`
+                    <button data-id="${id}" class="btn btn-danger btn-sm me-1 btn-del-yes">Si</button>
+                    <button data-id="${id}" class="btn btn-secondary btn-sm btn-del-no">No</button>
+                `);
+                requestAnimationFrame(() => { 
+                    $cell.find('.btn-fade-in').addClass('show');
+                });
+            }, 250);
+
+        });
+
+        $(document).on('click', '#allergies-body .btn-del-no', function () {
+            const id = $(this).data('id');
+            const $cell = $(this).closest('td');
+            const $btn = $(this);
+
+            $btn.addClass('btn-fade-out');
+
+            setTimeout(() => {
+                setTimeout(() => {
+                    $cell.html(`
+                        <button class="btn btn-sm btn-primary btn-allergy-detail me-1" data-id="${id}">Detalle</button>
+                        <button class="btn btn-sm btn-secondary btn-allergy-edit me-1" data-id="${id}">Editar</button>
+                        <button data-id="${id}" class="btn btn-danger btn-sm me-1 btn-delete">Eliminar</button>
+                        `);
+
+                    requestAnimationFrame(() => {
+                        $cell.find('.btn-fade-in').addClass('show');
+                    });
+                }, 250);
+            });
+        });
+
+        $(document).on('click', '#allergies-body .btn-del-yes', function () {
+            const id = $(this).data('id');
+
+            fetch(`/Allergies/Delete/${id}`, {
+                method: "DELETE",
+            }).then(r => {
+                if (!r.ok) AppUtils.showToast("error", "Error eliminando alergia");
+
+                if (typeof _reloadData === "function") _reloadData();
+
+                AppUtils.showToast("success", "Alergia eliminada correctamente");
+            });
+        });
     });
 
     function resolvePatientId() {
         return $('#patientId').val() || $('#PatientId').val() || '';
     }
 
-    function AllergyDetail(id) {
+    window.AllergyDetail = function (id) {
         $.ajax({
             type: 'GET',
             url: '/Allergies/Details',
@@ -58,6 +124,19 @@
             success: function (html) {
                 $('#AllergyDetailContent').html(html);
                 $('#AllergyDetail').modal('toggle');
+            }
+        });
+    }
+
+    window.AllergyEdit = function (id) {
+        $.ajax({
+            type: 'GET',
+            url: '/Allergies/Edit',
+            data: { id },
+            success: function (html) {
+                $('#CreateAllergyFormContent').html(html);
+                $('#CreateAllergy').modal('show');
+                document.dispatchEvent(new Event("allergies:editLoaded"));
             }
         });
     }
@@ -130,7 +209,9 @@
                     <td>${escape(begin)}</td>
                     <td>${escape(end)}</td>
                     <td>${escape(severity)}</td>
-                    <td><button class="btn btn-sm btn-primary btn-allergy-detail me-1" data-id="${id}">Detalle</button></td>
+                    <td><div class="btn-group"><button class="btn btn-sm btn-primary btn-allergy-detail me-1" data-id="${id}">Detalle</button>
+                    <button class="btn btn-sm btn-secondary btn-allergy-edit me-1" data-id="${id}">Editar</button>
+                    <button data-id="${id}" class="btn btn-danger btn-sm me-1 btn-delete">Eliminar</button></div></td>
                 </tr>
             `);
         }

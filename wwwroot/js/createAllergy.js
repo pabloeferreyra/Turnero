@@ -4,7 +4,7 @@
 
     AppUtils.initFlatpickr("#End", { maxToday: true });
 
-    AppUtils.FormValidationRules("#btnCreateAllergy", {
+    AppUtils.FormValidationRules("#btnEditAllergy", {
         Name: { required: true },
         Begin: { required: true },
         End: {
@@ -25,6 +25,36 @@
     });
 });
 
+document.addEventListener("allergies:editLoaded", function () {
+
+    var begin = document.querySelector("#Begin")?.value;
+    begin = AppUtils.ddmmyyyy_to_iso(begin);
+    
+    var end = document.querySelector("#End")?.value;
+    end = AppUtils.ddmmyyyy_to_iso(end);
+
+    AppUtils.initFlatpickr("#Begin", { maxToday: true, defaultDate: true, defaultValue: begin });
+    AppUtils.initFlatpickr("#End", { maxToday: true, defaultDate: true, defaultValue: end });
+
+    AppUtils.FormValidationRules("#btnEditAllergy", {
+        Name: { required: true },
+        Begin: { required: true },
+        End: {
+            required: false,
+            custom(value) {
+                if (!begin || !value) return true;
+                if (value < begin) return "La fecha de fin no puede ser anterior al inicio.";
+                return true;
+            }
+        }
+    });
+
+    $(document).on("click", "#btnEditAllergy", async function (e) {
+        e.preventDefault();
+        if (!AppUtils.validateAll()) return;
+        await EditAllergySubmit();
+    });
+});
 
 async function CreateAllergySubmit() {
 
@@ -51,6 +81,30 @@ async function CreateAllergySubmit() {
     }
 }
 
+async function EditAllergySubmit() {
+
+    const form = document.querySelector("#CreateAllergyForm");
+    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+    const data = new FormData(form);
+
+    const resp = await fetch("/Allergies/Edit", {
+        method: "POST",
+        headers: { "RequestVerificationToken": token },
+        body: data
+    });
+
+    if (!resp.ok) {
+        AppUtils.showToast("error", "Error editando alergia");
+        return;
+    }
+
+    $("#CreateAllergy").modal("toggle");
+    AppUtils.showToast("success", "Alergia editada correctamente", 900);
+
+    if (window.reloadAllergiesTable) {
+        window.reloadAllergiesTable();
+    }
+}
 
 window.CreateAllergyView = function (patientId) {
     $.ajax({

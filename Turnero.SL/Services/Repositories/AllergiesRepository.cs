@@ -4,7 +4,7 @@ public class AllergiesRepository(ApplicationDbContext context, IMemoryCache cach
 {
     public async Task<Allergies?> Get(Guid? id)
     {
-        return await FindByCondition(a => a.Id == id).FirstOrDefaultAsync();
+        return await FindByCondition(a => a.Id == id).Include(a => a.Patient).FirstOrDefaultAsync();
     }
 
     public async Task CreateAllergy(Allergies allergy)

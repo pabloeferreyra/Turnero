@@ -3,8 +3,8 @@
 namespace Turnero.Controllers;
 
 public class AllergiesController(IInsertAllergiesServices insertAllergies, 
-    //IUpdateAllergiesServices updateAllergies, 
-    //IDeleteAllergiesServices deleteAllergies,
+    IUpdateAllergiesServices updateAllergies, 
+    IDeleteAllergiesServices deleteAllergies,
     IGetAllergiesServices getAllergies,
     ILogger<AllergiesController> logger) : Controller
 {
@@ -48,7 +48,7 @@ public class AllergiesController(IInsertAllergiesServices insertAllergies,
                 Value = ((int)a).ToString(),
                 Text = a.ToString()
             }).ToList();
-        return PartialView("_CreateAllergies", model);
+        return PartialView("_Create", model);
     }
 
     [HttpPost]
@@ -107,6 +107,71 @@ public class AllergiesController(IInsertAllergiesServices insertAllergies,
             logger.LogError(ex, "InitializeAllergies failed");
             return StatusCode(500, new {error = ex.Message });
         }
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Edit(Guid? id)
+    {
+        if (id == null)
+            return NotFound();
+        var allergy = await getAllergies.Get(id);
+        if(allergy == null)
+        {
+            ViewBag.ErrorMesage = $"Allergy with Id = {id} cannot be found";
+            return NotFound();
+        }
+        var token = HttpContext.RequestServices.GetRequiredService<IAntiforgery>()
+            .GetAndStoreTokens(HttpContext)
+            .RequestToken;
+        ViewData["RequestVerificationToken"] = token;
+        ViewBag.Occurrency = Enum.GetValues<Occurrency>()
+            .Select(a => new SelectListItem
+            {
+                Value = ((int)a).ToString(),
+                Text = a.ToString()
+            }).ToList();
+        ViewBag.Severity = Enum.GetValues<Severity>()
+            .Select(a => new SelectListItem
+            {
+                Value = ((int)a).ToString(),
+                Text = a.ToString()
+            }).ToList();
+        ViewBag.Type = Enum.GetValues<AllergyType>()
+            .Select(a => new SelectListItem
+            {
+                Value = ((int)a).ToString(),
+                Text = a.ToString()
+            }).ToList();    
+        return PartialView("_Create", allergy);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<StatusCodeResult> Edit(Allergies allergy)
+    {
+        if (allergy == null || allergy.PatientId == Guid.Empty)
+        {
+            return BadRequest();
+        }
+        try
+        {
+            await updateAllergies.UpdateAllergy(allergy);
+            logger.LogInformation("Allergy updated successfully for patient {PatientId}", allergy.PatientId);
+            return Ok();
+        }
+        catch
+        {
+            logger.LogWarning("Failed to update allergy for patient {PatientId}", allergy.PatientId);
+            return StatusCode(500);
+        }
+    }
+
+    [HttpDelete]
+    public async Task<StatusCodeResult> Delete(Guid id)
+    {
+        var allergy = await getAllergies.Get(id);
+        deleteAllergies.DeleteAllergy(allergy);
+        return Ok();
     }
 
     #region private
