@@ -1,8 +1,8 @@
-﻿@model PatientDTO
+﻿@model Patient
 
 <form method="post" id="CreateForm" autocomplete="on">
 	<div class="modal-body row">
-		<div class="form-group col-md-4 col-sm-12">
+		<div class="form-group col-12">
 			<label asp-for="Name" class="control-label">Nombre</label>
 			<input asp-for="Name" autocomplete="name" id="Name" class="form-control" />
 			<span asp-for="Name" id="clientValidation" class="text-danger"></span>
@@ -17,29 +17,33 @@
 			<input asp-for="BirthDate" autocomplete="bday" id="BirthDate" type="text" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" max="@DateTime.Now.ToString("yyyy-MM-dd")" />
 			<span id="birthDateValidation" class="text-danger"></span>
 		</div>
+		<div class="form-group col-md-4 col-sm-12">
+			<label class="control-label" asp-for="BloodType">Grupo sanguineo</label>
+			<select asp-for="BloodType" id="Type" title="Grupo sanguineo" class="form-control form-select" asp-items="@ViewBag.Bloodtype"></select>
+		</div>
 		<div class="form-group col-md-6 col-sm-12">
-			<label asp-for="Phone" class="control-label">Teléfono</label>
-			<input asp-for="Phone" autocomplete="phone" id="Phone" class="form-control" />
+			<label asp-for="ContactInfo.Phone" class="control-label">Teléfono</label>
+			<input asp-for="ContactInfo.Phone" autocomplete="phone" id="Phone" class="form-control" />
 			<span id="phoneValidation" class="text-danger"></span>
 		</div>
 		<div class="form-group col-md-6 col-sm-12">
-			<label asp-for="Email" class="control-label">Email</label>
-			<input asp-for="Email" authocomplete="email" id="Email" class="form-control" />
+			<label asp-for="ContactInfo.Email" class="control-label">Email</label>
+			<input asp-for="ContactInfo.Email" authocomplete="email" id="Email" class="form-control" />
 			<span id="emailValidation" class="text-danger"></span>
 		</div>
 		<div class="form-group col-md-5 col-sm-12">
-			<label asp-for="Address"class="control-label">Dirección</label>
-			<input asp-for="Address" autocomplete="address" id="Address" class="form-control" />
+			<label asp-for="ContactInfo.Address" class="control-label">Dirección</label>
+			<input asp-for="ContactInfo.Address" autocomplete="address" id="Address" class="form-control" />
 			<span id="addressValidation" class="text-danger"></span>
 		</div>
 		<div class="form-group col-md-5 col-sm-12">
-			<label asp-for="City" class="control-label">Ciudad</label>
-			<input asp-for="City" autocomplete="address-level2" id="City" class="form-control" />
+			<label asp-for="ContactInfo.City" class="control-label">Ciudad</label>
+			<input asp-for="ContactInfo.City" autocomplete="address-level2" id="City" class="form-control" />
 			<span id="cityValidation" class="text-danger"></span>
 		</div>
 		<div class="form-group col-md-2 col-sm-12">
-			<label asp-for="PostalCode" class="control-label">Código Postal</label>
-			<input asp-for="PostalCode" id="PostalCode" class="form-control" maxlength="5" inputmode="numeric" pattern="\d{4,5}" />
+			<label asp-for="ContactInfo.PostalCode" class="control-label">Código Postal</label>
+			<input asp-for="ContactInfo.PostalCode" id="PostalCode" class="form-control" maxlength="5" inputmode="numeric" pattern="\d{4,5}" />
 			<span id="postalCodeValidation" class="text-danger"></span>
 		</div>
 		<div class="form-group col-md-6 col-sm-12">

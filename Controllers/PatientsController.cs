@@ -68,6 +68,12 @@ public class PatientsController(UserManager<IdentityUser> userManager,
     [HttpGet]
     public IActionResult Create()
     {
+        ViewBag.Bloodtype = Enum.GetValues<BloodType>()
+            .Select(a => new SelectListItem
+            {
+                Value = ((int)a).ToString(),
+                Text = a.GetDisplayName()
+            }).ToList();
         return PartialView("_Create");
     }
 
@@ -82,6 +88,7 @@ public class PatientsController(UserManager<IdentityUser> userManager,
             ViewBag.ErrorMessage = $"Patient with Id = {id} cannot be found";
             return NotFound();
         }
+        ViewBag.Age = DateTime.Today.Year - patient.BirthDate.Year;
         return View("Details", patient);
     }
 
@@ -109,11 +116,17 @@ public class PatientsController(UserManager<IdentityUser> userManager,
             return NotFound();
 
         var patient = await getPatient.GetPatientById(id.Value);
-        if(patient == null)
+            if(patient == null)
         {
             ViewBag.ErrorMessage = $"Patient with Id = {id} cannot be found";
             return NotFound();
         }
+        ViewBag.Bloodtype = Enum.GetValues<BloodType>()
+            .Select(a => new SelectListItem
+            {
+                Value = ((int)a).ToString(),
+                Text = a.GetDisplayName()
+            }).ToList();
         return PartialView("_Edit", patient);
     }
 

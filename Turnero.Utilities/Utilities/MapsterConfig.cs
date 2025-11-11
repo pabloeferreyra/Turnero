@@ -4,6 +4,8 @@ public static class MapsterConfig
 {
     public static void RegisterMappings()
     {
+        TypeAdapterConfig<Patient, PatientDTO>.NewConfig();
+
         TypeAdapterConfig<Medic, MedicDto>.NewConfig();
 
         TypeAdapterConfig<Turn, TurnDTO>.NewConfig()
@@ -21,8 +23,10 @@ public static class MapsterConfig
             .Map(dest => dest.Medic.Id, src => src.MedicId)
             .Ignore(dest => dest.Medic)
             .Map(dest => dest.DateTurn,
-     src => !string.IsNullOrEmpty(src.Date)
-         ? DateTime.ParseExact(src.Date, "yyyy-MM-dd", null)
-         : DateTime.MinValue);
+            src => !string.IsNullOrEmpty(src.Date) ? DateTime.ParseExact(src.Date, "yyyy-MM-dd", null) : DateTime.MinValue);
+
+        TypeAdapterConfig<Visit, VisitDTO>.NewConfig()
+            .Map(dest => dest.VisitDate, src => src.VisitDate.ToString("yyyy-MM-dd"))
+            .Map(dest => dest.Medic, src => src.Medic != null ? src.Medic.Name : null);
     }
 }

@@ -5,7 +5,7 @@ public class GetVisitService(LoggerService logger, IVisitRepository visitReposit
     private readonly LoggerService _logger = logger;
     private readonly IVisitRepository _visitRepository = visitRepository;
 
-    public async Task<IQueryable<Visit>> SearchVisits(Guid patientId)
+    public async Task<IQueryable<VisitDTO>> SearchVisits(Guid patientId)
     {
         try
         {
@@ -337,7 +337,7 @@ public interface IGetVisitService
     Task<Visit?> Get(Guid? id);
     Task<List<Visit>> GetVisitsByMedicAndDate(Guid medicId, DateTime date);
     Task<List<Visit>> GetVisitsByPatient(Guid patientId);
-    Task<IQueryable<Visit>> SearchVisits(Guid patientId);
+    Task<IQueryable<VisitDTO>> SearchVisits(Guid patientId);
     Task<List<Visit>> GetAllVisits();
     Task<List<Visit>> GetVisitsByDate(DateTime date);
     Task<List<Visit>> GetVisitsByMedic(Guid medicId);

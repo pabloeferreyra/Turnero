@@ -1,6 +1,3 @@
-using System.Text.Json.Serialization;
-using Turnero;
-
 var builder = WebApplication.CreateBuilder(args);
 
 MapsterConfig.RegisterMappings();
@@ -148,9 +145,6 @@ builder.Services.AddScoped<IGetPatientService, GetPatientService>();
 builder.Services.AddScoped<IUpdatePatientService, UpdatePatientService>();
 
 //History Services
-builder.Services.AddScoped<IInsertHistoryService, InsertHistoryService>();
-builder.Services.AddScoped<IGetHistoryService, GetHistoryService>();
-builder.Services.AddScoped<IUpdateHistoryService, UpdateHistoryService>();
 
 // Visit Services
 builder.Services.AddScoped<IGetVisitService, GetVisitService>();
@@ -161,6 +155,12 @@ builder.Services.AddScoped<IGetAllergiesServices, GetAllergiesServices>();
 builder.Services.AddScoped<IInsertAllergiesServices, InsertAllergiesServices>();
 builder.Services.AddScoped<IUpdateAllergiesServices, UpdateAllergiesServices>();
 builder.Services.AddScoped<IDeleteAllergiesServices, DeleteAllergiesServices>();
+
+//ParentsDataServices
+builder.Services.AddScoped<IGetParentsDataService, GetParentsDataService>();
+builder.Services.AddScoped<IInsertParentsDataService, InsertParentsDataService>();
+builder.Services.AddScoped<IUpdateParentsDataService, UpdateParentsDataService>();
+builder.Services.AddScoped<IDeleteParentsDataService, DeleteParentsDataService>();
 #endregion
 
 #region Dependency Injection - Repositories
@@ -169,9 +169,9 @@ builder.Services.AddScoped<IMedicRepository, MedicRepository>();
 builder.Services.AddScoped<ITurnRepository, TurnsRepository>();
 builder.Services.AddScoped<ITurnDTORepository, TurnDTORepository>();
 builder.Services.AddScoped<IPatientRepository, PatientRepository>();
-builder.Services.AddScoped<IHistoryRepository, HistoryRepository>();
 builder.Services.AddScoped<IVisitRepository, VisitRepository>();
 builder.Services.AddScoped<IAllergiesRepository, AllergiesRepository>();
+builder.Services.AddScoped<IParentsDataRepository, ParentsDataRepository>();
 #endregion
 
 #region HTTP Client

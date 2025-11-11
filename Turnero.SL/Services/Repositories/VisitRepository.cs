@@ -16,16 +16,20 @@ public class VisitRepository(ApplicationDbContext context, IMemoryCache cache) :
             .ToListAsync();
     }
 
-    public async Task<IQueryable<Visit>> SearchVisits(Guid patientId)
+    public async Task<IQueryable<VisitDTO>> SearchVisits(Guid patientId)
     {
-        var visits = new List<Visit>();
+        var visits = new List<VisitDTO>();
         if (patientId == Guid.Empty)
-            return FindAll().Include(v => v.Patient).Include(v => v.Medic).AsQueryable();
-        visits = await FindByCondition(v => v.PatientId == patientId)
+            return FindAll()
+                .Include(v => v.Patient).Include(v => v.Medic)
+                .Adapt<List<VisitDTO>>()
+                .AsQueryable();
+        return FindByCondition(v => v.PatientId == patientId)
             .Include(v => v.Patient)
             .Include(v => v.Medic)
-            .ToListAsync();
-        return visits.AsQueryable();
+            .ToList()
+            .Adapt<List<VisitDTO>>()
+            .AsQueryable();
     }
     public async Task<List<Visit>> GetVisitsByPatient(Guid patientId)
     {
@@ -63,6 +67,16 @@ public class VisitRepository(ApplicationDbContext context, IMemoryCache cache) :
             .Include(v => v.Medic)
             .ToListAsync();
     }
+
+    public async Task<List<VisitDTO>> GetAllVisitsDTO()
+    {
+        var visits = await FindAll()
+            .Include(v => v.Patient)
+            .Include(v => v.Medic)
+            .ToListAsync();
+        return visits.Adapt<List<VisitDTO>>();
+    }
+
     public async Task<List<Visit>> GetVisitsByDate(DateTime date)
     {
         return await FindByCondition(v => v.VisitDate.Date == date.Date)
@@ -200,13 +214,14 @@ public interface IVisitRepository
     Task<List<Visit>> GetVisitsByMedicAndDate(Guid medicId, DateTime date);
     Task<List<Visit>> GetVisitsByPatient(Guid patientId);
 
-    Task<IQueryable<Visit>> SearchVisits(Guid patientId);
+    Task<IQueryable<VisitDTO>> SearchVisits(Guid patientId);
     Task CreateVisit(Visit visit);
     Task UpdateVisit(Visit visit);
     void DeleteVisit(Visit visit);
     Task<Visit?> GetById(Guid id);
     bool Exists(Guid id);
     Task<List<Visit>> GetAllVisits();
+    Task<List<VisitDTO>> GetAllVisitsDTO();
     Task<List<Visit>> GetVisitsByDate(DateTime date);
     Task<List<Visit>> GetVisitsByMedic(Guid medicId);
     Task<List<Visit>> GetVisitsByDateRange(DateTime startDate, DateTime endDate);

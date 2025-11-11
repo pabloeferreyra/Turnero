@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Turnero.DAL.Data;
@@ -11,9 +12,11 @@ using Turnero.DAL.Data;
 namespace Turnero.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251110003837_Check")]
+    partial class Check
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -317,49 +320,6 @@ namespace Turnero.Migrations
                     b.ToTable("Medics");
                 });
 
-            modelBuilder.Entity("Turnero.DAL.Models.ParentsData", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("BrothersCount")
-                        .HasColumnType("integer");
-
-                    b.Property<DateOnly>("FatherBirthDate")
-                        .HasColumnType("date");
-
-                    b.Property<int>("FatherBloodType")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("FatherName")
-                        .HasColumnType("text");
-
-                    b.Property<string>("FatherWork")
-                        .HasColumnType("text");
-
-                    b.Property<DateOnly>("MotherBirthDate")
-                        .HasColumnType("date");
-
-                    b.Property<int>("MotherBloodType")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("MotherName")
-                        .HasColumnType("text");
-
-                    b.Property<string>("MotherWork")
-                        .HasColumnType("text");
-
-                    b.Property<Guid?>("PatientId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PatientId");
-
-                    b.ToTable("ParentsData");
-                });
-
             modelBuilder.Entity("Turnero.DAL.Models.Patient", b =>
                 {
                     b.Property<Guid>("Id")
@@ -582,15 +542,6 @@ namespace Turnero.Migrations
                         .HasForeignKey("Turnero.DAL.Models.ContactInfo", "PatientId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Patient");
-                });
-
-            modelBuilder.Entity("Turnero.DAL.Models.ParentsData", b =>
-                {
-                    b.HasOne("Turnero.DAL.Models.Patient", "Patient")
-                        .WithMany()
-                        .HasForeignKey("PatientId");
 
                     b.Navigation("Patient");
                 });

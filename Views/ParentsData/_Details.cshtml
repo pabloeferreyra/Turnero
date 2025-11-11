@@ -1,0 +1,63 @@
+﻿@model ParentsData
+@{
+	ViewData["Title"] = "Datos de los Padres de " + Model.Patient.Name;
+}
+<div class="back container-fluid">
+	<div class="row">
+		<div class="col-md-4 col-sm-12 btn-group" role="group">
+			<button onclick='EditView(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Id)))' class="btn btn-sm btn-primary me-1">Editar</button>
+			
+			
+		</div>
+	</div>
+	<hr />
+	<div class="row">
+		<div class="col-12">
+			<h5 class="col-md-2 col-sm-12">Nombre del Padre</h5>
+			<p class="col-md-10 col-sm-12">@Html.DisplayFor(model => model.FatherName)</p>
+		</div>
+		<div class="col-md-5 col-sm-12">
+			<h5 class="col-md-7 col-sm-12">Fecha de Nacimiento del Padre</h5>
+			<p class="col-md-5 col-sm-12">@Html.DisplayFor(model => model.FatherBirthDate)</p>
+		</div>
+		<div class="col-md-5 col-sm-12">
+			<h5 class="col-md-7 cool-sm-12">Grupo sanguineo</h5>
+			<p class="col-md-5 col-sm-12">@Html.DisplayFor(model => model.FatherBloodType)</p>
+		</div>
+		<div class="col-12">
+			<h5 class="col-md-2 col-sm-12">Ocupación del Padre</h5>
+			<p class="col-md-10 col-sm-12">@Html.DisplayFor(model => model.FatherWork)</p>
+		</div>
+		<hr />
+		<div class="col-12">
+			<h5 class="col-md-2 col-sm-12">Nombre de la Madre</h5>
+			<p class="col-md-10 col-sm-12">@Html.DisplayFor(model => model.MotherName)</p>
+		</div>
+		<hr />
+		<div class="col-md-5 col-sm-12">
+			<h5 class="col-md-7 col-sm-12">Fecha de Nacimiento de la Madre</h5>
+			<p class="col-md-5 col-sm-12">@Html.DisplayFor(model => model.MotherBirthDate)</p>
+		</div>
+		<div class="col-md-5 col-sm-12">
+			<h5 class="col-md-7 cool-sm-12">Grupo sanguineo</h5>
+			<p class="col-md-5 col-sm-12">@Html.DisplayFor(model => model.MotherBloodType)</p>
+		</div>
+		<div class="col-12">
+			<h5 class="col-md-2 col-sm-12">Ocupación de la Madre</h5>
+			<p class="col-md-10 col-sm-12">@Html.DisplayFor(model => model.MotherWork)</p>
+		</div>
+	</div>
+</div>
+
+<div class="modal modal-lg fade" id="Edit" role="dialog">
+	<div class="modal-dialog modal-lg modal-dialog-centered">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">Editar Datos de los Padres</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+				<div id="EditFormContent">
+			</div>
+		</div>
+	</div>
+</div>

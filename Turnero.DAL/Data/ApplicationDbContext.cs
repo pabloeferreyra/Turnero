@@ -24,6 +24,30 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         builder.Entity<Allergies>()
             .Property(p => p.End)
             .HasColumnType("date");
+        builder.Entity<ParentsData>()
+            .Property(p => p.FatherBirthDate)
+            .HasColumnType("date");
+        builder.Entity<ParentsData>()
+            .Property(p => p.MotherBirthDate)
+            .HasColumnType("date");
+        builder.Entity<Visit>()
+            .Property(b => b.DiagDescription)
+            .HasDefaultValue(string.Empty);
+        builder.Entity<Visit>()
+            .Property(b => b.Treatment)
+            .HasDefaultValue(string.Empty);
+        builder.Entity<Visit>()
+            .Property(b => b.EvolutionNotes)
+            .HasDefaultValue(string.Empty);
+        builder.Entity<Visit>()
+            .Property(b => b.LabResults)
+            .HasDefaultValue(string.Empty);
+        builder.Entity<Visit>()
+            .Property(b => b.OtherStudies)
+            .HasDefaultValue(string.Empty);
+        builder.Entity<Visit>()
+            .Property(b => b.Observations)
+            .HasDefaultValue(string.Empty);
     }
 
     public DbSet<Turn> Turns { get; set; }
@@ -31,12 +55,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<TimeTurn> TimeTurns { get; set; }
     public DbSet<Patient> Patients { get; set; }
     public DbSet<ContactInfo> ContactInfo { get; set; }
-    public DbSet<History> Histories { get; set; }
-    public DbSet<GeneralHistory> GeneralHistories { get; set; }
-    public DbSet<FamilyBackground> FamilyBackgrounds { get; set; }
-    public DbSet<Familiar> Familiar { get; set; }
-    public DbSet<Lifestyle> Lifestyle { get; set; }
     public DbSet<Allergies> Allergies { get; set; }
-    public DbSet<ExamsGenHis> ExamsGenHis { get; set; }
     public DbSet<Visit> Visits { get; set; }
+    public DbSet<ParentsData> ParentsData { get; set; }
 }

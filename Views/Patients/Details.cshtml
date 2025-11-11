@@ -13,17 +13,22 @@
 		</div>
 		<hr />
 		<div class="row">
-			<div class="col-md-4 col-sm-12 row">
+			<div class="col-12 row">
 				<h5 class="col-md-2 col-sm-12">Nombre</h5>
 				<p class="col-md-10 col-sm-12">@Html.DisplayFor(model => model.Name)</p>
 			</div>
+			<hr />
 			<div class="col-md-4 col-sm-12 row">
 				<h5 class="col-md-2 col-sm-12">Dni</h5>
 				<p class="col-md-10 col-sm-12">@Html.DisplayFor(model => model.Dni)</p>
 			</div>
-			<div class="col-md-4 col-sm-12 row">
+			<div class="col-md-5 col-sm-12 row">
 				<h5 class="col-md-7 col-sm-12">Fecha de Nacimiento</h5>
-				<p class="col-md-5 col-sm-12">@Html.DisplayFor(model => model.BirthDate)</p>
+				<p class="col-md-5 col-sm-12">@Html.DisplayFor(model => model.BirthDate) - @ViewBag.Age Años</p>
+			</div>
+			<div class="col-md-3 col-sm-12 row">
+				<h5 class="col-md-7 cool-sm-12">Grupo sanguineo</h5>
+				<p class="col-md-5 col-sm-12">@Html.DisplayFor(model => model.BloodType)</p>
 			</div>
 			<hr />
 			<div class="col-md-4 col-sm-12 row">

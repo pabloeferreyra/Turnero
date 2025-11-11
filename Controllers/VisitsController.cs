@@ -99,7 +99,7 @@ public class VisitsController(IGetVisitService getVisit,
     }
 
     #region private
-    private async Task<(string draw, int pageSize, int skip, List<Visit> data, int recordsTotal)> SetTableAsync(Guid? patientIdFromQuery = null)
+    private async Task<(string draw, int pageSize, int skip, List<VisitDTO> data, int recordsTotal)> SetTableAsync(Guid? patientIdFromQuery = null)
     {
         var draw = Request.Form["draw"].FirstOrDefault() ?? "1";
         var start = Request.Form["start"].FirstOrDefault();
@@ -188,11 +188,11 @@ public class VisitsController(IGetVisitService getVisit,
 
         searchCandidate ??= string.Empty;
 
-        IQueryable<Visit> visitsQueryable = Enumerable.Empty<Visit>().AsQueryable();
+        IQueryable<VisitDTO> visitsQueryable = Enumerable.Empty<VisitDTO>().AsQueryable();
         if (Guid.TryParse(searchCandidate, out var patientGuid))
         {
             var result = await getVisit.SearchVisits(patientGuid);
-            visitsQueryable = result ?? Enumerable.Empty<Visit>().AsQueryable();
+            visitsQueryable = result ?? Enumerable.Empty<VisitDTO>().AsQueryable();
         }
 
         var list = visitsQueryable.ToList();
@@ -224,7 +224,7 @@ public class VisitsController(IGetVisitService getVisit,
         return (draw, pageSize, skip, list, recordsTotal);
     }
 
-    private static List<Visit> SetPage(int pageSize, int skip, List<Visit> data)
+    private static List<VisitDTO> SetPage(int pageSize, int skip, List<VisitDTO> data)
     {
         if (data == null) return [];
         if (pageSize == -1) return data;

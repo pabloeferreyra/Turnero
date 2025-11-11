@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Turnero.DAL.Data;
@@ -11,9 +12,11 @@ using Turnero.DAL.Data;
 namespace Turnero.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251110234559_Parents Data Conected")]
+    partial class ParentsDataConected
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -350,12 +353,7 @@ namespace Turnero.Migrations
                     b.Property<string>("MotherWork")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("PatientId")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("PatientId");
 
                     b.ToTable("ParentsData");
                 });
@@ -384,10 +382,15 @@ namespace Turnero.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<Guid?>("ParentsDataId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("SocialWork")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ParentsDataId");
 
                     b.ToTable("Patients");
                 });
@@ -586,13 +589,13 @@ namespace Turnero.Migrations
                     b.Navigation("Patient");
                 });
 
-            modelBuilder.Entity("Turnero.DAL.Models.ParentsData", b =>
+            modelBuilder.Entity("Turnero.DAL.Models.Patient", b =>
                 {
-                    b.HasOne("Turnero.DAL.Models.Patient", "Patient")
+                    b.HasOne("Turnero.DAL.Models.ParentsData", "ParentsData")
                         .WithMany()
-                        .HasForeignKey("PatientId");
+                        .HasForeignKey("ParentsDataId");
 
-                    b.Navigation("Patient");
+                    b.Navigation("ParentsData");
                 });
 
             modelBuilder.Entity("Turnero.DAL.Models.Turn", b =>
