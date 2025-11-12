@@ -26,15 +26,32 @@ Here're some of the project's best features:
 <a href="https://docs.microsoft.com/en-us/dotnet/csharp/" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/skills/csharp-colored.svg" width="36" height="36" alt="C#" /></a><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/skills/javascript-colored.svg" width="36" height="36" alt="JavaScript" /></a><a href="https://developer.mozilla.org/en-US/docs/Glossary/HTML5" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/skills/html5-colored.svg" width="36" height="36" alt="HTML5" /></a><a href="https://jquery.com/" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/skills/jquery-colored.svg" width="36" height="36" alt="JQuery" /></a><a href="https://getbootstrap.com/" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/skills/bootstrap-colored.svg" width="36" height="36" alt="Bootstrap" /></a><a href="https://www.postgresql.org/" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/skills/postgresql-colored.svg" width="36" height="36" alt="PostgreSQL" /></a><a href="https://dotnet.microsoft.com/en-us/" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/skills/dot-net-colored.svg" width="36" height="36" alt=".NET" /></a>
 
 *   Net 8
-*   Razor
+*   Angular 17
 *   PostgreSQL
 *   SignalR
-*   JQuery
 *   Bootstrap
 
 <h2>🛡️ License:</h2>
 
 This project is licensed under the MIT License
+
+<h2>🛠️ Desarrollo Frontend con Angular</h2>
+
+Todo el trabajo de la nueva interfaz Angular vive en la rama <code>turnero-ang</code>, por lo que se puede mantener aislado del resto del desarrollo. El frontend está en la carpeta <code>ClientApp</code>.
+
+```bash
+cd ClientApp
+npm install
+npm run start
+```
+
+El script de desarrollo levanta un servidor en <code>http://localhost:4200</code> y proxy automático hacia la API de ASP.NET Core. Para generar los archivos productivos:
+
+```bash
+npm run build
+```
+
+Los artefactos se publican en <code>ClientApp/dist/turnero-frontend/browser</code> y se sirven como archivos estáticos desde la aplicación ASP.NET Core cuando se ejecuta en modo producción. La interfaz Angular está disponible en <code>/app</code> cuando el backend está en ejecución.
 
 <h2>💖Like my work?</h2>
 

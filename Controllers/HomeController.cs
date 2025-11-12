@@ -17,13 +17,6 @@ public class HomeController(IGetTurnsServices getTurns,
             await getTimeTurns.GetCachedTimes();
         }
 
-        var turnsAsync = getTurns.GetTurns(DateTime.Today, null);
-        List<int> turns =
-        [
-            turnsAsync.Where(t => t.Accessed).Count(),
-            turnsAsync.Where(t => !t.Accessed).Count()
-        ];
-
-        return View(turns);
+        return Redirect("/app");
     }
 }
