@@ -15,7 +15,9 @@ public class PatientRepository(ApplicationDbContext context, IMemoryCache cache)
     }
     public async Task<Patient> GetById(Guid id)
     {
-        return await FindByCondition(p => p.Id == id).Include(p => p.ContactInfo).SingleOrDefaultAsync()
+        return await FindByCondition(p => p.Id == id)
+            .Include(p => p.ContactInfo)
+            .SingleOrDefaultAsync()
             ?? throw new InvalidOperationException("No se encontró el paciente con el id especificado.");
     }
     public bool Exists(string dni, string name)

@@ -1,4 +1,5 @@
-﻿(function () {
+﻿// @ts-nocheck
+(function () {
     'use strict';
 
     const key = "allergies";

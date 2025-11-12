@@ -1,4 +1,5 @@
-﻿(() => {
+﻿// @ts-nocheck
+(() => {
     'use strict';
 
     const key = "patients";

@@ -1,4 +1,5 @@
-﻿document.addEventListener("allergies:createLoaded", function () {
+﻿// @ts-nocheck
+document.addEventListener("allergies:createLoaded", function () {
 
     AppUtils.initFlatpickr("#Begin", { maxToday: true });
 

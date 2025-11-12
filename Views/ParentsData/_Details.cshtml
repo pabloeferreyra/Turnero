@@ -5,9 +5,15 @@
 <div class="back container-fluid">
 	<div class="row">
 		<div class="col-md-4 col-sm-12 btn-group" role="group">
-			<button onclick='EditView(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Id)))' class="btn btn-sm btn-primary me-1">Editar</button>
-			
-			
+			@if (Model.Id != Guid.Empty)
+			{
+				<button onclick='EditView(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Id)))' class="btn btn-sm btn-primary me-1">Editar</button>
+			}
+			else
+			{
+				<button onclick='CreateParentsDataView(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.PatientId)))' class="btn btn-sm btn-primary me-1">Crear</button>
+			}
+
 		</div>
 	</div>
 	<hr />

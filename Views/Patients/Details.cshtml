@@ -8,7 +8,6 @@
 			<div class="col-md-4 col-sm-12 btn-group" role="group">
 				<button onclick='EditView(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Id)))' class="btn btn-sm btn-primary me-1">Editar</button>
 				
-				
 			</div>
 		</div>
 		<hr />
@@ -130,6 +129,9 @@
 				<li class="nav-item">
 					<button type="button" class="nav-link" id="allergiesTab" data-url='@Url.Action("GetAllergies", "Allergies", new { id = Model.Id })'>Alergias</button>
 				</li>
+				<li class="nav-item">
+					<button type="button" class="nav-link" id="familyTab" data-url='@Url.Action("Details", "Parents", new { id = Model.Id })'>Familia</button>
+				</li>
 			</ul>
 
 			<div class="tab-content" id="myTabContent">
@@ -150,8 +152,9 @@
 			</div>
 			
 		</div>
-
+	</div>
 	@section Scripts {
+		<script src="~/js/parentsData.js" asp-append-version="true"></script>
 		<script src="~/js/patients.js" asp-append-version="true"></script>
 		<script src="~/js/visits.js" asp-append-version="true"></script>
 		<script src="~/js/createVisit.js" asp-append-version="true"></script>
