@@ -1,65 +1,81 @@
-﻿// @ts-nocheck
-(() => {
+// @ts-nocheck
+(function () {
     'use strict';
-    const key = "parents";
-    const $tab = $('#parentsTab');
-    
-    $(document).ready(function(){
-        AppUtils.Sort.attachHeaderSorting("#Parents", key, loadData);
-        window._reloadData = loadData;
 
-        loadData();
-
-        $tab.off('click.parents').on('click.parents', function() {
-            $('#myTabs .nav-link').removeClass('active');
-            $(this).addClass('active');
-
-            const url = $(this).data('url');
-            if (!url) return;
-
-            if (!$('#parents').length) {
-                $('#tabContent').load(url, function () {
-                    loadData();
-                });
-            } else {
-                loadData();
-            }
-        });
-    })
+    const namespace = 'parentsData';
+    const tabSelector = '#parentsTab';
 
     $(document).ready(function () {
-        $(document).on("click", "[data-edit-parent]", function () {
-            EditParent($(this).data("id"));
+        const $tab = $(tabSelector);
+        if (!$tab.length) return;
+
+        $tab.off(`click.${namespace}`).on(`click.${namespace}`, function () {
+            loadParentsData();
         });
+
+        $('#tabContent')
+            .off(`click.${namespace}`, '[data-edit-parent]')
+            .on(`click.${namespace}`, '[data-edit-parent]', function () {
+                const id = $(this).data('id');
+                if (id) {
+                    editParent(id);
+                }
+            });
+
+        $('#tabContent')
+            .off(`click.${namespace}`, '[data-detail-parent]')
+            .on(`click.${namespace}`, '[data-detail-parent]', function () {
+                const id = $(this).data('id');
+                detailParent(id);
+            });
     });
 
-    $(document).ready(function () {
-        $(document).on("click", "[data-detail-parent]", function () {
-            console.log($(this).data("id"));
-            DetailParent($(this).data("id"));
-        });
-    });
+    function resolvePatientId() {
+        return $('#patientId').val() || $('#PatientId').val() || '';
+    }
 
-    function DetailParent(id) {
-        fetch(`/Parents/Details/${id}`)
-        .then(r => r.text())
-        .then(html => {
-            $("#DetailFormContent").html(html);
-            $("#Detail").modal("show");
-            document.dispatchEvent(new Event("parents:detailLoaded"));
+    function loadParentsData() {
+        const $tab = $(tabSelector);
+        if (!$tab.length) return;
+
+        const patientId = resolvePatientId();
+        if (!patientId) return;
+
+        let url = $tab.data('url');
+        if (!url) {
+            url = `/ParentsData/Index?id=${encodeURIComponent(patientId)}`;
+        }
+
+        $('#myTabs .nav-link').removeClass('active');
+        $tab.addClass('active');
+
+        $('#tabContent').load(url, function () {
+            document.dispatchEvent(new Event('parents:dataLoaded'));
         });
     }
 
+    function detailParent(id) {
+        const targetId = id || resolvePatientId();
+        if (!targetId) return;
 
-    function EditParent(id) {
-        fetch(`/Parents/Edit/${id}`)
+        const url = `/ParentsData/Index?id=${encodeURIComponent(targetId)}`;
+        $('#tabContent').load(url, function () {
+            document.dispatchEvent(new Event('parents:detailLoaded'));
+        });
+    }
+
+    function editParent(id) {
+        const targetId = id || resolvePatientId();
+        if (!targetId) return;
+
+        fetch(`/ParentsData/Edit?id=${encodeURIComponent(targetId)}`)
             .then(r => r.text())
             .then(html => {
-                $("#CreateFormContent").html(html);
-                $("#Create").modal("show");
-                
-                document.dispatchEvent(new Event("parents:editLoaded"));
-                window.parents_loadData = loadData;    
+                $('#EditFormContent').html(html);
+                $('#Edit').modal('show');
+                document.dispatchEvent(new Event('parents:editLoaded'));
             });
     }
-});
+
+    window.parents_loadData = loadParentsData;
+})();
