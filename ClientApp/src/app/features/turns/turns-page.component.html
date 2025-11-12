@@ -1,0 +1,174 @@
+<section class="layout">
+  <div class="card filters">
+    <h2>Buscar turnos</h2>
+    <form [formGroup]="filterForm" class="form-grid" (ngSubmit)="reloadTurns()">
+      <label>
+        <span>Fecha</span>
+        <input type="date" formControlName="date" />
+      </label>
+      <label>
+        <span>Profesional</span>
+        <select formControlName="medicId">
+          <option value="">Todos</option>
+          <option *ngFor="let medic of medics()" [value]="medic.id">{{ medic.name }}</option>
+        </select>
+      </label>
+      <label class="checkbox">
+        <input type="checkbox" formControlName="includeAccessed" />
+        <span>Incluir turnos ya ingresados</span>
+      </label>
+      <div class="actions">
+        <button class="button" type="submit" [disabled]="loading()">Aplicar filtros</button>
+        <button class="button secondary" type="button" (click)="startCreate()">Nuevo turno</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="card turn-form" *ngIf="isEditing(); else createBlock">
+    <h2>Editar turno</h2>
+    <form [formGroup]="turnForm" (ngSubmit)="submitTurn()">
+      <div class="form-grid">
+        <label>
+          <span>Nombre</span>
+          <input type="text" formControlName="name" />
+        </label>
+        <label>
+          <span>DNI</span>
+          <input type="text" formControlName="dni" />
+        </label>
+        <label>
+          <span>Profesional</span>
+          <select formControlName="medicId">
+            <option value="">Seleccione un profesional</option>
+            <option *ngFor="let medic of medics()" [value]="medic.id">{{ medic.name }}</option>
+          </select>
+        </label>
+        <label>
+          <span>Fecha</span>
+          <input type="date" formControlName="dateTurn" />
+        </label>
+        <label>
+          <span>Horario</span>
+          <select formControlName="timeId">
+            <option value="">Seleccione un horario</option>
+            <option *ngFor="let time of timeTurns()" [value]="time.id">{{ time.time }}</option>
+          </select>
+        </label>
+        <label>
+          <span>Obra social</span>
+          <input type="text" formControlName="socialWork" />
+        </label>
+        <label class="full">
+          <span>Motivo</span>
+          <textarea rows="3" formControlName="reason"></textarea>
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" formControlName="accessed" />
+          <span>Paciente ingresado</span>
+        </label>
+      </div>
+      <div class="form-actions">
+        <button class="button" type="submit" [disabled]="loading()">Guardar cambios</button>
+        <button class="button secondary" type="button" (click)="cancelEdition()">Cancelar</button>
+      </div>
+    </form>
+  </div>
+
+  <ng-template #createBlock>
+    <div class="card turn-form">
+      <h2>Nuevo turno</h2>
+      <form [formGroup]="turnForm" (ngSubmit)="submitTurn()">
+        <div class="form-grid">
+          <label>
+            <span>Nombre</span>
+            <input type="text" formControlName="name" />
+          </label>
+          <label>
+            <span>DNI</span>
+            <input type="text" formControlName="dni" />
+          </label>
+          <label>
+            <span>Profesional</span>
+            <select formControlName="medicId">
+              <option value="">Seleccione un profesional</option>
+              <option *ngFor="let medic of medics()" [value]="medic.id">{{ medic.name }}</option>
+            </select>
+          </label>
+          <label>
+            <span>Fecha</span>
+            <input type="date" formControlName="dateTurn" />
+          </label>
+          <label>
+            <span>Horario</span>
+            <select formControlName="timeId">
+              <option value="">Seleccione un horario</option>
+              <option *ngFor="let time of timeTurns()" [value]="time.id">{{ time.time }}</option>
+            </select>
+          </label>
+          <label>
+            <span>Obra social</span>
+            <input type="text" formControlName="socialWork" />
+          </label>
+          <label class="full">
+            <span>Motivo</span>
+            <textarea rows="3" formControlName="reason"></textarea>
+          </label>
+        </div>
+        <div class="form-actions">
+          <button class="button" type="submit" [disabled]="loading()">Crear turno</button>
+        </div>
+      </form>
+    </div>
+  </ng-template>
+
+  <div *ngIf="errorMessage()" class="alert error">{{ errorMessage() }}</div>
+  <div *ngIf="successMessage()" class="alert success">{{ successMessage() }}</div>
+
+  <div class="card">
+    <h2>Listado de turnos</h2>
+    <div *ngIf="loading()">Cargando turnos...</div>
+    <table class="table" *ngIf="!loading() && turns().length > 0; else emptyState">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>DNI</th>
+          <th>Profesional</th>
+          <th>Fecha</th>
+          <th>Hora</th>
+          <th>Obra social</th>
+          <th>Motivo</th>
+          <th>Estado</th>
+          <th class="actions-column">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let turn of turns(); trackBy: trackByTurnId">
+          <td>{{ turn.name }}</td>
+          <td>{{ turn.dni }}</td>
+          <td>{{ turn.medicName }}</td>
+          <td>{{ turn.date | date: 'longDate' }}</td>
+          <td>{{ turn.time }}</td>
+          <td>{{ turn.socialWork || 'Sin obra social' }}</td>
+          <td>{{ turn.reason || 'Sin motivo' }}</td>
+          <td>
+            <span class="status" [ngClass]="{ accessed: turn.accessed }">
+              {{ turn.accessed ? 'Ingresado' : 'Pendiente' }}
+            </span>
+          </td>
+          <td class="actions-column">
+            <div class="actions">
+              <button class="button secondary" type="button" (click)="editTurn(turn)">Editar</button>
+              <button class="button danger" type="button" (click)="deleteTurn(turn)">Eliminar</button>
+              <button class="button" type="button" (click)="toggleAccessed(turn)" [disabled]="turn.accessed">
+                Marcar ingresado
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <ng-template #emptyState>
+      <p>No hay turnos para los filtros seleccionados.</p>
+    </ng-template>
+  </div>
+</section>

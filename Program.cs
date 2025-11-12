@@ -108,6 +108,11 @@ builder.Services.AddControllersWithViews(options =>
 .AddXmlSerializerFormatters();
 
 builder.Services.AddRazorPages();
+
+builder.Services.AddSpaStaticFiles(configuration =>
+{
+    configuration.RootPath = "ClientApp/dist/turnero-frontend/browser";
+});
 #endregion
 
 #region Firebase Configuration
@@ -281,6 +286,11 @@ app.UseStaticFiles(new StaticFileOptions
 
 app.UseStaticFiles(); // Default static files
 
+if (!app.Environment.IsDevelopment())
+{
+    app.UseSpaStaticFiles();
+}
+
 app.UseRouting();
 app.UseSession();
 
@@ -295,6 +305,8 @@ app.UseAuthorization();
 
 app.MapHub<TurnsTableHub>("/TurnsTableHub");
 
+app.MapControllers();
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
@@ -305,5 +317,18 @@ app.UseCookiePolicy();
 #endregion
 
 
+
+app.Map("/app", spaApp =>
+{
+    spaApp.UseSpa(spa =>
+    {
+        spa.Options.SourcePath = "ClientApp";
+
+        if (app.Environment.IsDevelopment())
+        {
+            spa.UseProxyToSpaDevelopmentServer("http://localhost:4200");
+        }
+    });
+});
 
 await app.RunAsync();
