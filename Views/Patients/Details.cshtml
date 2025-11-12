@@ -129,9 +129,9 @@
 				<li class="nav-item">
 					<button type="button" class="nav-link" id="allergiesTab" data-url='@Url.Action("GetAllergies", "Allergies", new { id = Model.Id })'>Alergias</button>
 				</li>
-				<li class="nav-item">
-					<button type="button" class="nav-link" id="familyTab" data-url='@Url.Action("Details", "Parents", new { id = Model.Id })'>Familia</button>
-				</li>
+                                <li class="nav-item">
+                                        <button type="button" class="nav-link" id="parentsTab" data-url='@Url.Action("Index", "ParentsData", new { id = Model.Id })'>Familia</button>
+                                </li>
 			</ul>
 
 			<div class="tab-content" id="myTabContent">
