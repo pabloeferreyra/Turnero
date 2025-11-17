@@ -1,4 +1,6 @@
-﻿namespace Turnero.Controllers;
+﻿using Turnero.DAL.Models;
+
+namespace Turnero.Controllers;
 
 [Authorize(Roles = RolesConstants.Medico)]
 public class ParentsDataController(IInsertParentsDataService insertParentsData,
@@ -18,9 +20,12 @@ public class ParentsDataController(IInsertParentsDataService insertParentsData,
     [HttpGet]
     public IActionResult Create(Guid? id)
     {
-        if(id == null )
+        if(id == null)
             return BadRequest("El ID del paciente es obligatorio.");
-        ViewData["PatientId"] = id.Value;
+        var token = HttpContext.RequestServices.GetRequiredService<IAntiforgery>()
+            .GetAndStoreTokens(HttpContext)
+            .RequestToken;
+        ViewData["RequestVerificationToken"] = token;
         ViewBag.FatherBloodtype = Enum.GetValues<BloodType>()
             .Select(a => new SelectListItem
             {
@@ -35,8 +40,9 @@ public class ParentsDataController(IInsertParentsDataService insertParentsData,
             }).ToList();
         return PartialView("_Create");
     }
+
     [HttpPost]
-    public async Task<StatusCodeResult> Create([FromBody]ParentsData data)
+    public async Task<StatusCodeResult> Create(ParentsData data)
     {
         try
         {
@@ -44,12 +50,13 @@ public class ParentsDataController(IInsertParentsDataService insertParentsData,
             {
                 return BadRequest();
             }
+            data.Id = data.Patient.Id;
             await insertParentsData.InsertParentsData(data);
             return StatusCode(StatusCodes.Status201Created);
         }
         catch (Exception ex)
         {
-            logger.LogError($"Error in {nameof(Create)}: {ex.Message}");
+            logger.LogError("Error in {Action}: {Message}", nameof(Create), ex.Message);
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
@@ -62,6 +69,10 @@ public class ParentsDataController(IInsertParentsDataService insertParentsData,
         var data = await getParentsData.GetParentsData(id.Value);
         if (data == null)
             return NotFound();
+        var token = HttpContext.RequestServices.GetRequiredService<IAntiforgery>()
+            .GetAndStoreTokens(HttpContext)
+            .RequestToken;
+        ViewData["RequestVerificationToken"] = token;
         ViewBag.FatherBloodtype = Enum.GetValues<BloodType>()
             .Select(a => new SelectListItem
             {
@@ -78,20 +89,16 @@ public class ParentsDataController(IInsertParentsDataService insertParentsData,
     }
 
     [HttpPut]
-    public async Task<StatusCodeResult> Edit([FromBody]ParentsData data)
+    public async Task<StatusCodeResult> Edit(ParentsData data)
     {
         try
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest();
-            }
             await updateParentsData.UpdateParentsData(data);
             return Ok();
         }
         catch (Exception ex)
         {
-            logger.LogError($"Error in {nameof(Edit)}: {ex.Message}");
+            logger.LogError("Error in {Action}: {Message}", nameof(Edit), ex.Message);
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
@@ -110,7 +117,7 @@ public class ParentsDataController(IInsertParentsDataService insertParentsData,
         }
         catch (Exception ex)
         {
-            logger.LogError($"Error in {nameof(Delete)}: {ex.Message}");
+            logger.LogError("Error in {Action}: {Message}", nameof(Delete), ex.Message);
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }

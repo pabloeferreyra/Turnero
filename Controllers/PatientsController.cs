@@ -4,6 +4,7 @@
 public class PatientsController(UserManager<IdentityUser> userManager, 
     IInsertPatientService insertPatient,
     IGetPatientService getPatient,
+    IGetParentsDataService getParents,
     IUpdatePatientService updatePatient) : Controller
 {
     public async Task<IActionResult> Index()
@@ -78,12 +79,14 @@ public class PatientsController(UserManager<IdentityUser> userManager,
     }
 
     [HttpGet]
-    public IActionResult Details(Guid? id)
+    public async Task <IActionResult> Details(Guid? id)
     {
         if (id == null)
             return NotFound();
-        var patient = getPatient.GetPatientById(id.Value).Result;
-        if(patient == null)
+        var patient = await getPatient.GetPatientById(id.Value);
+        var parents = await getParents.GetParentsData(id.Value);
+        ViewBag.ParentsData = parents;
+        if (patient == null)
         {
             ViewBag.ErrorMessage = $"Patient with Id = {id} cannot be found";
             return NotFound();

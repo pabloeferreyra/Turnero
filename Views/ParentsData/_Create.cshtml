@@ -1,54 +1,92 @@
 ﻿@model ParentsData
 
-<form method="post" id="CreateForm" autocomplete="on">
-	<div class="modal-body row">
-		<input type="hidden" asp-for="PatientId" id="PatientId" />
-		<div class="form-group col-md-4 col-sm-12">
-			<label asp-for="FatherName" class="control-label">Nombre del Padre</label>
-			<input asp-for="FatherName" autocomplete="name" id="FatherName" class="form-control" />
-			<span asp-for="FatherName" id="fatherNameValidation" class="text-danger"></span>
-		</div>
-		<div class="form-group col-md-4 col-sm-12">
-			<label asp-for="FatherBirthDate" class="control-label">Fecha de Nacimiento del Padre</label>
-			<input asp-for="FatherBirthDate" autocomplete="bday" id="FatherBirthDate" type="date" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" max="@DateTime.Now.ToString("yyyy-MM-dd")" />
-			<span id="fatherBirthDateValidation" class="text-danger"></span>
-		</div>
-		<div class="form-group col-md-4 col-sm-12">
-			<label class="control-label" asp-for="FatherBloodType">Grupo sanguineo del Padre</label>
-			<select asp-for="FatherBloodType" id="FatherBloodType" title="Grupo sanguineo del Padre" class="form-control form-select" asp-items="@ViewBag.Bloodtype"></select>
-		</div>
-		<div class="form-group col-12">
-			<label asp-for="FatherWork" class="control-label">Ocupación del Padre</label>
-			<input asp-for="FatherWork" autocomplete="off" id="FatherWork" class="form-control" />
-			<span id="fatherWorkValidation" class="text-danger"></span>
-		</div>
-		<div class="form-group col-md-4 col-sm-12">
-			<label asp-for="MotherName" class="control-label">Nombre de la Madre</label>
-			<input asp-for="MotherName" autocomplete="name" id="MotherName" class="form-control" />
-			<span asp-for="MotherName" id="motherNameValidation" class="text-danger"></span>
-			</div>
-		<div class="form-group col-md-4 col-sm-12">
-			<label asp-for="MotherBirthDate" class="control-label">Fecha de Nacimiento de la Madre</label>
-			<input asp-for="MotherBirthDate" autocomplete="bday" id="MotherBirthDate" type="date" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" max="@DateTime.Now.ToString("yyyy-MM-dd")" />
-			<span id="motherBirthDateValidation" class="text-danger"></span>
-		</div>
-		<div class="form-group col-md-4 col-sm-12">
-			<label class="control-label" asp-for="MotherBloodType">Grupo sanguineo de la Madre</label>
-			<select asp-for="MotherBloodType" id="MotherBloodType" title="Grupo sanguineo de la Madre" class="form-control form-select" asp-items="@ViewBag.Bloodtype"></select>
-		</div>
-		<div class="form-group col-12">
-			<label asp-for="MotherWork" class="control-label">Ocupación de la Madre</label>
-			<input asp-for="MotherWork" autocomplete="off" id="MotherWork" class="form-control" />
-			<span id="motherWorkValidation" class="text-danger"></span>
-		</div>
-		<div class="form-group col-12">
-			<label asp-for="BrothersCount" class="control-label">Cantidad de hermanos</label>
-			<input asp-for="BrothersCount" autocomplete="off" id="BrothersCount" type="number" min="0" class="form-control" />
-			<span id="brothersCountValidation" class="text-danger"></span>
-		</div>
-	</div>
-	<div class="modal-footer">
-		<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-		<button type="button" id="btnCreateParentsData" class="btn btn-primary">Crear</button>
-	</div>
+<form method="post" id="ParentsForm" autocomplete="on">
+    <div class="modal-body row">
+
+        <input type="hidden" asp-for="Id" />
+
+        <div class="form-group col-md-4 col-sm-12">
+            <label asp-for="FatherName" class="control-label">Nombre del padre</label>
+            <input asp-for="FatherName" id="FatherName" class="form-control" />
+            <span id="fatherNameValidation" class="text-danger"></span>
+        </div>
+
+        <div class="form-group col-md-4 col-sm-12">
+            <label asp-for="FatherBirthDate" class="control-label">Fecha de nacimiento del padre</label>
+            <input asp-for="FatherBirthDate"
+                   id="FatherBirthDate"
+                   type="text"
+                   class="form-control"
+                   value="@(Model.FatherBirthDate == DateOnly.MinValue
+                                                   ? ""
+                                                   : Model.FatherBirthDate.ToString("yyyy-MM-dd"))" />
+            <span id="fatherBirthDateValidation" class="text-danger"></span>
+        </div>
+
+        <div class="form-group col-md-4 col-sm-12">
+            <label asp-for="FatherBloodType" class="control-label">Tipo de sangre del padre</label>
+            <select asp-for="FatherBloodType" id="FatherBloodType"
+                    class="form-control form-select"
+                    asp-items="@ViewBag.FatherBloodtype"></select>
+        </div>
+
+        <div class="form-group col-12">
+            <label asp-for="FatherWork" class="control-label">Empleo del padre</label>
+            <input asp-for="FatherWork" id="FatherWork" class="form-control" />
+            <span id="fatherWorkValidation" class="text-danger"></span>
+        </div>
+
+        <div class="form-group col-md-4 col-sm-12">
+            <label asp-for="MotherName" class="control-label">Nombre de la madre</label>
+            <input asp-for="MotherName" id="MotherName" class="form-control" />
+            <span id="motherNameValidation" class="text-danger"></span>
+        </div>
+
+        <div class="form-group col-md-4 col-sm-12">
+            <label asp-for="MotherBirthDate" class="control-label">Fecha de nacimiento de la madre</label>
+            <input asp-for="MotherBirthDate"
+                   id="MotherBirthDate"
+                   type="text"
+                   class="form-control"
+                   value="@(Model.MotherBirthDate == DateOnly.MinValue
+                                                   ? ""
+                                                   : Model.MotherBirthDate.ToString("yyyy-MM-dd"))" />
+            <span id="motherBirthDateValidation" class="text-danger"></span>
+        </div>
+
+        <div class="form-group col-md-4 col-sm-12">
+            <label asp-for="MotherBloodType" class="control-label">Tipo de sangre de la madre</label>
+            <select asp-for="MotherBloodType" id="MotherBloodType"
+                    class="form-control form-select"
+                    asp-items="@ViewBag.MotherBloodtype"></select>
+        </div>
+
+        <div class="form-group col-12">
+            <label asp-for="MotherWork" class="control-label">Empleo de la madre</label>
+            <input asp-for="MotherWork" id="MotherWork" class="form-control" />
+            <span id="motherWorkValidation" class="text-danger"></span>
+        </div>
+
+        <div class="form-group col-12">
+            <label asp-for="BrothersCount" class="control-label">Cantidad de hermanos</label>
+            <input asp-for="BrothersCount" id="BrothersCount" type="number" min="0" class="form-control" />
+            <span id="brothersCountValidation" class="text-danger"></span>
+        </div>
+
+    </div>
+
+    <div class="modal-footer">
+        @if (Model.Id == Guid.Empty)
+        {
+            <button type="button" id="btnCreateParentsData" class="btn btn-primary">
+                Crear
+            </button>
+        }
+        else
+        {
+            <button type="button" id="btnEditParentsData" class="btn btn-primary">
+                Guardar cambios
+            </button>
+        }
+    </div>
 </form>

@@ -129,9 +129,9 @@
 				<li class="nav-item">
 					<button type="button" class="nav-link" id="allergiesTab" data-url='@Url.Action("GetAllergies", "Allergies", new { id = Model.Id })'>Alergias</button>
 				</li>
-                                <li class="nav-item">
-                                        <button type="button" class="nav-link" id="parentsTab" data-url='@Url.Action("Index", "ParentsData", new { id = Model.Id })'>Familia</button>
-                                </li>
+                <li class="nav-item">
+                        <button type="button" class="nav-link" id="parentsTab" data-url='@Url.Action("Index", "ParentsData", new { id = Model.Id })'>Familia</button>
+                </li>
 			</ul>
 
 			<div class="tab-content" id="myTabContent">
@@ -155,6 +155,7 @@
 	</div>
 	@section Scripts {
 		<script src="~/js/parentsData.js" asp-append-version="true"></script>
+		<script src="~/js/createParentsData.js" asp-append-version="true"></script>
 		<script src="~/js/patients.js" asp-append-version="true"></script>
 		<script src="~/js/visits.js" asp-append-version="true"></script>
 		<script src="~/js/createVisit.js" asp-append-version="true"></script>

@@ -104,8 +104,7 @@ builder.Services.AddControllersWithViews(options =>
 .AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-})
-.AddXmlSerializerFormatters();
+});
 
 builder.Services.AddRazorPages();
 #endregion

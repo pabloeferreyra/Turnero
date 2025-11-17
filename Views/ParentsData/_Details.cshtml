@@ -1,69 +1,69 @@
 ﻿@model ParentsData
 @{
-	ViewData["Title"] = "Datos de los Padres de " + Model.Patient.Name;
+    var patientId = ViewBag.Id ?? "";
 }
-<div class="back container-fluid">
-	<div class="row">
-		<div class="col-md-4 col-sm-12 btn-group" role="group">
-			@if (Model.Id != Guid.Empty)
-			{
-				<button onclick='EditView(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Id)))' class="btn btn-sm btn-primary me-1">Editar</button>
-			}
-			else
-			{
-				<button onclick='CreateParentsDataView(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.PatientId)))' class="btn btn-sm btn-primary me-1">Crear</button>
-			}
 
-		</div>
-	</div>
-	<hr />
-	<div class="row">
-		<div class="col-12">
-			<h5 class="col-md-2 col-sm-12">Nombre del Padre</h5>
-			<p class="col-md-10 col-sm-12">@Html.DisplayFor(model => model.FatherName)</p>
-		</div>
-		<div class="col-md-5 col-sm-12">
-			<h5 class="col-md-7 col-sm-12">Fecha de Nacimiento del Padre</h5>
-			<p class="col-md-5 col-sm-12">@Html.DisplayFor(model => model.FatherBirthDate)</p>
-		</div>
-		<div class="col-md-5 col-sm-12">
-			<h5 class="col-md-7 cool-sm-12">Grupo sanguineo</h5>
-			<p class="col-md-5 col-sm-12">@Html.DisplayFor(model => model.FatherBloodType)</p>
-		</div>
-		<div class="col-12">
-			<h5 class="col-md-2 col-sm-12">Ocupación del Padre</h5>
-			<p class="col-md-10 col-sm-12">@Html.DisplayFor(model => model.FatherWork)</p>
-		</div>
-		<hr />
-		<div class="col-12">
-			<h5 class="col-md-2 col-sm-12">Nombre de la Madre</h5>
-			<p class="col-md-10 col-sm-12">@Html.DisplayFor(model => model.MotherName)</p>
-		</div>
-		<hr />
-		<div class="col-md-5 col-sm-12">
-			<h5 class="col-md-7 col-sm-12">Fecha de Nacimiento de la Madre</h5>
-			<p class="col-md-5 col-sm-12">@Html.DisplayFor(model => model.MotherBirthDate)</p>
-		</div>
-		<div class="col-md-5 col-sm-12">
-			<h5 class="col-md-7 cool-sm-12">Grupo sanguineo</h5>
-			<p class="col-md-5 col-sm-12">@Html.DisplayFor(model => model.MotherBloodType)</p>
-		</div>
-		<div class="col-12">
-			<h5 class="col-md-2 col-sm-12">Ocupación de la Madre</h5>
-			<p class="col-md-10 col-sm-12">@Html.DisplayFor(model => model.MotherWork)</p>
-		</div>
-	</div>
+<div class="container mt-2">
+
+    @if (Model == null)
+    {
+        <div class="alert alert-info">
+            Este paciente no tiene datos familiares cargados todavía.
+        </div>
+
+        <button id="btnCreateParentsData"
+                class="btn btn-primary"
+                data-patient-id="@patientId">
+            Crear datos familiares
+        </button>
+    }
+    else
+    {
+        <h5 class="mt-3">Padre</h5>
+        <div class="row border p-3 rounded bg-light mb-4">
+            <div class="col-md-4"><strong>Nombre:</strong></div>
+            <div class="col-md-8">@Model.FatherName</div>
+
+            <div class="col-md-4"><strong>Fecha de nacimiento:</strong></div>
+            <div class="col-md-8">@Model.FatherBirthDate.ToString("dd/MM/yyyy")</div>
+
+            <div class="col-md-4"><strong>Grupo sanguíneo:</strong></div>
+            <div class="col-md-8">@Html.DisplayFor(model => model.FatherBloodType)</div>
+
+            <div class="col-md-4"><strong>Ocupación:</strong></div>
+            <div class="col-md-8">@Model.FatherWork</div>
+        </div>
+
+        <h5 class="mt-3">Madre</h5>
+        <div class="row border p-3 rounded bg-light mb-4">
+            <div class="col-md-4"><strong>Nombre:</strong></div>
+            <div class="col-md-8">@Model.MotherName</div>
+
+            <div class="col-md-4"><strong>Fecha de nacimiento:</strong></div>
+            <div class="col-md-8">@Model.MotherBirthDate.ToString("dd/MM/yyyy")</div>
+
+            <div class="col-md-4"><strong>Grupo sanguíneo:</strong></div>
+            <div class="col-md-8">@Html.DisplayFor(model => model.MotherBloodType)</div>
+
+            <div class="col-md-4"><strong>Ocupación:</strong></div>
+            <div class="col-md-8">@Model.MotherWork</div>
+        </div>
+
+        <h5 class="mt-3">Hermanos</h5>
+        <div class="row border p-3 rounded bg-light mb-4">
+            <div class="col-md-4"><strong>Cantidad:</strong></div>
+            <div class="col-md-8">@Model.BrothersCount</div>
+        </div>
+
+        <button id="btnEditParentsData"
+                class="btn btn-secondary"
+                data-edit-parent
+                data-id="@Model.Id">
+            Editar datos familiares
+        </button>
+    }
 </div>
 
-<div class="modal modal-lg fade" id="Edit" role="dialog">
-	<div class="modal-dialog modal-lg modal-dialog-centered">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h5 class="modal-title">Editar Datos de los Padres</h5>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-			</div>
-				<div id="EditFormContent">
-			</div>
-		</div>
-	</div>
-</div>
+<script>
+    document.dispatchEvent(new Event("parents:dataLoaded"));
+</script>
