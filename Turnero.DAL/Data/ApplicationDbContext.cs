@@ -48,6 +48,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         builder.Entity<Visit>()
             .Property(b => b.Observations)
             .HasDefaultValue(string.Empty);
+        builder.Entity<PersonalBackground>()
+            .Property(b => b.Other)
+            .HasDefaultValue(string.Empty);
     }
 
     public DbSet<Turn> Turns { get; set; }
@@ -58,4 +61,5 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Allergies> Allergies { get; set; }
     public DbSet<Visit> Visits { get; set; }
     public DbSet<ParentsData> ParentsData { get; set; }
+    public DbSet<PersonalBackground> PersonalBackground { get; set; }
 }

@@ -19,7 +19,8 @@ public class Patient : BaseEntity
     public BloodType BloodType { get; set; }
     public ICollection<Turn>? Turns { get; set; }
     public ICollection<Visit>? Visits { get; set; }
-    public ParentsData Parent { get; set; }
+    public ParentsData? Parent { get; set; }
+    public PersonalBackground? PersonalBackground { get; set; }
 }
 
 public class PatientDTO : BaseEntity

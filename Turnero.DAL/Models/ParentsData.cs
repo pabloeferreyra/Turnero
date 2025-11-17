@@ -1,10 +1,7 @@
 ﻿namespace Turnero.DAL.Models;
 
-public class ParentsData
+public class ParentsData : PatientFKEntity
 {
-    [Key]
-    [ForeignKey(nameof(Patient))]
-    public Guid Id { get; set; }
     [Display(Name = "Nombre del padre")]
     public string? FatherName { get; set; }
     [Display(Name = "Fecha de nacimiento del padre")]
