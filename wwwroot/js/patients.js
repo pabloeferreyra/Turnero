@@ -22,7 +22,7 @@
 
         let searchTimer = null;
 
-        $(document).on("input", "#searchBox", function () {
+        $(document).on("input", "#searchBox", () => {
 
             clearTimeout(searchTimer);
 
@@ -31,23 +31,36 @@
             }, 250);
         });
 
-        $(document).on("keydown", "#searchBox", function (e) {
+        $(document).on("keydown", "#searchBox", (e) => {
             if (e.key === "Enter") {
                 e.preventDefault();
                 AppUtils.Pagination.goTo(key, 1, loadData);
             }
         });
 
-        $(document).on("click", "#btnSearch", function () {
+        $(document).on("click", "#btnSearch", () => {
             AppUtils.Pagination.goTo(key, 1, loadData);
         });
 
         // editar
-        $(document).on("click", "#patients-body .btn-edit-patient", function () {
+        $(document).on("click", "[data-edit-patient]", () => {
             EditPatient($(this).data("id"));
         });
 
         $(document).on("click", "[data-create-patient]", openCreatePatient);
+
+        $(document).on("click", "[personal-background]", function () {
+            window.PersonalBackgroundView($(this).data("id"));
+        });
+
+        $(document).on("click", "[edit-personal-background]", function () {
+
+            window.EditPersonalBackground($(this).data("id"));
+        });
+
+        $(document).on("click", "[data-save-background]", () => {
+            window.SavePersonalBackground();
+        });
 
         function openCreatePatient() {
             fetch("/Patients/Create")
@@ -61,7 +74,7 @@
                 });
         }
     });
-
+    
 
     function loadData() {
 
@@ -133,7 +146,7 @@
                     <td>${escape(p.affiliateNumber)}</td>
                     <td>
                         <div class="btn-group" role="group">
-                            <button data-id="${p.id}" class="btn btn-sm btn-primary me-1 btn-edit-patient">Editar</button>
+                            <button data-edit-patient data-id="${p.id}" class="btn btn-sm btn-primary me-1">Editar</button>
                             <a href="/Patients/Details/${p.id}" class="btn btn-sm btn-secondary me-1">Detalles</a>
                         </div>
                     </td>
@@ -146,7 +159,7 @@
         return $('<div/>').text(s || '').html();
     }
 
-    function EditPatient(id) {
+    window.EditPatient = function (id) {
         fetch("/Patients/Edit?id=" + id)
             .then(r => r.text())
             .then(html => {
@@ -159,6 +172,11 @@
     }
 
 })();
+
+document.getElementById("PersonalBackgroundModal")
+    .addEventListener("hidden.bs.modal", function () {
+        $("#PersonalBackgroundContent").html("");
+    });
 
 document.addEventListener("patients:editLoaded", function () {
     AppUtils.initFlatpickr("#BirthDateEdit", { maxToday: true, blockSundays: false });

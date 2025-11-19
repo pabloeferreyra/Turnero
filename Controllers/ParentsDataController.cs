@@ -1,6 +1,4 @@
-﻿using Turnero.DAL.Models;
-
-namespace Turnero.Controllers;
+﻿namespace Turnero.Controllers;
 
 [Authorize(Roles = RolesConstants.Medico)]
 public class ParentsDataController(IInsertParentsDataService insertParentsData,
@@ -20,7 +18,7 @@ public class ParentsDataController(IInsertParentsDataService insertParentsData,
     [HttpGet]
     public IActionResult Create(Guid? id)
     {
-        if(id == null)
+        if (id == null)
             return BadRequest("El ID del paciente es obligatorio.");
         var token = HttpContext.RequestServices.GetRequiredService<IAntiforgery>()
             .GetAndStoreTokens(HttpContext)
@@ -104,7 +102,7 @@ public class ParentsDataController(IInsertParentsDataService insertParentsData,
     }
 
     [HttpDelete]
-    public IActionResult Delete([FromBody]ParentsData data)
+    public IActionResult Delete([FromBody] ParentsData data)
     {
         try
         {

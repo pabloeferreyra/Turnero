@@ -6,8 +6,20 @@
 	<div class="back container-fluid">
 		<div class="row">
 			<div class="col-md-4 col-sm-12 btn-group" role="group">
-				<button onclick='EditView(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Id)))' class="btn btn-sm btn-primary me-1">Editar</button>
+			<button data-edit-patient data-id="@Model.Id" class="btn btn-sm btn-primary me-1">Editar</button>
 				
+			</div>
+			<div class="col-md-4 col-sm-12 btn-group ms-auto" role="group" style="text-align:right">
+				<button type="button" personal-background
+					class="btn btn-sm btn-secondary me-1"
+						data-id="@Model.Id">
+					Antecedentes Personales
+				</button>
+			<button type="button" personal-background
+					class="btn btn-sm btn-secondary me-1"
+					data-id="@Model.Id">
+				Antecedentes Perinatales
+			</button>
 			</div>
 		</div>
 		<hr />
@@ -73,6 +85,23 @@
 
 			</div>
 		</div>
+
+		<div class="modal modal-lg fade" id="PersonalBackgroundModal" tabindex="-1" aria-hidden="true">
+			<div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+				<div class="modal-content">
+
+					<div class="modal-header">
+						<h5 class="modal-title"></h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" onclick="ClosePersonalBackground()"></button>
+					</div>
+
+					<div class="modal-body" id="PersonalBackgroundContent">
+					</div>
+
+				</div>
+			</div>
+		</div>
+		
 		<div class="modal modal-lg fade" id="CreateVisit" role="dialog">
 			<div class="modal-dialog modal-lg modal-dialog-centered">
 				<div class="modal-content">
@@ -80,9 +109,12 @@
 						<h5 class="modal-title">Ingresar visita</h5>
 						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 					</div>
-					<div id="CreateVisitFormContent">
+					<div class="modal-body">
+						<div id="CreateVisitFormContent">
+						</div>
 					</div>
 				</div>
+			
 			</div>
 		</div>
 		<div class="modal modal-lg fade" id="CreateAllergy" role="dialog">
@@ -92,7 +124,9 @@
 						<h5 class="modal-title">Alergia</h5>
 						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 					</div>
-					<div id="CreateAllergyFormContent">
+					<div class="modal-body">
+						<div id="CreateAllergyFormContent">
+						</div>
 					</div>
 				</div>
 			</div>
@@ -104,7 +138,9 @@
 						<h5 class="modal-title">Detalle de visita</h5>
 						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 					</div>
-					<div id="VisitDetailContent">
+					<div class="modal-body">
+						<div id="VisitDetailContent">
+						</div>
 					</div>
 				</div>
 			</div>
@@ -116,7 +152,9 @@
 						<h5 class="modal-title">Detalle de alergia</h5>
 						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 					</div>
-					<div id="AllergyDetailContent">
+					<div class="modal-body">
+						<div id="AllergyDetailContent">
+						</div>
 					</div>
 				</div>
 			</div>
@@ -161,6 +199,7 @@
 		<script src="~/js/createVisit.js" asp-append-version="true"></script>
 		<script src="~/js/allergies.js" asp-append-version="true"></script>
 		<script src="~/js/createAllergy.js" asp-append-version="true"></script>
+		<script src="~/js/personalBackground.js" asp-append-version="true"></script>
 		@{
 			await Html.RenderPartialAsync("_ValidationScriptsPartial");
 		}

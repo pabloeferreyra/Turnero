@@ -1,3 +1,5 @@
+using Turnero.SL.Services.PersonalBackgroundServices;
+
 var builder = WebApplication.CreateBuilder(args);
 
 MapsterConfig.RegisterMappings();
@@ -160,6 +162,12 @@ builder.Services.AddScoped<IGetParentsDataService, GetParentsDataService>();
 builder.Services.AddScoped<IInsertParentsDataService, InsertParentsDataService>();
 builder.Services.AddScoped<IUpdateParentsDataService, UpdateParentsDataService>();
 builder.Services.AddScoped<IDeleteParentsDataService, DeleteParentsDataService>();
+
+//PersonalBackgroundServices
+builder.Services.AddScoped<IGetPersonalBackgroundService, GetPersonalBackgroundService>();
+builder.Services.AddScoped<IInsertPersonalBackgroundService, InsertPersonalBackgroundService>();
+builder.Services.AddScoped<IUpdatePersonalBackgroundService, UpdatePersonalBackgroundService>();
+builder.Services.AddScoped<IDeletePersonalBackgroundService, DeletePersonalBackgroundService>();
 #endregion
 
 #region Dependency Injection - Repositories
@@ -171,6 +179,7 @@ builder.Services.AddScoped<IPatientRepository, PatientRepository>();
 builder.Services.AddScoped<IVisitRepository, VisitRepository>();
 builder.Services.AddScoped<IAllergiesRepository, AllergiesRepository>();
 builder.Services.AddScoped<IParentsDataRepository, ParentsDataRepository>();
+builder.Services.AddScoped<IPersonalBackgroundRepository, PersonalBackgroundRepository>();
 #endregion
 
 #region HTTP Client

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Turnero.DAL.Models;
 
 namespace Turnero.DAL.Data;
@@ -18,39 +19,62 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         builder.Entity<Visit>()
             .Property(p => p.VisitDate)
             .HasColumnType("date");
-        builder.Entity<Allergies>()
-            .Property(p => p.Begin)
-            .HasColumnType("date");
-        builder.Entity<Allergies>()
-            .Property(p => p.End)
-            .HasColumnType("date");
-        builder.Entity<ParentsData>()
-            .Property(p => p.FatherBirthDate)
-            .HasColumnType("date");
-        builder.Entity<ParentsData>()
-            .Property(p => p.MotherBirthDate)
-            .HasColumnType("date");
-        builder.Entity<Visit>()
-            .Property(b => b.DiagDescription)
-            .HasDefaultValue(string.Empty);
-        builder.Entity<Visit>()
-            .Property(b => b.Treatment)
-            .HasDefaultValue(string.Empty);
-        builder.Entity<Visit>()
-            .Property(b => b.EvolutionNotes)
-            .HasDefaultValue(string.Empty);
-        builder.Entity<Visit>()
-            .Property(b => b.LabResults)
-            .HasDefaultValue(string.Empty);
-        builder.Entity<Visit>()
-            .Property(b => b.OtherStudies)
-            .HasDefaultValue(string.Empty);
-        builder.Entity<Visit>()
-            .Property(b => b.Observations)
-            .HasDefaultValue(string.Empty);
-        builder.Entity<PersonalBackground>()
-            .Property(b => b.Other)
-            .HasDefaultValue(string.Empty);
+        var allergiesDate = typeof(Allergies)
+            .GetProperties()
+            .Where(p => p.PropertyType == typeof(DateTime?));
+        var visitStrings = typeof(Visit)
+            .GetProperties()
+            .Where(p => p.PropertyType == typeof(string));
+        var boolProps = typeof(PersonalBackground)
+           .GetProperties()
+           .Where(p => p.PropertyType == typeof(bool));
+        var stringParents = typeof(ParentsData)
+            .GetProperties()
+            .Where(p => p.PropertyType == typeof(string));
+        var dateParents = typeof(ParentsData)
+            .GetProperties()
+            .Where(p => p.PropertyType == typeof(DateOnly));
+        var intParents = typeof(ParentsData)
+            .GetProperties()
+            .Where(p => p.PropertyType == typeof(int));
+        foreach (var allergies in allergiesDate)
+        {
+            builder.Entity<Allergies>()
+                .Property(allergies.Name)
+                .HasColumnType("date")
+                .HasDefaultValue(null);
+        }
+        foreach (var visit in visitStrings)
+        {
+            builder.Entity<Visit>()
+                .Property(visit.Name)
+                .HasDefaultValue(string.Empty);
+        }
+        foreach (var prop in boolProps)
+        {
+            builder.Entity<PersonalBackground>()
+                .Property(prop.Name)
+                .HasDefaultValue(false);
+        }
+        foreach (var prop in stringParents)
+        {
+            builder.Entity<ParentsData>()
+                .Property(prop.Name)
+                .HasDefaultValue(string.Empty);
+        }
+        foreach (var prop in dateParents)
+        {
+            builder.Entity<ParentsData>()
+                .Property(prop.Name)
+                .HasColumnType("date")
+                .HasDefaultValue(DateOnly.MinValue);
+        }
+        foreach (var prop in intParents)
+        {
+            builder.Entity<ParentsData>()
+            .Property(prop.Name)
+            .HasDefaultValue(0);
+        }
     }
 
     public DbSet<Turn> Turns { get; set; }

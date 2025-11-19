@@ -1,13 +1,9 @@
-﻿/* Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
-for details on configuring this project to bundle and minify static web assets. */
-
-a.navbar-brand {
+﻿a.navbar-brand {
   white-space: normal;
   text-align: center;
   word-break: break-all;
 }
 
-/* Provide sufficient contrast against white background */
 a {
     color: #fff;
     text-decoration: none;
@@ -75,8 +71,6 @@ input[type="password"] {
     color: #0B5066;
 }
 
-/* Sticky footer styles
--------------------------------------------------- */
 html {
   font-size: 14px;
 }
@@ -102,15 +96,13 @@ button.accept-policy {
   line-height: inherit;
 }
 
-/* Sticky footer styles
--------------------------------------------------- */
+
 html {
   position: relative;
   min-height: 100%;
 }
 
 body {
-  /* Margin bottom by footer height */
   margin-bottom: 60px;
 }
 .footer {
@@ -118,7 +110,7 @@ body {
   bottom: 0;
   width: 100%;
   white-space: nowrap;
-  line-height: 60px; /* Vertically center the text there */
+  line-height: 60px;
 }
 
 .btn-fade-out {
@@ -133,4 +125,52 @@ body {
 
 .btn-fade-in.show {
     opacity: 1;
+}
+
+.switch-ios {
+    position: relative;
+    display: inline-block;
+    width: 46px;
+    height: 26px;
+    margin: 0;
+}
+
+.switch-ios input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider-ios {
+    position: absolute;
+    cursor: pointer;
+    background-color: #ccc;
+    transition: .3s;
+    border-radius: 34px;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* ← NECESARIO */
+    pointer-events: none;
+}
+
+.slider-ios:before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+}
+
+.switch-ios input:checked + .slider-ios {
+    background-color: #4cd964;
+}
+
+.switch-ios input:checked + .slider-ios:before {
+    transform: translateX(20px);
 }
