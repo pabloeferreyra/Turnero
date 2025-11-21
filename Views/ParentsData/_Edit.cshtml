@@ -1,76 +1,83 @@
 ﻿@model ParentsData
 
 <form method="post" id="ParentsForm" autocomplete="on">
+    @Html.AntiForgeryToken()
+
     <div class="modal-body row">
 
         <input type="hidden" asp-for="Id" />
 
+        <!-- PADRE -->
         <div class="form-group col-md-4 col-sm-12">
             <label asp-for="FatherName" class="control-label">Nombre del padre</label>
-            <input asp-for="FatherName" id="FatherName" class="form-control" />
-            <span id="fatherNameValidation" class="text-danger"></span>
+            <input asp-for="FatherName" class="form-control" id="FatherName" />
+            <span asp-validation-for="FatherName" class="text-danger"></span>
         </div>
 
         <div class="form-group col-md-4 col-sm-12">
             <label asp-for="FatherBirthDate" class="control-label">Fecha de nacimiento del padre</label>
             <input asp-for="FatherBirthDate"
-                   id="FatherBirthDate"
-                   type="text"
                    class="form-control"
-                   value="@(Model.FatherBirthDate == DateOnly.MinValue
-                                                   ? ""
-                                                   : Model.FatherBirthDate.ToString("yyyy-MM-dd"))" />
-            <span id="fatherBirthDateValidation" class="text-danger"></span>
+                   id="FatherBirthDate"
+                   type="text" />
+            <span asp-validation-for="FatherBirthDate" class="text-danger"></span>
         </div>
 
         <div class="form-group col-md-4 col-sm-12">
             <label asp-for="FatherBloodType" class="control-label">Tipo de sangre del padre</label>
-            <select asp-for="FatherBloodType" id="FatherBloodType"
+            <select asp-for="FatherBloodType"
                     class="form-control form-select"
-                    asp-items="@ViewBag.FatherBloodtype"></select>
+                    asp-items="ViewBag.FatherBloodtype"
+                    id="FatherBloodType"></select>
+            <span asp-validation-for="FatherBloodType" class="text-danger"></span>
         </div>
 
         <div class="form-group col-12">
             <label asp-for="FatherWork" class="control-label">Empleo del padre</label>
-            <input asp-for="FatherWork" id="FatherWork" class="form-control" />
-            <span id="fatherWorkValidation" class="text-danger"></span>
+            <input asp-for="FatherWork" class="form-control" id="FatherWork" />
+            <span asp-validation-for="FatherWork" class="text-danger"></span>
         </div>
 
+        <!-- MADRE -->
         <div class="form-group col-md-4 col-sm-12">
             <label asp-for="MotherName" class="control-label">Nombre de la madre</label>
-            <input asp-for="MotherName" id="MotherName" class="form-control" />
-            <span id="motherNameValidation" class="text-danger"></span>
+            <input asp-for="MotherName" class="form-control" id="MotherName" />
+            <span asp-validation-for="MotherName" class="text-danger"></span>
         </div>
 
         <div class="form-group col-md-4 col-sm-12">
             <label asp-for="MotherBirthDate" class="control-label">Fecha de nacimiento de la madre</label>
             <input asp-for="MotherBirthDate"
-                   id="MotherBirthDate"
-                   type="text"
                    class="form-control"
-                   value="@(Model.MotherBirthDate == DateOnly.MinValue
-                                                   ? ""
-                                                   : Model.MotherBirthDate.ToString("yyyy-MM-dd"))" />
-            <span id="motherBirthDateValidation" class="text-danger"></span>
+                   id="MotherBirthDate"
+                   type="text" />
+            <span asp-validation-for="MotherBirthDate" class="text-danger"></span>
         </div>
 
         <div class="form-group col-md-4 col-sm-12">
             <label asp-for="MotherBloodType" class="control-label">Tipo de sangre de la madre</label>
-            <select asp-for="MotherBloodType" id="MotherBloodType"
+            <select asp-for="MotherBloodType"
                     class="form-control form-select"
-                    asp-items="@ViewBag.MotherBloodtype"></select>
+                    asp-items="ViewBag.MotherBloodtype"
+                    id="MotherBloodType"></select>
+            <span asp-validation-for="MotherBloodType" class="text-danger"></span>
         </div>
 
         <div class="form-group col-12">
             <label asp-for="MotherWork" class="control-label">Empleo de la madre</label>
-            <input asp-for="MotherWork" id="MotherWork" class="form-control" />
-            <span id="motherWorkValidation" class="text-danger"></span>
+            <input asp-for="MotherWork" class="form-control" id="MotherWork" />
+            <span asp-validation-for="MotherWork" class="text-danger"></span>
         </div>
 
+        <!-- HERMANOS -->
         <div class="form-group col-12">
             <label asp-for="BrothersCount" class="control-label">Cantidad de hermanos</label>
-            <input asp-for="BrothersCount" id="BrothersCount" type="number" min="0" class="form-control" />
-            <span id="brothersCountValidation" class="text-danger"></span>
+            <input asp-for="BrothersCount"
+                   class="form-control"
+                   id="BrothersCount"
+                   type="number"
+                   min="0" />
+            <span asp-validation-for="BrothersCount" class="text-danger"></span>
         </div>
 
     </div>

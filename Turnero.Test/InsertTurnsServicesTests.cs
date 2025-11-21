@@ -18,7 +18,7 @@ public class InsertTurnsServicesTests
         Name = "Patient1",
         DateTurn = DateTime.Today,
         MedicId = new Guid(),
-        Dni = "99999999",
+        Dni = 99999999,
         TimeId = new Guid(),
         SocialWork = "O.S. Test",
         Accessed = false,

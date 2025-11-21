@@ -16,50 +16,6 @@ public class ParentsDataController(IInsertParentsDataService insertParentsData,
     }
 
     [HttpGet]
-    public IActionResult Create(Guid? id)
-    {
-        if (id == null)
-            return BadRequest("El ID del paciente es obligatorio.");
-        var token = HttpContext.RequestServices.GetRequiredService<IAntiforgery>()
-            .GetAndStoreTokens(HttpContext)
-            .RequestToken;
-        ViewData["RequestVerificationToken"] = token;
-        ViewBag.FatherBloodtype = Enum.GetValues<BloodType>()
-            .Select(a => new SelectListItem
-            {
-                Value = ((int)a).ToString(),
-                Text = a.GetDisplayName()
-            }).ToList();
-        ViewBag.MotherBloodtype = Enum.GetValues<BloodType>()
-            .Select(a => new SelectListItem
-            {
-                Value = ((int)a).ToString(),
-                Text = a.GetDisplayName()
-            }).ToList();
-        return PartialView("_Create");
-    }
-
-    [HttpPost]
-    public async Task<StatusCodeResult> Create(ParentsData data)
-    {
-        try
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest();
-            }
-            data.Id = data.Patient.Id;
-            await insertParentsData.InsertParentsData(data);
-            return StatusCode(StatusCodes.Status201Created);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError("Error in {Action}: {Message}", nameof(Create), ex.Message);
-            return StatusCode(StatusCodes.Status500InternalServerError);
-        }
-    }
-
-    [HttpGet]
     public async Task<IActionResult> Edit(Guid? id)
     {
         if (id == null)
@@ -83,7 +39,7 @@ public class ParentsDataController(IInsertParentsDataService insertParentsData,
                 Value = ((int)a).ToString(),
                 Text = a.GetDisplayName()
             }).ToList();
-        return PartialView("_Create", data);
+        return PartialView("_Edit", data);
     }
 
     [HttpPut]
