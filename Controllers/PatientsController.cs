@@ -79,6 +79,7 @@ public class PatientsController(UserManager<IdentityUser> userManager,
     }
 
     [HttpGet]
+    [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
     public async Task <IActionResult> Details(Guid? id)
     {
         if (id == null)

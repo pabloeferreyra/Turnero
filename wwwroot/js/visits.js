@@ -1,156 +1,224 @@
-﻿(function () {
+﻿// @ts-nocheck
+(function () {
     'use strict';
 
     const key = "visits";
     let currentData = [];
 
+    // -------------------------------------------
+    // UTILITIES
+    // -------------------------------------------
     function resolvePatientId() {
-        return $('#patientId').val() || $('#PatientId').val() || '';
+        return document.querySelector('#patientId')?.value
+            || document.querySelector('#PatientId')?.value
+            || '';
     }
 
-    function loadData() {
+    function parseLocalDate(raw) {
+        if (!raw) return "";
+        const [y, m, d] = raw.split('-').map(Number);
+        return new Date(y, m - 1, d).toLocaleDateString("es-AR");
+    }
 
+    // -------------------------------------------
+    // LOAD DATA
+    // -------------------------------------------
+    async function loadData() {
         const patientId = resolvePatientId();
+        const tbody = document.querySelector('#visits-body');
+
+        if (!tbody) return;
+
         if (!patientId) {
-            console.warn('patientId no encontrado');
-            $('#visits-body').html('<tr><td colspan="4" class="text-center">No hay visitas para mostrar.</td></tr>');
-            $('#visits-pagination').empty();
-            $('#pageInfoVisits').text('');
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center">No hay visitas para mostrar.</td></tr>';
+            document.querySelector('#visits-pagination').innerHTML = '';
+            document.querySelector('#pageInfoVisits').textContent = '';
             return;
         }
 
         const st = AppUtils.Pagination.getState(key);
 
-        const payload = {
+        const payload = new URLSearchParams({
             draw: 1,
             start: (st.currentPage - 1) * st.pageSize,
             length: st.pageSize,
             patientId,
             "order[0][column]": st.order.column,
             "order[0][dir]": st.order.dir
-        };
+        });
 
         const columnsMap = ['VisitDate', 'Medic', 'Reason'];
-        columnsMap.forEach((name, i) => payload[`columns[${i}][name]`] = name);
-
-        $.ajax({
-            type: 'POST',
-            url: '/Visits/InitializeVisits',
-            data: payload,
-            dataType: 'json',
-            success: function (response) {
-
-                currentData = response?.data || response?.Data || [];
-                st.recordsTotal = response?.recordsTotal || response?.recordsFiltered || currentData.length || 0;
-
-                renderTable();
-
-                AppUtils.Sort.attachHeaderSorting("#visits", key, loadData);
-
-                AppUtils.Pagination.renderWithState("#visits-pagination", key, loadData);
-                renderPageInfo();
-            }
+        columnsMap.forEach((name, i) => {
+            payload.append(`columns[${i}][name]`, name);
         });
+
+        const res = await fetch('/Visits/InitializeVisits', {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: payload
+        });
+
+        const response = await res.json();
+
+        currentData =
+            response?.data ||
+            response?.Data ||
+            [];
+
+        st.recordsTotal =
+            response?.recordsTotal ||
+            response?.recordsFiltered ||
+            currentData.length;
+
+        renderTable();
+        AppUtils.Sort.attachHeaderSorting("#visits", key, loadData);
+        AppUtils.Pagination.renderWithState("#visits-pagination", key, loadData);
+        renderPageInfo();
     }
 
+    // -------------------------------------------
+    // RENDER TABLE
+    // -------------------------------------------
     function renderTable() {
-        const $tbody = $('#visits-body').empty();
+        const tbody = document.querySelector('#visits-body');
+        if (!tbody) return;
+
+        tbody.innerHTML = "";
 
         if (!currentData.length) {
-            $tbody.html('<tr><td colspan="4" class="text-center">No hay visitas para mostrar.</td></tr>');
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center">No hay visitas para mostrar.</td></tr>';
             return;
         }
 
-        currentData.forEach(function (item) {
-            const dateRaw = item.visitDate;
-            let date = '';
-            if (dateRaw) {
-                let dt = new Date(dateRaw);
-                date = !isNaN(dt) ? dt.toLocaleDateString('es-AR') : dateRaw;
-            }
-
-            const medicObj = item.medic;
-            const medicName = typeof medicObj === 'string' ? medicObj : (medicObj.name);
-
-            const reason = item.reason;
+        currentData.forEach(item => {
             const id = item.id;
+            const date = parseLocalDate(item.visitDate);
+            const medic = typeof item.medic === "string"
+                ? item.medic
+                : item.medic.name;
 
-            const row = `
+            tbody.insertAdjacentHTML("beforeend", `
                 <tr>
                     <td>${date}</td>
-                    <td>${medicName}</td>
-                    <td>${reason}</td>
-                    <td><button class="btn btn-sm btn-primary btn-visit-detail me-1" data-id="${id}">Detalle</button></td>
-                </tr>`;
-            $tbody.append(row);
+                    <td>${medic}</td>
+                    <td>${item.reason}</td>
+                    <td>
+                        <button data-open-modal
+                                data-modal-id="GlobalModal"
+                                data-url="/Visits/Details?id=${id}"
+                                data-title="Detalle de visita"
+                                class="btn btn-sm btn-primary me-1">
+                            Detalle
+                        </button>
+                    </td>
+                </tr>
+            `);
         });
     }
 
     function renderPageInfo() {
         const st = AppUtils.Pagination.getState(key);
-        const start = st.recordsTotal === 0 ? 0 : ((st.currentPage - 1) * st.pageSize) + 1;
+        const el = document.querySelector('#pageInfoVisits');
+        if (!el) return;
+
+        const start = st.recordsTotal === 0
+            ? 0
+            : ((st.currentPage - 1) * st.pageSize) + 1;
+
         const end = Math.min(st.recordsTotal, st.currentPage * st.pageSize);
-        $('#pageInfoVisits').text(`Mostrando ${start} - ${end} de ${st.recordsTotal} visitas`);
+
+        el.textContent = `Mostrando ${start} - ${end} de ${st.recordsTotal} visitas`;
     }
 
-    function VisitDetail(id) {
-        $.ajax({
-            type: 'GET',
-            url: '/Visits/Details',
-            data: { id },
-            success: function (html) {
-                $('#VisitDetailContent').html(html);
-                $('#VisitDetail').modal('toggle');
-            }
+    // -------------------------------------------
+    // INIT Create Visit
+    // -------------------------------------------
+    function initCreateVisit() {
+
+        const dt = document.querySelector("#VisitDate");
+        if (dt) {
+            AppUtils.initFlatpickr("#VisitDate", { maxToday: true });
+        }
+
+        AppUtils.FormValidationRules("#btnCreateVisit", {
+            VisitDate: { required: true },
+            MedicId: { required: true },
+            Reason: { required: true }
         });
+
+        const btn = document.querySelector("#btnCreateVisit");
+        if (btn) {
+            btn.addEventListener("click", async function (e) {
+                e.preventDefault();
+                if (!AppUtils.validateAll()) return;
+                await ModalUtils.submitForm(
+                    "GlobalModal",
+                    "CreateVisitForm",
+                    "/Visits/Create",
+                    "POST",
+                    "Nueva visita"
+                );
+
+                window.reloadVisitsTable?.();
+            });
+        }
     }
 
-    function reloadVisitsTable() {
-        loadData();
+    function initVisitDetail() {
     }
 
-    window.VisitDetail = VisitDetail;
+    window.reloadVisitsTable = loadData;
 
-    window.reloadVisitsTable = reloadVisitsTable;
-
-    $(document).ready(function () {
+    document.addEventListener("DOMContentLoaded", () => {
 
         AppUtils.Pagination.init(key, {
             defaultPageSize: 25,
             defaultOrder: { column: 0, dir: 'asc' },
-            pageSizeSelector: '#pageSize',
+            pageSizeSelector: "#pageSize",
             onChange: loadData
         });
 
-        const $tab = $('#visitsTab');
+        const tab = document.querySelector('#visitsTab');
 
-        $tab.off('click.visits').on('click.visits', function () {
+        if (tab) {
+            tab.addEventListener('click', () => {
 
-            // visual tabs
-            $('#myTabs .nav-link').removeClass('active');
-            $(this).addClass('active');
+                document.querySelectorAll('#myTabs .nav-link')
+                    .forEach(x => x.classList.remove('active'));
 
-            // limpiar sort visual del tab *alergies*
-            $('#allergies thead .sort-btn')
-                .removeClass('active')
-                .attr('aria-sort', 'none')
-                .find('.sort-indicator').text('');
+                tab.classList.add('active');
 
-            const url = $(this).data('url');
-            if (!url) return;
+                const url = tab.dataset.url;
+                if (!url) return;
 
-            if (!$('#visits').length) {
-                $('#tabContent').load(url, function () {
-                    loadData();
-                });
-            } else {
-                loadData();
+                const container = document.querySelector('#tabContent');
+
+                if (!document.querySelector('#visits')) {
+                    fetch(url)
+                        .then(r => r.text())
+                        .then(html => {
+                            container.innerHTML = html;
+                            loadData();
+                        });
+                } else loadData();
+            });
+        }
+
+        document.addEventListener("modal:updated", (ev) => {
+            if (ev.detail.modalId !== "GlobalModal") return;
+
+            const html = document
+                .querySelector("#GlobalModal-body")
+                ?.innerHTML
+                ?.toLowerCase() || "";
+
+            if (html.includes("createvisit")) {
+                initCreateVisit();
             }
-        });
 
-        $(document).on('click.visits', '#visits-body .btn-visit-detail', function () {
-            const id = $(this).data('id');
-            if (id) VisitDetail(id);
+            if (html.includes("visit detail") || html.includes("detalle de visita")) {
+                initVisitDetail();
+            }
         });
     });
 

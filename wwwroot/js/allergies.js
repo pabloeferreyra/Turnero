@@ -3,228 +3,24 @@
     'use strict';
 
     const key = "allergies";
+    let currentData = [];
 
-    $(document).ready(function () {
-
-        AppUtils.Pagination.init(key, {
-            defaultPageSize: 25,
-            pageSizeSelector: "#pageSizeAllergies",
-            defaultOrder: { column: 0, dir: 'asc' },
-            onChange: loadData
-        });
-
-        AppUtils.Sort.attachHeaderSorting("#allergies", key, loadData);
-
-        window._reloadData = loadData;
-
-        loadData();
-
-        const $tab = $('#allergiesTab');
-
-        $tab.off('click.allergies').on('click.allergies', function () {
-
-            // visual tabs
-            $('#myTabs .nav-link').removeClass('active');
-            $(this).addClass('active');
-
-            // limpiar sort visual del tab “visits”
-            $('#visits thead .sort-btn')
-                .removeClass('active')
-                .attr('aria-sort', 'none')
-                .find('.sort-indicator').text('');
-
-            const url = $(this).data('url');
-            if (!url) return;
-
-            if (!$('#allergies').length) {
-                $('#tabContent').load(url, function () {
-                    loadData();
-                });
-            } else {
-                loadData();
-            }
-        });
-
-        $(document).on('click.allergies', '#allergies-body .btn-allergy-detail', function () {
-            const id = $(this).data('id');
-            if (id) AllergyDetail(id);
-        });
-
-        $(document).on('click.allergies', '#allergies-body .btn-allergy-edit', function () {
-            const id = $(this).data('id');
-            if (id) AllergyEdit(id);
-        });
-
-        $(document).on('click.allergies', '#allergies-body .btn-delete', function () {
-            const id = $(this).data('id');
-            const $cell = $(this).closest('td');
-            const $btn = $(this);
-
-            if (!id) return;
-
-            $btn.addClass('btn-fade-out');
-
-            setTimeout(() => {
-                $cell.html(`
-                    <button data-id="${id}" class="btn btn-danger btn-sm me-1 btn-del-yes">Si</button>
-                    <button data-id="${id}" class="btn btn-secondary btn-sm btn-del-no">No</button>
-                `);
-                requestAnimationFrame(() => { 
-                    $cell.find('.btn-fade-in').addClass('show');
-                });
-            }, 250);
-
-        });
-
-        $(document).on('click', '#allergies-body .btn-del-no', function () {
-            const id = $(this).data('id');
-            const $cell = $(this).closest('td');
-            const $btn = $(this);
-
-            $btn.addClass('btn-fade-out');
-
-            setTimeout(() => {
-                setTimeout(() => {
-                    $cell.html(`
-                        <button class="btn btn-sm btn-primary btn-allergy-detail me-1" data-id="${id}">Detalle</button>
-                        <button class="btn btn-sm btn-secondary btn-allergy-edit me-1" data-id="${id}">Editar</button>
-                        <button data-id="${id}" class="btn btn-danger btn-sm me-1 btn-delete">Eliminar</button>
-                        `);
-
-                    requestAnimationFrame(() => {
-                        $cell.find('.btn-fade-in').addClass('show');
-                    });
-                }, 250);
-            });
-        });
-
-        $(document).on('click', '#allergies-body .btn-del-yes', function () {
-            const id = $(this).data('id');
-
-            fetch(`/Allergies/Delete/${id}`, {
-                method: "DELETE",
-            }).then(r => {
-                if (!r.ok) AppUtils.showToast("error", "Error eliminando alergia");
-
-                if (typeof _reloadData === "function") _reloadData();
-
-                AppUtils.showToast("success", "Alergia eliminada correctamente");
-            });
-        });
-    });
-
+    // -----------------------------------------------------
+    // UTILIDADES
+    // -----------------------------------------------------
     function resolvePatientId() {
-        return $('#patientId').val() || $('#PatientId').val() || '';
-    }
-
-    window.AllergyDetail = function (id) {
-        $.ajax({
-            type: 'GET',
-            url: '/Allergies/Details',
-            data: { id },
-            success: function (html) {
-                $('#AllergyDetailContent').html(html);
-                $('#AllergyDetail').modal('toggle');
-            }
-        });
-    }
-
-    window.AllergyEdit = function (id) {
-        $.ajax({
-            type: 'GET',
-            url: '/Allergies/Edit',
-            data: { id },
-            success: function (html) {
-                $('#CreateAllergyFormContent').html(html);
-                $('#CreateAllergy').modal('show');
-                document.dispatchEvent(new Event("allergies:editLoaded"));
-            }
-        });
-    }
-
-    function loadData() {
-        const pid = resolvePatientId();
-        if (!pid) {
-            renderEmpty();
-            return;
-        }
-
-        const st = AppUtils.Pagination.getState(key);
-        const order = AppUtils.Pagination.getOrder(key);
-
-        const start = (st.currentPage - 1) * st.pageSize;
-        const length = st.pageSize;
-
-        const payload = {
-            draw: 1,
-            start,
-            length,
-            'order[0][column]': order.column,
-            'order[0][dir]': order.dir,
-            patientId: pid
-        };
-
-        const columnsMap = ['Name', 'Begin', 'End', 'Severity'];
-        columnsMap.forEach((name, i) => payload[`columns[${i}][name]`] = name);
-
-        $.ajax({
-            type: "POST",
-            url: "/Allergies/InitializeAllergies",
-            data: payload,
-            dataType: "json",
-            success: function (response) {
-                const data = response?.data || response?.Data || [];
-                const total = response?.recordsTotal || response?.recordsFiltered || data.length || 0;
-
-                AppUtils.Pagination.setRecordsTotal(key, total);
-
-                renderTable(data);
-                AppUtils.Pagination.renderWithState("#allergies-pagination", key, loadData);
-                updatePageInfo(total);
-            },
-            error: function (xhr) {
-                console.error("Error cargando alergias:", xhr);
-                renderEmpty();
-            }
-        });
-    }
-
-    function renderTable(rows) {
-        const $tbody = $('#allergies-body').empty();
-
-        if (!rows.length) {
-            renderEmpty();
-            return;
-        }
-
-        for (const item of rows) {
-            const id = item.id;
-            const name = item.name;
-            const begin = toDisplayDate(item.begin);
-            const end = toDisplayDate(item.end);
-            const severity = item.severity;
-
-            $tbody.append(`
-                <tr>
-                    <td>${escape(name)}</td>
-                    <td>${escape(begin)}</td>
-                    <td>${escape(end)}</td>
-                    <td>${escape(severity)}</td>
-                    <td><div class="btn-group"><button class="btn btn-sm btn-primary btn-allergy-detail me-1" data-id="${id}">Detalle</button>
-                    <button class="btn btn-sm btn-secondary btn-allergy-edit me-1" data-id="${id}">Editar</button>
-                    <button data-id="${id}" class="btn btn-danger btn-sm me-1 btn-delete">Eliminar</button></div></td>
-                </tr>
-            `);
-        }
+        return document.querySelector('#patientId')?.value
+            || document.querySelector('#PatientId')?.value
+            || '';
     }
 
     function toDisplayDate(raw) {
         if (!raw) return "";
-        const d = new Date(raw);
-        return !isNaN(d) ? d.toLocaleDateString('es-AR') : raw;
+        const [y, m, d] = raw.split('-').map(Number);
+        return new Date(y, m - 1, d).toLocaleDateString("es-AR");
     }
 
-    function escape(s) {
+    function escapeHtml(s) {
         return s ? String(s)
             .replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
@@ -233,17 +29,327 @@
             .replace(/'/g, "&#039;") : '';
     }
 
-    function renderEmpty() {
-        $('#allergies-body').html('<tr><td colspan="5" class="text-center">No hay alergias para mostrar.</td></tr>');
-        $('#allergies-pagination').empty();
-        $('#pageInfoAllergies').text('');
+    // -----------------------------------------------------
+    // CARGA DE TABLA
+    // -----------------------------------------------------
+    async function loadData() {
+
+        const tbody = document.querySelector('#allergies-body');
+        if (!tbody) return;
+
+        const pid = resolvePatientId();
+        if (!pid) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center">No hay alergias para mostrar.</td></tr>';
+            document.querySelector('#allergies-pagination').innerHTML = '';
+            document.querySelector('#pageInfoAllergies').textContent = '';
+            return;
+        }
+
+        const st = AppUtils.Pagination.getState(key);
+
+        const payload = new URLSearchParams({
+            draw: 1,
+            start: (st.currentPage - 1) * st.pageSize,
+            length: st.pageSize,
+            patientId: pid,
+            "order[0][column]": st.order.column,
+            "order[0][dir]": st.order.dir
+        });
+
+        const columnsMap = ['Name', 'Begin', 'End', 'Severity'];
+        columnsMap.forEach((name, i) =>
+            payload.append(`columns[${i}][name]`, name)
+        );
+
+        const res = await fetch('/Allergies/InitializeAllergies', {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: payload
+        });
+
+        const response = await res.json();
+
+        currentData = response?.data || response?.Data || [];
+        st.recordsTotal =
+            response?.recordsTotal ||
+            response?.recordsFiltered ||
+            currentData.length ||
+            0;
+
+        renderTable();
+        AppUtils.Sort.attachHeaderSorting("#allergies", key, loadData);
+        AppUtils.Pagination.renderWithState("#allergies-pagination", key, loadData);
+        renderPageInfo();
     }
 
-    function updatePageInfo(total) {
-        const st = AppUtils.Pagination.getState(key);
-        const start = total === 0 ? 0 : ((st.currentPage - 1) * st.pageSize) + 1;
-        const end = Math.min(total, st.currentPage * st.pageSize);
-        $('#pageInfoAllergies').text(`Mostrando ${start} - ${end} de ${total} alergias`);
+    // -----------------------------------------------------
+    // RENDER TABLA
+    // -----------------------------------------------------
+    function renderTable() {
+        const tbody = document.querySelector('#allergies-body');
+        tbody.innerHTML = "";
+
+        if (!currentData.length) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center">No hay alergias para mostrar.</td></tr>';
+            return;
+        }
+
+        currentData.forEach(item => {
+
+            const id = item.id;
+            const name = escapeHtml(item.name);
+            const begin = escapeHtml(toDisplayDate(item.begin));
+            const end = escapeHtml(toDisplayDate(item.end));
+            const severity = escapeHtml(item.severity);
+
+            tbody.insertAdjacentHTML('beforeend', `
+                <tr>
+                    <td>${name}</td>
+                    <td>${begin}</td>
+                    <td>${end}</td>
+                    <td>${severity}</td>
+                    <td>
+                    <button data-open-modal
+                                data-modal-id="GlobalModal"
+                                data-url="/Allergies/Details?id=${id}"
+                                data-title="Detalle de alergia"
+                                class="btn btn-sm btn-primary me-1">
+                            Detalle
+                        </button>
+
+                        <button 
+                            data-open-modal
+                            data-modal-id="GlobalModal"
+                            data-url="/Allergies/Edit?id=${id}"
+                            data-title="Editar alergia"
+                            class="btn btn-sm btn-secondary me-1">
+                            Editar
+                        </button>
+
+                        <button
+                            class="btn btn-sm btn-danger me-1 btn-delete"
+                            data-id="${id}">
+                            Eliminar
+                        </button>
+                    </td>
+                </tr>
+            `);
+        });
     }
+
+    // -----------------------------------------------------
+    // PAGE INFO
+    // -----------------------------------------------------
+    function renderPageInfo() {
+        const st = AppUtils.Pagination.getState(key);
+        const el = document.querySelector('#pageInfoAllergies');
+        if (!el) return;
+
+        const start = st.recordsTotal === 0
+            ? 0
+            : ((st.currentPage - 1) * st.pageSize) + 1;
+
+        const end = Math.min(st.recordsTotal, st.currentPage * st.pageSize);
+
+        el.textContent = `Mostrando ${start} - ${end} de ${st.recordsTotal} alergias`;
+    }
+
+   
+
+    // -----------------------------------------------------
+    // DELETE INLINE
+    // -----------------------------------------------------
+    document.addEventListener('click', (ev) => {
+        const target = ev.target;
+
+        if (target.matches('.btn-allergy-detail')) {
+            const id = target.dataset.id;
+            if (id) AllergyDetail(id);
+            return;
+        }
+
+        if (target.matches('.btn-delete')) {
+            const id = target.dataset.id;
+            const cell = target.closest('td');
+
+            target.classList.add('btn-fade-out');
+            setTimeout(() => {
+                cell.innerHTML = `
+                    <button data-id="${id}" class="btn btn-danger btn-sm me-1 btn-confirm-delete">Si</button>
+                    <button class="btn btn-secondary btn-sm btn-cancel-delete">No</button>
+                `;
+            }, 200);
+
+            return;
+        }
+
+        if (target.matches('.btn-cancel-delete')) {
+            loadData();
+            return;
+        }
+
+        if (target.matches('.btn-confirm-delete')) {
+            const id = target.dataset.id;
+
+            fetch(`/Allergies/Delete/${id}`, { method: "DELETE" })
+                .then(r => {
+                    if (!r.ok)
+                        AppUtils.showToast("error", "Error eliminando alergia");
+
+                    loadData();
+                    AppUtils.showToast("success", "Alergia eliminada");
+                });
+
+            return;
+        }
+    });
+
+    // -----------------------------------------------------
+    // MODAL UPDATED → CREATE / EDIT
+    // -----------------------------------------------------
+    document.addEventListener("modal:updated", () => {
+        const html = document.querySelector("#GlobalModal-body")?.innerHTML ?? "";
+
+        if (html.includes("btnCreateAllergy")) {
+            initCreate();
+        }
+
+        if (html.includes("btnEditAllergy")) {
+            initEdit();
+        }
+    });
+
+    // -----------------------------------------------------
+    // CREATE
+    // -----------------------------------------------------
+    function initCreate() {
+
+        AppUtils.initFlatpickr("#Begin", { maxToday: true });
+        AppUtils.initFlatpickr("#End", { maxToday: true });
+
+        AppUtils.FormValidationRules("#btnCreateAllergy", {
+            Name: { required: true },
+            Begin: { required: true },
+            End: {
+                required: false,
+                custom(value) {
+                    const begin = document.querySelector("#Begin")?.value;
+                    if (!begin || !value) return true;
+                    if (value < begin) return "La fecha de fin no puede ser anterior al inicio.";
+                    return true;
+                }
+            }
+        });
+
+        const btn = document.querySelector("#btnCreateAllergy");
+        if (btn) {
+            btn.addEventListener("click", async function (e) {
+                e.preventDefault();
+                if (!AppUtils.validateAll()) return;
+
+                await ModalUtils.submitForm(
+                    "GlobalModal",
+                    "CreateAllergyForm",
+                    "/Allergies/Create",
+                    "POST",
+                    "Nueva alergia"
+                );
+
+                loadData();
+            });
+        }
+    }
+
+    // -----------------------------------------------------
+    // EDIT
+    // -----------------------------------------------------
+    function initEdit() {
+
+        let begin = document.querySelector("#Begin")?.value;
+        let end = document.querySelector("#End")?.value;
+
+        begin = AppUtils.ddmmyyyy_to_iso(begin);
+        end = AppUtils.ddmmyyyy_to_iso(end);
+
+        AppUtils.initFlatpickr("#Begin", { maxToday: true, defaultDate: begin });
+        AppUtils.initFlatpickr("#End", { maxToday: true, defaultDate: end });
+
+        AppUtils.FormValidationRules("#btnEditAllergy", {
+            Name: { required: true },
+            Begin: { required: true },
+            End: {
+                required: false,
+                custom(value) {
+                    if (!begin || !value) return true;
+                    if (value < begin) return "La fecha de fin no puede ser anterior al inicio.";
+                    return true;
+                }
+            }
+        });
+
+        const btn = document.querySelector("#btnEditAllergy");
+        if (btn) {
+            btn.addEventListener("click", async function (e) {
+                e.preventDefault();
+                if (!AppUtils.validateAll()) return;
+
+                await ModalUtils.submitForm(
+                    "GlobalModal",
+                    "CreateAllergyForm",
+                    "/Allergies/Edit",
+                    "POST",
+                    "Editar alergia",
+                    false
+                );
+
+                loadData();
+            });
+        }
+    }
+
+    // -----------------------------------------------------
+    // INIT AL CARGAR
+    // -----------------------------------------------------
+    window.reloadAllergiesTable = loadData;
+
+    document.addEventListener("DOMContentLoaded", () => {
+
+        AppUtils.Pagination.init(key, {
+            defaultPageSize: 25,
+            defaultOrder: { column: 0, dir: 'asc' },
+            pageSizeSelector: '#pageSizeAllergies',
+            onChange: loadData
+        });
+
+        const tab = document.querySelector('#allergiesTab');
+
+        if (tab) {
+            tab.addEventListener('click', () => {
+
+                document.querySelectorAll('#myTabs .nav-link')
+                    .forEach(x => x.classList.remove('active'));
+
+                tab.classList.add('active');
+
+                const url = tab.dataset.url;
+                if (!url) return;
+
+                const container = document.querySelector('#tabContent');
+
+                if (!document.querySelector('#allergies')) {
+                    fetch(url)
+                        .then(r => r.text())
+                        .then(html => {
+                            container.innerHTML = html;
+                            loadData();
+                        });
+                } else {
+                    loadData();
+                }
+            });
+        }
+
+        loadData();
+    });
 
 })();

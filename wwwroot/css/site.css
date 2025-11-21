@@ -174,3 +174,36 @@ body {
 .switch-ios input:checked + .slider-ios:before {
     transform: translateX(20px);
 }
+
+.timeline {
+    position: relative;
+    margin-left: 20px;
+    border-left: 3px solid #0d6efd33;
+    padding-left: 20px;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 25px;
+    padding-left: 10px;
+}
+
+    .timeline-item::before {
+        content: "";
+        position: absolute;
+        left: -31px;
+        top: 5px;
+        width: 14px;
+        height: 14px;
+        background-color: #0d6efd;
+        border-radius: 50%;
+        border: 2px solid white;
+        box-shadow: 0 0 0 2px #0d6efd;
+    }
+
+.timeline-card {
+    background: #f8f9fa;
+    border-radius: 6px;
+    padding: 15px;
+    border: 1px solid #e0e0e0;
+}

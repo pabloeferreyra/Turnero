@@ -1,4 +1,5 @@
-﻿'use strict';
+﻿// @ts-nocheck
+'use strict';
 
 window.AppUtils = window.AppUtils || {};
 AppUtils.Pagination = AppUtils.Pagination || {};
@@ -37,13 +38,7 @@ AppUtils.bindDateValidation = function ($input, $btn, options = {}) {
         const day = d.getDay();
 
         if (cfg.minToday && d < today) {
-            Swal.fire({
-                position: 'top-end',
-                icon: 'info',
-                title: 'No puede seleccionar fechas anteriores a hoy.',
-                showConfirmButton: false,
-                timer: 1200
-            });
+            AppUtils.showToast('info', 'No puede seleccionar fechas anteriores a hoy.');
             $(this).val(AppUtils.todayString());
             safeDisable(true);
             return;
@@ -93,23 +88,17 @@ AppUtils.reloadTable = function (url, payload, successCallback) {
         },
         error: function (xhr) {
             console.error('Error recargando tabla:', xhr);
-            Swal.fire({
-                position: 'top-end',
-                icon: 'error',
-                title: 'Error cargando datos',
-                showConfirmButton: false,
-                timer: 1200
-            });
+            AppUtils.showToast('error', 'Error cargando datos');
         }
     });
 };
 
-AppUtils.showToast = function (icon, title, ms = 1200) {
+AppUtils.showToast = function (icon, title, show = false, ms = 1200) {
     Swal.fire({
         position: 'top-end',
         icon,
         title,
-        showConfirmButton: false,
+        showConfirmButton: show,
         timer: ms
     });
 };
@@ -409,6 +398,25 @@ AppUtils.FormValidationRules = function (submitSelector, rules) {
     // first call
     validateAll();
 };
+
+document.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-open-modal]");
+    if (!btn) return;
+
+    const modalId = btn.dataset.modalId;
+    const url = btn.dataset.url;
+    const title = btn.dataset.title || null;
+
+    ModalUtils.load(modalId, url, title);
+});
+
+document.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-close-modal]");
+    if (!btn) return;
+    
+    const modalId = "GlobalModal";
+    ModalUtils.close(modalId);
+});
 
 (function () {
     const AU = window.AppUtils;

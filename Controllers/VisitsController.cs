@@ -37,7 +37,7 @@ public class VisitsController(IGetVisitService getVisit,
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<StatusCodeResult> Create([FromBody]Visit visit)
+    public async Task<StatusCodeResult> Create(Visit visit)
     {
         string isMedic = await CheckMedic();
         var medicId = Guid.TryParse(isMedic, out var mid) ? mid : (Guid?)null;

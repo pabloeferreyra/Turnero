@@ -1,9 +1,15 @@
 ﻿@model PersonalBackground
+@{
+    string[] methods = ["Index", "Edit"];
+    string peModalUrl = string.Format("/PersonalBackground/{0}?id={1}", methods[1], Model.Id);
 
+}
 <div class="container px-3">
     <div class="text-end mb-3">
-        <button type="button" edit-personal-background class="btn btn-primary btn-sm"
-                data-id="@Model.Id">
+        <button type="button" data-open-modal data-modal-id="GlobalModal"
+                class="btn btn-sm btn-secondary me-1"
+                data-url="@peModalUrl"
+                data-title="Editar antecedentes personales">
             Editar
         </button>
     </div>

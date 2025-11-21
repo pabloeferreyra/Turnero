@@ -17,7 +17,7 @@
 		<div class="form-group col-6">
 			<label asp-for="Begin">Inicio</label>
 			@{
-				if(Model.Begin != DateTime.MinValue)
+				if(Model.Begin != DateOnly.MinValue)
 				{
 					<input asp-for="Begin" id="Begin" type="text" class="form-control"
 							value="@Model.Begin" max="@DateTime.Now.ToString("yyyy-MM-dd")" />
@@ -33,7 +33,7 @@
 		<div class="form-group col-6">
 			<label asp-for="End">Fin</label>
 			@{
-				if(Model.End != DateTime.MinValue)
+				if(Model.End != DateOnly.MinValue)
 				{
 					<input asp-for="End" id="End" type="text" class="form-control"
 						   value="@Model.End" max="@DateTime.Now.ToString("yyyy-MM-dd")" />

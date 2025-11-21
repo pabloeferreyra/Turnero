@@ -8,7 +8,7 @@
 
         <div class="form-group col-md-6 col-sm-12">
             <label asp-for="VisitDate" class="control-label">Fecha</label>
-            <input asp-for="VisitDate" autocomplete="off" id="VisitDate" type="date" class="form-control"
+            <input asp-for="VisitDate" autocomplete="off" id="VisitDate" type="text" class="form-control"
                    value="@DateTime.Now.ToString("yyyy-MM-dd")" max="@DateTime.Now.ToString("yyyy-MM-dd")" />
             <span asp-for="VisitDate" id="dateValidation" class="text-danger"></span>
         </div>
@@ -48,9 +48,7 @@
             <input asp-for="DiagDescription" autocomplete="off" type="text" id="DiagDescription" class="form-control" />
         </div>
     </div>
-
     <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
         <button type="button" id="btnCreateVisit" class="btn btn-primary">Crear</button>
     </div>
 </form>

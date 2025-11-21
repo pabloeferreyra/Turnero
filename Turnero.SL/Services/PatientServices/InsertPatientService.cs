@@ -10,6 +10,7 @@ public class InsertPatientService(LoggerService logger, IPatientRepository patie
         {
             patient.Id = Guid.NewGuid();
             patient.PersonalBackground = new ();
+            patient.PerinatalBackground = new ();
             patient.Parent = new ();
             await _patientRepository.NewPatient(patient);
         }

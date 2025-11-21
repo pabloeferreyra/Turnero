@@ -21,6 +21,7 @@ public class Patient : BaseEntity
     public ICollection<Visit>? Visits { get; set; }
     public ParentsData? Parent { get; set; }
     public PersonalBackground? PersonalBackground { get; set; }
+    public PerinatalBackground? PerinatalBackground { get; set; }
 }
 
 public class PatientDTO : BaseEntity

@@ -37,6 +37,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         var intParents = typeof(ParentsData)
             .GetProperties()
             .Where(p => p.PropertyType == typeof(int));
+        var intPernHis = typeof(PerinatalBackground)
+            .GetProperties()
+            .Where(p => p.PropertyType == typeof(int));
         foreach (var allergies in allergiesDate)
         {
             builder.Entity<Allergies>()
@@ -75,6 +78,12 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .Property(prop.Name)
             .HasDefaultValue(0);
         }
+        foreach (var prop in intPernHis)
+        {
+            builder.Entity<PerinatalBackground>()
+            .Property(prop.Name)
+            .HasDefaultValue(0);
+        }
     }
 
     public DbSet<Turn> Turns { get; set; }
@@ -86,4 +95,5 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Visit> Visits { get; set; }
     public DbSet<ParentsData> ParentsData { get; set; }
     public DbSet<PersonalBackground> PersonalBackground { get; set; }
+    public DbSet<PerinatalBackground> PerinatalBackground { get; set; }
 }

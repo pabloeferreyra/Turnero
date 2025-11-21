@@ -53,7 +53,7 @@ public class AllergiesController(IInsertAllergiesServices insertAllergies,
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<StatusCodeResult> Create([FromBody]Allergies allergy)
+    public async Task<StatusCodeResult> Create(Allergies allergy)
     {
         if(allergy == null || allergy.PatientId == Guid.Empty)
         {

@@ -1,121 +1,92 @@
 ﻿// @ts-nocheck
+(function () {
+    "use strict";
 
-function initParentsDatePickers() {
-    if (!window.AppUtils || typeof AppUtils.initFlatpickr !== "function") return;
+    function initParentsDatePickers() {
+        if (!window.AppUtils || typeof AppUtils.initFlatpickr !== "function") return;
 
-    if (document.querySelector("#FatherBirthDate")) {
-        AppUtils.initFlatpickr("#FatherBirthDate", { maxToday: true });
-    }
-    if (document.querySelector("#MotherBirthDate")) {
-        AppUtils.initFlatpickr("#MotherBirthDate", { maxToday: true });
-    }
-}
+        const father = document.querySelector("#FatherBirthDate");
+        const mother = document.querySelector("#MotherBirthDate");
 
-function refreshParentsUI(patientId) {
-
-    if (window.parents_loadData) {
-        window.parents_loadData();
+        if (father) AppUtils.initFlatpickr("#FatherBirthDate", { maxToday: true });
+        if (mother) AppUtils.initFlatpickr("#MotherBirthDate", { maxToday: true });
     }
 
-    $("#ParentsSummary").load(`/ParentsData/Summary?id=${patientId}`);
-}
+    function refreshParentsUI(patientId) {
 
-document.addEventListener("parents:dataLoaded", function () {
+        if (window.parents_loadData) {
+            window.parents_loadData();
+        }
 
-    initParentsDatePickers();
+        const summary = document.querySelector("#ParentsSummary");
+        if (summary) {
+            fetch(`/ParentsData/Summary?id=${patientId}`)
+                .then(r => r.text())
+                .then(html => summary.innerHTML = html);
+        }
+    }
 
-    $(document)
-        .off("click.parentsCreateTab")
-        .on("click.parentsCreateTab", "#btnCreateParentsData", async function (e) {
-            e.preventDefault();
-            if (!AppUtils.validateAll()) return;
-            await CreateParentsDataSubmit();
+    async function EditParentsDataSubmit() {
+
+        const form = document.querySelector("#ParentsForm");
+        if (!form) return;
+
+        const token = form.querySelector('input[name="__RequestVerificationToken"]')?.value;
+        const data = new FormData(form);
+
+        const patientId = data.get("PatientId");
+        const id = data.get("Id");
+
+        const resp = await fetch(`/ParentsData/Edit/${id}`, {
+            method: "PUT",
+            headers: { "RequestVerificationToken": token },
+            body: data
         });
 
-    $(document)
-        .off("click.parentsEditTab")
-        .on("click.parentsEditTab", "#btnEditParentsData", async function (e) {
-            e.preventDefault();
-            if (!AppUtils.validateAll()) return;
-            await EditParentsDataSubmit();
-        });
-});
+        if (!resp.ok) {
+            AppUtils.showToast("error", "Error editando datos familiares");
+            return;
+        }
 
+        ModalUtils.close("GlobalModal");
 
-document.addEventListener("parents:createLoaded", function () {
-    initParentsDatePickers();
+        AppUtils.showToast("success", "Datos familiares actualizados", 900);
 
-    $(document)
-        .off("click.parentsCreateModal")
-        .on("click.parentsCreateModal", "#btnCreateParentsData", async function (e) {
-            e.preventDefault();
-            if (!AppUtils.validateAll()) return;
-            await CreateParentsDataSubmit();
-        });
-});
+        refreshParentsUI(patientId);
+    }
 
-document.addEventListener("parents:editLoaded", function () {
-    initParentsDatePickers();
+    document.addEventListener("parents:editLoaded", function () {
 
-    $(document)
-        .off("click.parentsEditModal")
-        .on("click.parentsEditModal", "#btnEditParentsData", async function (e) {
-            e.preventDefault();
-            if (!AppUtils.validateAll()) return;
-            await EditParentsDataSubmit();
-        });
-});
+        initParentsDatePickers();
 
-async function CreateParentsDataSubmit() {
+        const btn = document.querySelector("#btnEditParentsData");
 
-    const form = document.querySelector("#ParentsForm");
-    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+        if (btn) {
+            btn.addEventListener("click", async (e) => {
+                e.preventDefault();
+                if (!AppUtils.validateAll()) return;
 
-    const data = new FormData(form);
-    const patientId = data.get("PatientId");
-
-    const resp = await fetch("/ParentsData/Create", {
-        method: "POST",
-        headers: { "RequestVerificationToken": token },
-        body: data
+                await EditParentsDataSubmit();
+            }, { once: true }); 
+        }
     });
 
-    if (!resp.ok) {
-        AppUtils.showToast("error", "Error creando datos familiares");
-        return;
-    }
+    document.addEventListener("parents:dataLoaded", function () {
 
-    $("#Create").modal("hide");
-    AppUtils.showToast("success", "Datos familiares creados correctamente", 900);
+        initParentsDatePickers();
 
-    refreshParentsUI(patientId);
-}
+        const btn = document.querySelector("#btnEditParentsData");
 
-async function EditParentsDataSubmit() {
+        if (btn) {
+            btn.addEventListener("click", async (e) => {
+                e.preventDefault();
+                if (!AppUtils.validateAll()) return;
 
-    const form = document.querySelector("#ParentsForm");
-    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
-
-    const data = new FormData(form);
-    const patientId = data.get("PatientId");
-    const id = data.get("Id");
-
-    const resp = await fetch(`/ParentsData/Edit/${id}`, {
-        method: "PUT",
-        headers: { "RequestVerificationToken": token },
-        body: data
+                await EditParentsDataSubmit();
+            }, { once: true });
+        }
     });
 
-    if (!resp.ok) {
-        AppUtils.showToast("error", "Error editando datos familiares");
-        return;
-    }
+    window.ParentsInitDatePickers = initParentsDatePickers;
 
-    $("#Create").modal("hide");
-    AppUtils.showToast("success", "Datos familiares actualizados", 900);
-
-    refreshParentsUI(patientId);
-}
-
-
-window.ParentsInitDatePickers = initParentsDatePickers;
+})();

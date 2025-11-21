@@ -6,8 +6,8 @@ public class Allergies : BaseEntity
     public string? Name { get; set; }
     public Patient? Patient { get; set; }
     public Guid PatientId { get; set; }
-    public DateTime Begin { get; set; }
-    public DateTime? End { get; set; }
+    public DateOnly Begin { get; set; }
+    public DateOnly? End { get; set; }
     public string? Description { get; set; }
     public Severity Severity { get; set; }
     public AllergyType Type { get; set; }

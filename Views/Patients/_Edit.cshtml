@@ -1,77 +1,100 @@
 ﻿@model Patient
 
-<form method="put" id="EditForm" autocomplete="on">
-	<div class="modal-body row">
-		<div asp-validation-summary="ModelOnly" class="text-danger"></div>
-		<input type="hidden" asp-for="Id" />
-		<input type="hidden" asp-for="Dni" />
-		<input type="hidden" asp-for="ContactInfo.Id" />
-		<div class="form-group col-12">
-			<label asp-for="Name" class="control-label">Nombre</label>
-			<input asp-for="Name" autocomplete="name" id="Name" class="form-control" />
-			<span asp-for="Name" id="clientValidation" class="text-danger"></span>
-		</div>
-		<div class="form-group col-md-4 col-sm-12">
-			<label class="control-label">Dni</label>
-			<input asp-for="Dni" id="Dni" class="form-control" maxlength="8" inputmode="numeric" pattern="\d*" disabled />
-			<span id="dniValidation" class="text-danger"></span>
-		</div>
-		<div class="form-group col-md-4 col-sm-12">
-			<label class="control-label">Fecha de Nacimiento</label>
-			<input asp-for="BirthDate" autocomplete="bday" id="BirthDateEdit" type="text" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" max="@DateTime.Now.ToString("yyyy-MM-dd")" />
-			<span id="birthDateValidation" class="text-danger"></span>
-		</div>
-		<div class="form-group col-md-4 col-sm-12">
-			<label class="control-label">Grupo sanguineo</label>
-			<select asp-for="BloodType" id="Type" title="Grupo sanguineo" class="form-control form-select" asp-items="@ViewBag.Bloodtype"></select>
-		</div>
-		<div class="form-group col-md-6 col-sm-12">
-			<label class="control-label">Teléfono</label>
-			<input asp-for="ContactInfo.Phone" autocomplete="phone" id="Phone" class="form-control" />
-			<span id="phoneValidation" class="text-danger"></span>
-		</div>
-		<div class="form-group col-md-6 col-sm-12">
-			<label class="control-label">Email</label>
-			<input asp-for="ContactInfo.Email" authocomplete="email" id="Email" class="form-control" />
-			<span id="emailValidation" class="text-danger"></span>
-		</div>
-		<div class="form-group col-md-5 col-sm-12">
-			<label class="control-label">Dirección</label>
-			<input asp-for="ContactInfo.Address" autocomplete="address" id="Address" class="form-control" />
-			<span id="addressValidation" class="text-danger"></span>
-		</div>
-		<div class="form-group col-md-5 col-sm-12">
-			<label class="control-label">Ciudad</label>
-			<input asp-for="ContactInfo.City" autocomplete="address-level2" id="City" class="form-control" />
-			<span id="cityValidation" class="text-danger"></span>
-		</div>
-		<div class="form-group col-md-2 col-sm-12">
-			<label class="control-label">Código Postal</label>
-			<input asp-for="ContactInfo.PostalCode" id="PostalCode" class="form-control" maxlength="5" inputmode="numeric" pattern="\d{4,5}" />
-			<span id="postalCodeValidation" class="text-danger"></span>
-		</div>
-		<div class="form-group col-md-6 col-sm-12">
-			<label class="control-label">Obra Social</label>
-			<input asp-for="SocialWork" autocomplete="off" id="SocialWork" class="form-control" />
-			<span id="socialWorkValidation" class="text-danger"></span>
-		</div>
-		<div class="form-group col-md-6 col-sm-12">
-			<label class="control-label">Número de Afiliado</label>
-			<input asp-for="AffiliateNumber" autocomplete="dni" id="AffiliateNumber" class="form-control" />
-			<span id="affiliateNumberValidation" class="text-danger"></span>
-		</div>
-	</div>
-	<div class="modal-footer">
-		<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-		<button type="submit" id="btnEditarPaciente" class="btn btn-primary">Guardar</button>
-	</div>
+<form method="post" id="PatientEditForm" autocomplete="on">
+    @Html.AntiForgeryToken()
+
+    <div class="modal-body row">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="ContactInfo.Id" />
+
+        <div class="form-group col-12">
+            <label asp-for="Name" class="control-label">Nombre</label>
+            <input asp-for="Name" class="form-control" id="Name" autocomplete="name" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+
+        <div class="form-group col-md-4 col-sm-12">
+            <label asp-for="Dni" class="control-label">Dni</label>
+            <input asp-for="Dni"
+                   class="form-control"
+                   id="Dni"
+                   disabled
+                   maxlength="8"
+                   inputmode="numeric"
+                   pattern="\d*" />
+            <span asp-validation-for="Dni" class="text-danger"></span>
+        </div>
+
+        <div class="form-group col-md-4 col-sm-12">
+            <label asp-for="BirthDate" class="control-label">Fecha de Nacimiento</label>
+            <input asp-for="BirthDate"
+                   class="form-control"
+                   id="BirthDateEdit"
+                   type="text" />
+            <span asp-validation-for="BirthDate" class="text-danger"></span>
+        </div>
+
+        <div class="form-group col-md-4 col-sm-12">
+            <label asp-for="BloodType" class="control-label">Grupo sanguíneo</label>
+            <select asp-for="BloodType"
+                    class="form-control form-select"
+                    asp-items="ViewBag.Bloodtype"></select>
+            <span asp-validation-for="BloodType" class="text-danger"></span>
+        </div>
+
+        <div class="form-group col-md-6 col-sm-12">
+            <label asp-for="ContactInfo.Phone" class="control-label">Teléfono</label>
+            <input asp-for="ContactInfo.Phone" class="form-control" id="Phone" />
+            <span asp-validation-for="ContactInfo.Phone" class="text-danger"></span>
+        </div>
+
+        <div class="form-group col-md-6 col-sm-12">
+            <label asp-for="ContactInfo.Email" class="control-label">Email</label>
+            <input asp-for="ContactInfo.Email" class="form-control" id="Email" />
+            <span asp-validation-for="ContactInfo.Email" class="text-danger"></span>
+        </div>
+
+        <div class="form-group col-md-5 col-sm-12">
+            <label asp-for="ContactInfo.Address" class="control-label">Dirección</label>
+            <input asp-for="ContactInfo.Address" class="form-control" id="Address" />
+            <span asp-validation-for="ContactInfo.Address" class="text-danger"></span>
+        </div>
+
+        <div class="form-group col-md-5 col-sm-12">
+            <label asp-for="ContactInfo.City" class="control-label">Ciudad</label>
+            <input asp-for="ContactInfo.City" class="form-control" id="City" />
+            <span asp-validation-for="ContactInfo.City" class="text-danger"></span>
+        </div>
+
+        <div class="form-group col-md-2 col-sm-12">
+            <label asp-for="ContactInfo.PostalCode" class="control-label">Código Postal</label>
+            <input asp-for="ContactInfo.PostalCode"
+                   class="form-control"
+                   id="PostalCode"
+                   maxlength="5"
+                   inputmode="numeric"
+                   pattern="\d{4,5}" />
+            <span asp-validation-for="ContactInfo.PostalCode" class="text-danger"></span>
+        </div>
+
+        <div class="form-group col-md-6 col-sm-12">
+            <label asp-for="SocialWork" class="control-label">Obra Social</label>
+            <input asp-for="SocialWork" class="form-control" id="SocialWork" />
+            <span asp-validation-for="SocialWork" class="text-danger"></span>
+        </div>
+
+        <div class="form-group col-md-6 col-sm-12">
+            <label asp-for="AffiliateNumber" class="control-label">Número de Afiliado</label>
+            <input asp-for="AffiliateNumber" class="form-control" id="AffiliateNumber" />
+            <span asp-validation-for="AffiliateNumber" class="text-danger"></span>
+        </div>
+
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        <button type="submit" id="btnEditPatient" class="btn btn-primary">Guardar</button>
+    </div>
 </form>
-
-<script src="~/js/editPatient.js" asp-append-version="true"></script>
-
-@section scripts{
-
-	@{
-		await Html.RenderPartialAsync("_ValidationScriptsPartial");
-	}
-}
