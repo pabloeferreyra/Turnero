@@ -3,6 +3,7 @@
     ViewData["Title"] = "Paciente " + Model.Name;
     string[] methods = ["Index", "Edit", "Create"];
     string peModalUrl = string.Format("/PersonalBackground/{0}?id={1}", methods[0], Model.Id);
+    string naModalUrl = string.Format("/PerinatalBackground/{0}?id={1}", methods[0], Model.Id);
     string edModalUrl = string.Format("/Patients/{0}?id={1}", methods[1], Model.Id);
     string viModalUrl = string.Format("/Visits/{0}?id={1}", methods[2], Model.Id);
     string alModalUrl = string.Format("/Allergies/{0}?id={1}", methods[2], Model.Id);
@@ -12,9 +13,7 @@
 
 <div class="back container-fluid">
 
-    <!-- ============================= -->
-    <!-- BOTONES SUPERIORES -->
-    <!-- ============================= -->
+ 
     <div class="row">
         <div class="col-md-4 col-sm-12 btn-group" role="group">
             <button data-open-modal
@@ -37,19 +36,17 @@
             </button>
 
             <button type="button"
-                    personal-background
+                    data-open-modal
+                    data-modal-id="GlobalModal"
                     class="btn btn-sm btn-secondary me-1"
-                    data-id="@Model.Id">
+                    data-url="@naModalUrl"
+                    data-title="Antecedentes perinatales">
                 Antecedentes Perinatales
             </button>
         </div>
     </div>
 
     <hr />
-
-    <!-- ============================= -->
-    <!-- INFO DEL PACIENTE -->
-    <!-- ============================= -->
 
     <div class="row">
         <div class="col-12 row">
@@ -113,10 +110,7 @@
         </div>
     </div>
 
-    <!-- ============================= -->
-    <!-- TABS -->
-    <!-- ============================= -->
-
+  
     <div class="row">
         <ul class="nav nav-tabs" role="tablist" id="myTabs">
             <li class="nav-item">
@@ -141,9 +135,6 @@
             </li>
         </ul>
 
-        <!-- ============================= -->
-        <!-- BLOQUE "CREAR" (MOVIDO AQUÍ) -->
-        <!-- ============================= -->
         <div class="col-md-4 col-sm-12 btn-group" role="group" style="margin-top:10px;">
             <ul class="navbar-nav me-auto">
                 <li class="nav-item dropdown">
@@ -180,9 +171,6 @@
             </ul>
         </div>
 
-        <!-- ============================= -->
-        <!-- TAB CONTENT LIMPIO -->
-        <!-- ============================= -->
         <div class="tab-content" id="myTabContent">
             <div id="tabContent"></div>
         </div>
@@ -195,6 +183,7 @@
     <script src="~/js/visits.js" asp-append-version="true"></script>
     <script src="~/js/allergies.js" asp-append-version="true"></script>
     <script src="~/js/personalBackground.js" asp-append-version="true"></script>
+    <script src="~/js/perinatalBackground.js" asp-append-version="true"></script>
 
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");

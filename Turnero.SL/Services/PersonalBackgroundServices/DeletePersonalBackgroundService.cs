@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Turnero.SL.Services.PersonalBackgroundServices;
+﻿namespace Turnero.SL.Services.PersonalBackgroundServices;
 
 public class DeletePersonalBackgroundService(LoggerService logger, IPersonalBackgroundRepository repository) : IDeletePersonalBackgroundService
 {

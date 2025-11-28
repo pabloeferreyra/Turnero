@@ -66,7 +66,7 @@ window.ModalUtils = {
     async submitForm(modalId, formId, url, method = "POST", title = null, showSuccess = true, update = false) {
 
         const form = document.getElementById(formId);
-        const token = form.querySelector('input[name="__RequestVerificationToken"]').value;
+        
         if (!form) throw new Error("Formulario no encontrado: " + formId);
 
         const formData = new FormData(form);
@@ -81,7 +81,8 @@ window.ModalUtils = {
             var response = null;
             if(method === "PUT"){
                 response = await fetch(url, { method, body: formData });
-            } else if(method === "POST"){
+            } else if (method === "POST") {
+                const token = form.querySelector('input[name="__RequestVerificationToken"]').value;
                 response = await fetch(url, { method, headers: {"RequestVerificationToken": token}, body: formData });
             }
             if (!response.ok) {

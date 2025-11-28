@@ -19,12 +19,13 @@
 
         AppUtils.Sort.attachHeaderSorting("#turns", key, loadData);
 
+        initSearchDatePicker();
+
         loadData();
         reloadTurns = loadData;
 
         document.dispatchEvent(new Event("turns:loaded"));
 
-        // Filtro buscar
         const btnSearch = document.querySelector("#btnSearch");
         if (btnSearch) {
             btnSearch.addEventListener("click", () => {
@@ -32,9 +33,9 @@
             });
         }
 
-        // Botonera ingreso/eliminación
         initActionButtons();
     });
+
 
 
 
@@ -351,5 +352,15 @@
             })
             .catch(() => AppUtils.showToast("error", "Error eliminando"));
     }
+
+    function initSearchDatePicker() {
+        const el = document.querySelector("#DateTurn");
+        if (!el) return;
+
+        AppUtils.initFlatpickr("#DateTurn", {
+            blockSundays: true
+        });
+    }
+
 
 })();

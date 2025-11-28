@@ -4,21 +4,21 @@
 document.addEventListener("modal:updated", (e) => {
     if (e.detail.modalId !== "GlobalModal") return;
 
-    const btn = document.querySelector("[data-save-background]");
+    const btn = document.querySelector("[data-save-perinatal]");
     if (!btn) return;
 
     btn.addEventListener("click", () => {
-        window.SavePersonalBackground();
+        window.SavePerinatalBackground();
     }, { once: true });
 });
 
-window.SavePersonalBackground = () =>
+window.SavePerinatalBackground = () =>
     ModalUtils.submitForm(
         "GlobalModal",                    // modal destino
-        "PersonalBackgroundEditForm",     // ID del form
-        "/PersonalBackground/Edit",       // URL
+        "PerinatalBackgroundEditForm",     // ID del form
+        "/PerinatalBackground/Edit",       // URL
         "PUT",                            // método
-        "Antecedentes personales",
+        "Antecedentes perinatales",
         true,
         true
     );

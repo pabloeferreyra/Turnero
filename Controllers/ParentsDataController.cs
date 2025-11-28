@@ -1,7 +1,7 @@
 ﻿namespace Turnero.Controllers;
 
 [Authorize(Roles = RolesConstants.Medico)]
-public class ParentsDataController(IInsertParentsDataService insertParentsData,
+public class ParentsDataController(
     IUpdateParentsDataService updateParentsData,
     IDeleteParentsDataService deleteParentsData,
     IGetParentsDataService getParentsData,

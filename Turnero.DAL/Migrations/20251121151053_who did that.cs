@@ -8,7 +8,6 @@ namespace Turnero.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // 1) limpiar datos según tu regla
             migrationBuilder.Sql(@"
                 UPDATE ""Turns""
                 SET ""Dni"" =
@@ -19,7 +18,6 @@ namespace Turnero.Migrations
                     END;
             ");
 
-            // 2) cambiar tipo usando SQL explícito con USING
             migrationBuilder.Sql(@"
                 ALTER TABLE ""Turns""
                 ALTER COLUMN ""Dni"" TYPE bigint

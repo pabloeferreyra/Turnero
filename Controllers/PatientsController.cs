@@ -1,8 +1,7 @@
 ﻿namespace Turnero.Controllers;
 
 [Authorize(Roles = RolesConstants.Medico)]
-public class PatientsController(UserManager<IdentityUser> userManager, 
-    IInsertPatientService insertPatient,
+public class PatientsController(IInsertPatientService insertPatient,
     IGetPatientService getPatient,
     IGetParentsDataService getParents,
     IUpdatePatientService updatePatient) : Controller

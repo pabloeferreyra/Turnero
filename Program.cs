@@ -1,17 +1,17 @@
-using Turnero.SL.Services.PersonalBackgroundServices;
-
 var builder = WebApplication.CreateBuilder(args);
 
 MapsterConfig.RegisterMappings();
 #region Path Configuration
 string firebasePath = GetFirebasePath(builder.Configuration["secretsFolder"]);
 
-static string GetFirebasePath(string secretsFolder) =>
-    RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+static string GetFirebasePath(string secretsFolder)
+{
+    return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
         ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                       "Microsoft", "UserSecrets", secretsFolder, "firebase.json")
         : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
                       ".microsoft", "usersecrets", secretsFolder, "firebase.json");
+}
 #endregion
 
 #region Configuration
@@ -39,8 +39,8 @@ if (builder.Environment.IsDevelopment())
 
 #region Database Configuration
 AppSettings.ConnectionString = builder.Configuration.GetConnectionString("LocalConnection");
-    builder.Services.AddDbContext<ApplicationDbContext>(options =>
-        options.UseNpgsql(AppSettings.ConnectionString));
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(AppSettings.ConnectionString));
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 {
@@ -168,6 +168,10 @@ builder.Services.AddScoped<IGetPersonalBackgroundService, GetPersonalBackgroundS
 builder.Services.AddScoped<IInsertPersonalBackgroundService, InsertPersonalBackgroundService>();
 builder.Services.AddScoped<IUpdatePersonalBackgroundService, UpdatePersonalBackgroundService>();
 builder.Services.AddScoped<IDeletePersonalBackgroundService, DeletePersonalBackgroundService>();
+
+//PerinatalBackgroundServices
+builder.Services.AddScoped<IGetPerinatalBackgroundService, GetPerinatalBackgroundService>();
+builder.Services.AddScoped<IUpdatePerinatalBackgroundService, UpdatePerinatalBackgroundService>();
 #endregion
 
 #region Dependency Injection - Repositories
@@ -180,6 +184,7 @@ builder.Services.AddScoped<IVisitRepository, VisitRepository>();
 builder.Services.AddScoped<IAllergiesRepository, AllergiesRepository>();
 builder.Services.AddScoped<IParentsDataRepository, ParentsDataRepository>();
 builder.Services.AddScoped<IPersonalBackgroundRepository, PersonalBackgroundRepository>();
+builder.Services.AddScoped<IPerinatalBackgroundRepository, PerinatalBackgroundRepositroy>();
 #endregion
 
 #region HTTP Client

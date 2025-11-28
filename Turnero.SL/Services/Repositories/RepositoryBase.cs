@@ -93,6 +93,28 @@ public abstract class RepositoryBase<T>(ApplicationDbContext context, IMemoryCac
         return mappedResults.AsQueryable();
     }
 
+    public IQueryable<T> CallStoredProcedureDTO(
+    string connectionString,
+    string procedureName,
+    params NpgsqlParameter[] parameters)
+    {
+        using var connection = new NpgsqlConnection(connectionString);
+        connection.Open();
+
+        var command = new NpgsqlCommand(procedureName, connection)
+        {
+            CommandType = CommandType.Text
+        };
+
+        if (parameters != null && parameters.Length > 0)
+            command.Parameters.AddRange(parameters);
+
+        var results = command.ExecuteReader();
+        var mappedResults = MapResults(results);
+        return mappedResults.AsQueryable();
+    }
+
+
     private static List<T> MapResults(NpgsqlDataReader reader)
     {
         var results = new List<T>();
