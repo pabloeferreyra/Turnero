@@ -2,8 +2,8 @@
 
 public class VisitRepository(ApplicationDbContext context, IMemoryCache cache) : RepositoryBase<Visit>(context, cache), IVisitRepository
 {
-    public async Task<Visit?> Get(Guid? id) 
-    { 
+    public async Task<Visit?> Get(Guid? id)
+    {
         return await FindByCondition(v => v.Id == id)
             .Include(v => v.Patient)
             .Include(v => v.Medic)

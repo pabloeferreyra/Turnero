@@ -1,6 +1,6 @@
 ﻿namespace Turnero.SL.Services.ParentsDataServices;
 
-public class InsertParentsDataService (LoggerService logger, IParentsDataRepository parentsDataRepository) : IInsertParentsDataService
+public class InsertParentsDataService(LoggerService logger, IParentsDataRepository parentsDataRepository) : IInsertParentsDataService
 {
     public async Task InsertParentsData(ParentsData data)
     {

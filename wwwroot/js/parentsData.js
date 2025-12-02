@@ -84,14 +84,12 @@
         const container = document.getElementById("tabContent");
         if (!container) return;
 
-        // 🔥 animación aquí
         showTabLoading();
 
         fetch(url)
             .then(r => r.text())
             .then(html => {
 
-                // fade-in después de cargar la data
                 container.style.opacity = 0;
 
                 container.innerHTML = html;

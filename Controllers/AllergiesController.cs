@@ -1,9 +1,7 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
+﻿namespace Turnero.Controllers;
 
-namespace Turnero.Controllers;
-
-public class AllergiesController(IInsertAllergiesServices insertAllergies, 
-    IUpdateAllergiesServices updateAllergies, 
+public class AllergiesController(IInsertAllergiesServices insertAllergies,
+    IUpdateAllergiesServices updateAllergies,
     IDeleteAllergiesServices deleteAllergies,
     IGetAllergiesServices getAllergies,
     ILogger<AllergiesController> logger) : Controller
@@ -55,7 +53,7 @@ public class AllergiesController(IInsertAllergiesServices insertAllergies,
     [ValidateAntiForgeryToken]
     public async Task<StatusCodeResult> Create(Allergies allergy)
     {
-        if(allergy == null || allergy.PatientId == Guid.Empty)
+        if (allergy == null || allergy.PatientId == Guid.Empty)
         {
             return BadRequest();
         }
@@ -105,7 +103,7 @@ public class AllergiesController(IInsertAllergiesServices insertAllergies,
         catch (Exception ex)
         {
             logger.LogError(ex, "InitializeAllergies failed");
-            return StatusCode(500, new {error = ex.Message });
+            return StatusCode(500, new { error = ex.Message });
         }
     }
 
@@ -115,7 +113,7 @@ public class AllergiesController(IInsertAllergiesServices insertAllergies,
         if (id == null)
             return NotFound();
         var allergy = await getAllergies.Get(id);
-        if(allergy == null)
+        if (allergy == null)
         {
             ViewBag.ErrorMesage = $"Allergy with Id = {id} cannot be found";
             return NotFound();
@@ -141,7 +139,7 @@ public class AllergiesController(IInsertAllergiesServices insertAllergies,
             {
                 Value = ((int)a).ToString(),
                 Text = a.ToString()
-            }).ToList();    
+            }).ToList();
         return PartialView("_Create", allergy);
     }
 

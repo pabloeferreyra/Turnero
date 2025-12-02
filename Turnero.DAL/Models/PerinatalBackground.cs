@@ -23,9 +23,10 @@ public class PerinatalBackground : PatientFKEntity
     [DisplayName("Apgar 5\'")]
     public int Apgar5 { get; set; }
     [DisplayName("Edad Gestacional")]
-    public int GestAge { get; set;}
+    public int GestAge { get; set; }
     [DisplayName("Patologías")]
     public string? Pathologies { get; set; }
     [DisplayName("Errores Congénitos")]
     public string? CongErrors { get; set; }
+    public Patient Patient { get; set; }
 }

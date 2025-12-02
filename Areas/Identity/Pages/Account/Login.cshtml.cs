@@ -47,7 +47,7 @@ public class LoginModel(SignInManager<IdentityUser> signInManager,
 
         ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
-        ReturnUrl = returnUrl;  
+        ReturnUrl = returnUrl;
     }
 
     public async Task<IActionResult> OnPostAsync(string returnUrl = null)
@@ -65,9 +65,9 @@ public class LoginModel(SignInManager<IdentityUser> signInManager,
             {
                 _logger.LogInformation("User logged in.");
                 var user = await _userManager.FindByIdAsync(firebaseRes.LocalId);
-                
+
                 await _signInManager.SignInAsync(user, Input.RememberMe);
-                
+
                 if (await _userManager.IsInRoleAsync(user, "Admin"))
                 {
                     returnUrl = Url.Content("~/");

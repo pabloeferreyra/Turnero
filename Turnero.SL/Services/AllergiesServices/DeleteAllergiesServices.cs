@@ -1,6 +1,6 @@
 ﻿namespace Turnero.SL.Services.AllergiesServices;
 
-public class DeleteAllergiesServices(IAllergiesRepository _repository, LoggerService _loggerService): IDeleteAllergiesServices
+public class DeleteAllergiesServices(IAllergiesRepository _repository, LoggerService _loggerService) : IDeleteAllergiesServices
 {
     public void DeleteAllergy(Allergies allergy)
     {

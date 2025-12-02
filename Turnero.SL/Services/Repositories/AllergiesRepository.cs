@@ -20,7 +20,7 @@ public class AllergiesRepository(ApplicationDbContext context, IMemoryCache cach
     public async Task<IQueryable<Allergies>> SearchAllergies(Guid id)
     {
         var allergies = new List<Allergies>();
-        if(id != Guid.Empty)
+        if (id != Guid.Empty)
             allergies = await FindByCondition(a => a.PatientId == id)
                 .Include(a => a.Patient).ToListAsync();
         return allergies.AsQueryable();

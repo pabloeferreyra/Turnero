@@ -1,6 +1,6 @@
 ﻿namespace Turnero.SL.Services.AllergiesServices;
 
-public class UpdateAllergiesServices (IAllergiesRepository _allergiesRepository, LoggerService _logger) : IUpdateAllergiesServices
+public class UpdateAllergiesServices(IAllergiesRepository _allergiesRepository, LoggerService _logger) : IUpdateAllergiesServices
 {
     public async Task UpdateAllergy(Allergies allergy)
     {

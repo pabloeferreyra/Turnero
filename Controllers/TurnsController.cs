@@ -54,7 +54,6 @@ public class TurnsController(UserManager<IdentityUser> userManager,
 
     private IQueryable<TurnDTO> SetTable(string isMedic, out string draw, out int pageSize, out int skip, out List<TurnDTO> data, out int recordsTotal)
     {
-        IQueryable<TurnDTO> turns = null;
         draw = Request.Form["draw"].FirstOrDefault();
         var start = Request.Form["start"].FirstOrDefault();
         var length = Request.Form["length"].FirstOrDefault();
@@ -72,12 +71,13 @@ public class TurnsController(UserManager<IdentityUser> userManager,
         }
         else
         {
-            dateTurn = DateOnly.Parse(DateTime.Today.ToString());
+            dateTurn = DateOnly.Parse(DateTime.Today.ToShortDateString());
         }
 
         var sortColumn = Request.Form["columns[" + Request.Form["order[0][column]"].FirstOrDefault() + "][name]"].FirstOrDefault();
         var sortColumnDirection = Request.Form["order[0][dir]"].FirstOrDefault();
 
+        IQueryable<TurnDTO> turns;
         if ((dateTurn != DateOnly.MinValue) && !string.IsNullOrEmpty(medic))
         {
             turns = getTurnDTO.GetTurnsDtoByDateAndId(dateTurn, Guid.Parse(medic));

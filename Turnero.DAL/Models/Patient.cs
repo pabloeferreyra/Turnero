@@ -22,6 +22,8 @@ public class Patient : BaseEntity
     public ParentsData? Parent { get; set; }
     public PersonalBackground? PersonalBackground { get; set; }
     public PerinatalBackground? PerinatalBackground { get; set; }
+    public ICollection<Vaccines>? Vaccines { get; set; }
+    public ICollection<Allergies>? Allergies { get; set; }
 }
 
 public class PatientDTO : BaseEntity

@@ -21,7 +21,7 @@ public class MedicRepository(ApplicationDbContext context, IMemoryCache cache) :
 
     public async Task<Medic?> GetByUserId(string id)
     {
-        return await FindByCondition(m => m.UserGuid == id).SingleOrDefaultAsync(); 
+        return await FindByCondition(m => m.UserGuid == id).SingleOrDefaultAsync();
     }
 
     public bool Exists(Guid id)

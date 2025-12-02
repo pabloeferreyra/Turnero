@@ -19,7 +19,7 @@ public class InsertTimeTurnServices(LoggerService logger,
     }
 }
 
-public interface IInsertTimeTurnServices 
-{ 
-    Task Create(TimeTurn timeTurnViewModel); 
+public interface IInsertTimeTurnServices
+{
+    Task Create(TimeTurn timeTurnViewModel);
 }

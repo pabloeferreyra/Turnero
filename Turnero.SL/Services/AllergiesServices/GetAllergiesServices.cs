@@ -1,6 +1,6 @@
 ﻿namespace Turnero.SL.Services.AllergiesServices;
 
-public class GetAllergiesServices (IAllergiesRepository _allergiesRepository, LoggerService _logger) : IGetAllergiesServices
+public class GetAllergiesServices(IAllergiesRepository _allergiesRepository, LoggerService _logger) : IGetAllergiesServices
 {
     public async Task<List<Allergies>> GetAllergiesByPatient(Guid? id)
     {

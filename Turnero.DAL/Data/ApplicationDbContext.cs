@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
 using Turnero.DAL.Models;
 
 namespace Turnero.DAL.Data;
@@ -96,4 +95,5 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<ParentsData> ParentsData { get; set; }
     public DbSet<PersonalBackground> PersonalBackground { get; set; }
     public DbSet<PerinatalBackground> PerinatalBackground { get; set; }
+    public DbSet<Vaccines> Vaccines { get; set; }
 }

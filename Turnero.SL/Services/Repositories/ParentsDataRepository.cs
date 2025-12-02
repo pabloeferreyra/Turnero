@@ -1,6 +1,6 @@
 ﻿namespace Turnero.SL.Services.Repositories;
 
-public class ParentsDataRepository (ApplicationDbContext context, IMemoryCache cache) 
+public class ParentsDataRepository(ApplicationDbContext context, IMemoryCache cache)
     : RepositoryBase<ParentsData>(context, cache), IParentsDataRepository
 {
     public async Task<ParentsData?> Get(Guid id)

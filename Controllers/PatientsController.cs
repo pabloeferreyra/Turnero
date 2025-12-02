@@ -17,7 +17,8 @@ public class PatientsController(IInsertPatientService insertPatient,
     {
         _ = SetTable(out string draw, out int pageSize, out int skip, out List<PatientDTO> data, out int recordsTotal);
         data = SetPage(pageSize, skip, data);
-        var json = new {
+        var json = new
+        {
             draw,
             recordsFiltered = recordsTotal,
             recordsTotal,
@@ -47,18 +48,18 @@ public class PatientsController(IInsertPatientService insertPatient,
         {
             data = [.. patients];
         }
-    
+
         recordsTotal = data.Count;
         return patients;
     }
 
     private static List<PatientDTO> SetPage(int pageSize, int skip, List<PatientDTO> data)
     {
-        if(skip != 0)
+        if (skip != 0)
         {
             data = [.. data.Skip(skip).Take(pageSize).ToList()];
         }
-        else if(pageSize != -1)
+        else if (pageSize != -1)
         {
             data = [.. data.Take(pageSize).ToList()];
         }
@@ -79,7 +80,7 @@ public class PatientsController(IInsertPatientService insertPatient,
 
     [HttpGet]
     [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
-    public async Task <IActionResult> Details(Guid? id)
+    public async Task<IActionResult> Details(Guid? id)
     {
         if (id == null)
             return NotFound();
@@ -96,7 +97,7 @@ public class PatientsController(IInsertPatientService insertPatient,
     }
 
     [HttpPost]
-    public async Task<StatusCodeResult> Create([FromBody]Patient patient)
+    public async Task<StatusCodeResult> Create([FromBody] Patient patient)
     {
         try
         {
@@ -119,7 +120,7 @@ public class PatientsController(IInsertPatientService insertPatient,
             return NotFound();
 
         var patient = await getPatient.GetPatientById(id.Value);
-            if(patient == null)
+        if (patient == null)
         {
             ViewBag.ErrorMessage = $"Patient with Id = {id} cannot be found";
             return NotFound();

@@ -4,7 +4,7 @@ public class PersonalBackgroundRepository(ApplicationDbContext context, IMemoryC
 {
     public void Delete(PersonalBackground data)
     {
-       ArgumentNullException.ThrowIfNull(data);
+        ArgumentNullException.ThrowIfNull(data);
         Delete(data);
     }
 

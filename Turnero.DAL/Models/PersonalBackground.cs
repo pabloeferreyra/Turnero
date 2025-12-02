@@ -2,7 +2,7 @@
 
 public class PersonalBackground : PatientFKEntity
 {
-    [Display(Name="Asma")]
+    [Display(Name = "Asma")]
     public bool Asthma { get; set; }
     [Display(Name = "Alergias")]
     public bool Allergy { get; set; }

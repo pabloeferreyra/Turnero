@@ -1,6 +1,4 @@
-﻿using Turnero.SL.Services.TurnsServices;
-
-namespace Turnero.Controllers;
+﻿namespace Turnero.Controllers;
 
 [Authorize(Roles = RolesConstants.Admin)]
 public class TimeTurnController(IGetTimeTurnsServices getTimeTurns,

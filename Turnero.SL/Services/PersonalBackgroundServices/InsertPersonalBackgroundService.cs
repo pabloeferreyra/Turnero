@@ -1,6 +1,6 @@
 ﻿namespace Turnero.SL.Services.PersonalBackgroundServices;
 
-public class InsertPersonalBackgroundService (LoggerService logger, IPersonalBackgroundRepository repository) : IInsertPersonalBackgroundService
+public class InsertPersonalBackgroundService(LoggerService logger, IPersonalBackgroundRepository repository) : IInsertPersonalBackgroundService
 {
     public async Task InsertPersonalBackground(PersonalBackground data)
     {

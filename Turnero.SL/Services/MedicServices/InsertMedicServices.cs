@@ -18,7 +18,7 @@ public class InsertMedicServices(LoggerService logger, IMedicRepository medicRep
     }
 }
 
-public interface IInsertMedicServices 
-{ 
-    Task Create(Medic medic); 
+public interface IInsertMedicServices
+{
+    Task Create(Medic medic);
 }

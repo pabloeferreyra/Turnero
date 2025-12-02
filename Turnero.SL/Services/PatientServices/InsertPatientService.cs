@@ -9,9 +9,9 @@ public class InsertPatientService(LoggerService logger, IPatientRepository patie
         try
         {
             patient.Id = Guid.NewGuid();
-            patient.PersonalBackground = new ();
-            patient.PerinatalBackground = new ();
-            patient.Parent = new ();
+            patient.PersonalBackground = new();
+            patient.PerinatalBackground = new();
+            patient.Parent = new();
             await _patientRepository.NewPatient(patient);
         }
         catch (Exception ex)

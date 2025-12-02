@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace Turnero.Controllers;
+﻿namespace Turnero.Controllers;
 
 public class PerinatalBackgroundController(IGetPerinatalBackgroundService get,
     IUpdatePerinatalBackgroundService update,
@@ -10,7 +8,7 @@ public class PerinatalBackgroundController(IGetPerinatalBackgroundService get,
     {
         if (id == null)
             return BadRequest("El ID del paciente es obligatorio.");
-        var data  = await get.Get(id.Value);
+        var data = await get.Get(id.Value);
         return PartialView("_Details", data);
     }
 

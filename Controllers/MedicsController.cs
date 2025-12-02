@@ -68,7 +68,7 @@ public class MedicsController(UserManager<IdentityUser> userManager,
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(Medic medic)
     {
-       
+
         if (!MedicExists(medic.Id))
         {
             ViewBag.ErrorMessage = $"Medic with Id = {medic.Id} cannot be found";
@@ -77,8 +77,8 @@ public class MedicsController(UserManager<IdentityUser> userManager,
         else if (ModelState.IsValid)
         {
             bool resUpd = await updateMedicServices.Update(medic);
-            if(!resUpd)
-            { 
+            if (!resUpd)
+            {
                 return View("Error");
             }
         }

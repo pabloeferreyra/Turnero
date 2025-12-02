@@ -5,7 +5,11 @@ public abstract class RepositoryBase<T>(ApplicationDbContext context, IMemoryCac
     protected ApplicationDbContext _context = context;
     public IMemoryCache _cache = cache;
 
-    public IQueryable<T> FindAll() => _context.Set<T>().AsNoTracking();
+    public IQueryable<T> FindAll()
+    {
+        return _context.Set<T>().AsNoTracking();
+    }
+
     public IQueryable<T> FindByCondition(Expression<Func<T, bool>> expression)
     {
         return _context.Set<T>().Where(expression).AsNoTracking();

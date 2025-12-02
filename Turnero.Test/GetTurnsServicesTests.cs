@@ -1,9 +1,9 @@
 ﻿using Moq;
 using Turnero.DAL.Models;
-using Turnero.SL.Services.Repositories;
 using Turnero.SL.Services;
-using Xunit;
+using Turnero.SL.Services.Repositories;
 using Turnero.SL.Services.TurnsServices;
+using Xunit;
 
 namespace Turnero.Test;
 
@@ -26,7 +26,7 @@ public class GetTurnsServicesTests
         // Arrange
         var dateTurn = DateTime.Now;
         var medicId = Guid.NewGuid();
-        var turns = new List<Turn> { new Turn { Id = Guid.NewGuid(), Name = "Turn1" } };
+        var turns = new List<Turn> { new() { Id = Guid.NewGuid(), Name = "Turn1" } };
         _turnRepositoryMock.Setup(repo => repo.GetList(dateTurn, medicId)).Returns(turns);
 
         // Act

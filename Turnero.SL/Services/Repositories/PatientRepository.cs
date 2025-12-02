@@ -5,7 +5,7 @@ public class PatientRepository(ApplicationDbContext context, IMemoryCache cache)
     public async Task<List<PatientDTO>> GetList()
     {
         var patients = await FindAll().Include(p => p.ContactInfo).ToListAsync();
-            return patients.Adapt<List<PatientDTO>>();
+        return patients.Adapt<List<PatientDTO>>();
     }
 
     public IQueryable<PatientDTO> GetAll()

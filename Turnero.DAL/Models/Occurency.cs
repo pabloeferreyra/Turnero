@@ -1,8 +1,9 @@
 ﻿namespace Turnero.DAL.Models;
 
-public enum Occurrency { 
-    Una, 
-    Sporadica, 
-    Frequente, 
-    Constante 
+public enum Occurrency
+{
+    Una,
+    Sporadica,
+    Frequente,
+    Constante
 }

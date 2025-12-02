@@ -1,4 +1,5 @@
 ﻿namespace Turnero.Utilities.Utilities;
+
 public static class RolesConstants
 {
     public const string Ingreso = "Ingreso";

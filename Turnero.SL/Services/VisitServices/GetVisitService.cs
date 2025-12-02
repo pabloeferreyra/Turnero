@@ -221,8 +221,8 @@ public class GetVisitService(LoggerService logger, IVisitRepository visitReposit
             return 0;
         }
     }
-    public async Task<List<Visit>> GetRecentVisitsByPatient(Guid patientId, int count) 
-    {   
+    public async Task<List<Visit>> GetRecentVisitsByPatient(Guid patientId, int count)
+    {
         try
         {
             return await _visitRepository.GetRecentVisitsByPatient(patientId, count);
@@ -247,7 +247,7 @@ public class GetVisitService(LoggerService logger, IVisitRepository visitReposit
     }
     public async Task<List<Visit>> GetVisitsWithDiagnosis()
     {
-         
+
         try
         {
             return await _visitRepository.GetVisitsWithDiagnosis();
@@ -258,8 +258,8 @@ public class GetVisitService(LoggerService logger, IVisitRepository visitReposit
             return [];
         }
     }
-    public async Task<List<Visit>> GetVisitsWithTreatment() 
-    {   
+    public async Task<List<Visit>> GetVisitsWithTreatment()
+    {
         try
         {
             return await _visitRepository.GetVisitsWithTreatment();

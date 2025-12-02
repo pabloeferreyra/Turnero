@@ -1,9 +1,9 @@
 ﻿using Moq;
 using Turnero.DAL.Models;
-using Turnero.SL.Services.Repositories;
 using Turnero.SL.Services;
-using Xunit;
 using Turnero.SL.Services.MedicServices;
+using Turnero.SL.Services.Repositories;
+using Xunit;
 
 namespace Turnero.Test;
 
@@ -39,7 +39,7 @@ public class GetMedicsServicesTests
     public async Task GetMedics_ShouldReturnMedicsList()
     {
         // Arrange
-        var medics = new List<Medic> { 
+        var medics = new List<Medic> {
             new() { Id = Guid.NewGuid(), Name = "Medic1" },
             new() { Id = Guid.NewGuid(), Name = "Medic2" }
         };

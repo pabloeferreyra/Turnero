@@ -1,5 +1,4 @@
-﻿using Mapster;
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace Turnero.SL.Services.Repositories;
 
@@ -16,7 +15,7 @@ public class TurnsRepository(ApplicationDbContext context, IMemoryCache cache) :
     {
         return await FindByCondition(m => m.Id == id)
             .SingleOrDefaultAsync()
-            ?? throw new InvalidOperationException("No se encontró el turno con el id especificado."); 
+            ?? throw new InvalidOperationException("No se encontró el turno con el id especificado.");
     }
 
     public async Task<TurnDTO> GetDTOById(Guid id)
@@ -24,7 +23,7 @@ public class TurnsRepository(ApplicationDbContext context, IMemoryCache cache) :
         var turn = await FindByCondition(m => m.Id == id).SingleOrDefaultAsync();
         var dto = turn.Adapt<TurnDTO>();
         return dto
-            ?? throw new InvalidOperationException("No se encontró el turno con el id especificado."); 
+            ?? throw new InvalidOperationException("No se encontró el turno con el id especificado.");
     }
 
     public List<Turn> GetList(DateTime? date, Guid? id)

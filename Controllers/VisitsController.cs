@@ -9,7 +9,7 @@ public class VisitsController(IGetVisitService getVisit,
     [HttpGet]
     public IActionResult Details(Guid? id)
     {
-        if(id == null || id == Guid.Empty)
+        if (id == null || id == Guid.Empty)
         {
             return BadRequest("Visit ID is required.");
         }
@@ -21,7 +21,7 @@ public class VisitsController(IGetVisitService getVisit,
     [HttpGet]
     public IActionResult Create(Guid? id)
     {
-        if(id == null || id == Guid.Empty)
+        if (id == null || id == Guid.Empty)
         {
             return BadRequest("Patient ID is required.");
         }
@@ -50,7 +50,7 @@ public class VisitsController(IGetVisitService getVisit,
             return BadRequest();
         }
         try
-        { 
+        {
             await insertVisit.Create(visit);
             logger.LogInformation("Visit created successfully for patient {PatientId}", visit.PatientId);
             return Ok();

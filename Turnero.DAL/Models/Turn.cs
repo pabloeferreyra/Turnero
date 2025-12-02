@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Turnero.DAL.Models;
+﻿namespace Turnero.DAL.Models;
 
 public class Turn
 {

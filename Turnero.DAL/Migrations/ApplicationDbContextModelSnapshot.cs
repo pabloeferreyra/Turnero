@@ -392,15 +392,10 @@ namespace Turnero.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("PerinatalBackgroundId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("SocialWork")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("PerinatalBackgroundId");
 
                     b.ToTable("Patients");
                 });
@@ -408,7 +403,6 @@ namespace Turnero.Migrations
             modelBuilder.Entity("Turnero.DAL.Models.PerinatalBackground", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<int>("Abort")
@@ -625,6 +619,28 @@ namespace Turnero.Migrations
                     b.ToTable("Turns");
                 });
 
+            modelBuilder.Entity("Turnero.DAL.Models.Vaccines", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly?>("DateApplied")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PatientId");
+
+                    b.ToTable("Vaccines");
+                });
+
             modelBuilder.Entity("Turnero.DAL.Models.Visit", b =>
                 {
                     b.Property<Guid>("Id")
@@ -743,7 +759,7 @@ namespace Turnero.Migrations
             modelBuilder.Entity("Turnero.DAL.Models.Allergies", b =>
                 {
                     b.HasOne("Turnero.DAL.Models.Patient", "Patient")
-                        .WithMany()
+                        .WithMany("Allergies")
                         .HasForeignKey("PatientId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -773,13 +789,15 @@ namespace Turnero.Migrations
                     b.Navigation("Patient");
                 });
 
-            modelBuilder.Entity("Turnero.DAL.Models.Patient", b =>
+            modelBuilder.Entity("Turnero.DAL.Models.PerinatalBackground", b =>
                 {
-                    b.HasOne("Turnero.DAL.Models.PerinatalBackground", "PerinatalBackground")
-                        .WithMany()
-                        .HasForeignKey("PerinatalBackgroundId");
+                    b.HasOne("Turnero.DAL.Models.Patient", "Patient")
+                        .WithOne("PerinatalBackground")
+                        .HasForeignKey("Turnero.DAL.Models.PerinatalBackground", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("PerinatalBackground");
+                    b.Navigation("Patient");
                 });
 
             modelBuilder.Entity("Turnero.DAL.Models.PersonalBackground", b =>
@@ -816,6 +834,17 @@ namespace Turnero.Migrations
                     b.Navigation("Time");
                 });
 
+            modelBuilder.Entity("Turnero.DAL.Models.Vaccines", b =>
+                {
+                    b.HasOne("Turnero.DAL.Models.Patient", "Patient")
+                        .WithMany("Vaccines")
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Patient");
+                });
+
             modelBuilder.Entity("Turnero.DAL.Models.Visit", b =>
                 {
                     b.HasOne("Turnero.DAL.Models.Medic", "Medic")
@@ -844,13 +873,19 @@ namespace Turnero.Migrations
 
             modelBuilder.Entity("Turnero.DAL.Models.Patient", b =>
                 {
+                    b.Navigation("Allergies");
+
                     b.Navigation("ContactInfo");
 
                     b.Navigation("Parent");
 
+                    b.Navigation("PerinatalBackground");
+
                     b.Navigation("PersonalBackground");
 
                     b.Navigation("Turns");
+
+                    b.Navigation("Vaccines");
 
                     b.Navigation("Visits");
                 });

@@ -1,10 +1,10 @@
-﻿using Moq;
+﻿using Microsoft.EntityFrameworkCore;
+using Moq;
 using Turnero.DAL.Models;
-using Turnero.SL.Services.Repositories;
 using Turnero.SL.Services;
-using Microsoft.EntityFrameworkCore;
-using Xunit;
 using Turnero.SL.Services.MedicServices;
+using Turnero.SL.Services.Repositories;
+using Xunit;
 
 namespace Turnero.Test;
 

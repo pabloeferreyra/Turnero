@@ -7,6 +7,8 @@
     string edModalUrl = string.Format("/Patients/{0}?id={1}", methods[1], Model.Id);
     string viModalUrl = string.Format("/Visits/{0}?id={1}", methods[2], Model.Id);
     string alModalUrl = string.Format("/Allergies/{0}?id={1}", methods[2], Model.Id);
+    string vaModalUrl = string.Format("/Vaccines/{0}?id={1}", methods[2], Model.Id);
+	string vmModalUrl = string.Format("/Vademecum/Index");
 }
 
 <input type="hidden" name="patientId" id="patientId" value="@Model.Id" />
@@ -32,7 +34,7 @@
                     class="btn btn-sm btn-secondary me-1"
                     data-url="@peModalUrl"
                     data-title="Antecedentes personales">
-                Antecedentes Personales
+                <i class="fa-solid fa-notes-medical"></i> Antecedentes Personales
             </button>
 
             <button type="button"
@@ -41,8 +43,9 @@
                     class="btn btn-sm btn-secondary me-1"
                     data-url="@naModalUrl"
                     data-title="Antecedentes perinatales">
-                Antecedentes Perinatales
+                <i class="fa-solid fa-user-nurse"></i> Antecedentes Perinatales
             </button>
+            
         </div>
     </div>
 
@@ -56,66 +59,74 @@
         <hr />
 
         <div class="col-md-4 col-sm-12 row">
-            <h5 class="col-md-2 col-sm-12">Dni</h5>
+            <h5 class="col-md-2 col-sm-12"><i class="fa-solid fa-id-card"></i> Dni</h5>
             <p class="col-md-10 col-sm-12">@Html.DisplayFor(model => model.Dni)</p>
         </div>
 
         <div class="col-md-5 col-sm-12 row">
-            <h5 class="col-md-7 col-sm-12">Fecha de Nacimiento</h5>
+            <h5 class="col-md-7 col-sm-12"><i class="fa-solid fa-calendar-day"></i> Fecha de Nacimiento</h5>
             <p class="col-md-5 col-sm-12">@Html.DisplayFor(model => model.BirthDate) - @ViewBag.Age Años</p>
         </div>
 
         <div class="col-md-3 col-sm-12 row">
-            <h5 class="col-md-7 cool-sm-12">Grupo sanguineo</h5>
+            <h5 class="col-md-7 cool-sm-12"><i class="fa-solid fa-droplet"></i> Grupo sanguineo</h5>
             <p class="col-md-5 col-sm-12">@Html.DisplayFor(model => model.BloodType)</p>
         </div>
 
         <hr />
 
         <div class="col-md-4 col-sm-12 row">
-            <h5 class="col-md-3 col-sm-12">Teléfono</h5>
+            <h5 class="col-md-3 col-sm-12"><i class="fa-solid fa-phone"></i> Teléfono</h5>
             <p class="col-md-9 col-sm-12">@Html.DisplayFor(model => model.ContactInfo.Phone)</p>
         </div>
 
         <div class="col-md-4 col-sm-12 row">
-            <h5 class="col-md-2 col-sm-12">Email</h5>
+            <h5 class="col-md-2 col-sm-12"><i class="fa-solid fa-envelope"></i> Email</h5>
             <p class="col-md-10 col-sm-12">@Html.DisplayTextFor(model => model.ContactInfo.Email)</p>
         </div>
 
         <div class="col-md-4 col-sm-12 row">
-            <h5 class="col-md-3 col-sm-12">Dirección</h5>
+            <h5 class="col-md-3 col-sm-12"><i class="fa-solid fa-map-pin"></i> Dirección</h5>
             <p class="col-md-9 col-sm-12">@Html.DisplayFor(model => model.ContactInfo.Address)</p>
         </div>
 
         <div class="col-md-4 col-sm-12 row">
-            <h5 class="col-md-2 col-sm-12">Ciudad</h5>
-            <p class="col-md-10 col-sm-12">@Html.DisplayFor(model => model.ContactInfo.City)</p>
+            <h5 class="col-md-3 col-sm-12"><i class="fa-solid fa-location-arrow"></i> Ciudad</h5>
+            <p class="col-md-9 col-sm-12">@Html.DisplayFor(model => model.ContactInfo.City)</p>
         </div>
 
         <div class="col-md-4 col-sm-12 row">
-            <h5 class="col-md-4 col-sm-12">Código Postal</h5>
+            <h5 class="col-md-4 col-sm-12"><i class="fa-solid fa-envelope-open"></i> Código Postal</h5>
             <p class="col-md-8 col-sm-12">@Html.DisplayFor(model => model.ContactInfo.PostalCode)</p>
         </div>
 
         <hr />
 
         <div class="col-md-4 col-sm-12 row">
-            <h5 class="col-md-4 col-sm-12">Obra Social</h5>
+            <h5 class="col-md-4 col-sm-12"><i class="fa-solid fa-hospital"></i> Obra Social</h5>
             <p class="col-md-8 col-sm-12">@Html.DisplayFor(model => model.SocialWork)</p>
         </div>
 
         <div class="col-md-4 col-sm-12 row">
-            <h5 class="col-md-5 col-sm-12">Número de Afiliado</h5>
+            <h5 class="col-md-5 col-sm-12"><i class="fa-solid fa-hashtag"></i> Número de Afiliado</h5>
             <p class="col-md-7 col-sm-12">@Html.DisplayFor(model => model.AffiliateNumber)</p>
         </div>
     </div>
-
+    <button type="button"
+            data-open-modal
+            data-modal-id="GlobalModal"
+            class="btn btn-sm btn-primary me-1"
+            data-url="@vmModalUrl"
+            data-title="Vademecum">
+        <i class="fa-solid fa-pills"></i>Vademecum
+    </button>
   
     <div class="row">
         <ul class="nav nav-tabs" role="tablist" id="myTabs">
             <li class="nav-item">
                 <button type="button" class="nav-link" id="visitsTab"
                         data-url='@Url.Action("GetVisits", "Visits", new { id = Model.Id })'>
+                    <i class="fa-solid fa-calendar-day"></i>
                     Visitas
                 </button>
             </li>
@@ -123,6 +134,7 @@
             <li class="nav-item">
                 <button type="button" class="nav-link" id="allergiesTab"
                         data-url='@Url.Action("GetAllergies", "Allergies", new { id = Model.Id })'>
+                    <i class="fa-solid fa-bacteria"></i>
                     Alergias
                 </button>
             </li>
@@ -130,8 +142,16 @@
             <li class="nav-item">
                 <button type="button" class="nav-link" id="parentsTab"
                         data-url='@Url.Action("Index", "ParentsData", new { id = Model.Id })'>
+                    <i class="fa-solid fa-people-group"></i>
                     Familia
                 </button>
+            </li>
+            <li class="nav-item">
+                <button type="button" class="nav-link" id="vaccinesTab"
+						data-url='@Url.Action("Index", "Vaccines", new { id = Model.Id })'>
+                    <i class="fa-solid fa-syringe"></i>
+					Vacunas
+				</button>
             </li>
         </ul>
 
@@ -166,6 +186,15 @@
                                 Alergia
                             </button>
                         </li>
+                        <li>
+                            <button data-open-modal
+                                    data-modal-id="GlobalModal"
+                                    data-url="@vaModalUrl"
+                                    data-title="Nueva vacuna"
+                                    class="btn btn-sm btn-secondary me-1 dropdown-item">
+                                    Vacuna
+                            </button>
+                        </li>
                     </ul>
                 </li>
             </ul>
@@ -182,6 +211,7 @@
     <script src="~/js/patients.js" asp-append-version="true"></script>
     <script src="~/js/visits.js" asp-append-version="true"></script>
     <script src="~/js/allergies.js" asp-append-version="true"></script>
+	<script src="~/js/vaccines.js" asp-append-version="true"></script>
     <script src="~/js/personalBackground.js" asp-append-version="true"></script>
     <script src="~/js/perinatalBackground.js" asp-append-version="true"></script>
 

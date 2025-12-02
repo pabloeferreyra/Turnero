@@ -7,7 +7,7 @@ public class PersonalBackgroundController(IGetPersonalBackgroundService get,
 {
     public async Task<IActionResult> Index(Guid? id)
     {
-        if(id == null)
+        if (id == null)
             return BadRequest("El ID del paciente es obligatorio.");
         var data = await get.GetPersonalBackground(id.Value);
         return PartialView("_Details", data);

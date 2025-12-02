@@ -27,7 +27,7 @@ namespace Turnero.Areas.Identity.Pages.Account
                 }
 
                 await firebaseService.SendPasswordResetLinkAsync(Input.Email);
-                
+
                 return RedirectToPage("./ForgotPasswordConfirmation");
             }
 
