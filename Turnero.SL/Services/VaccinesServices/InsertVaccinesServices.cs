@@ -2,11 +2,17 @@
 
 public class InsertVaccinesServices(LoggerService logger, IVaccinesRepository vaccinesRepository) : IInsertVaccinesServices
 {
-    public async Task Insert(Vaccines vaccines)
+    public async Task Insert(VaccinesDto vaccines)
     {
         try
         {
-            await vaccinesRepository.Insert(vaccines);
+            Vaccines vaccine = new()
+            {
+                Description = vaccines.Description != "Otra" ? vaccines.Description : vaccines.OtherDescription,
+                DateApplied = vaccines.DateApplied,
+                PatientId = vaccines.PatientId
+            };
+            await vaccinesRepository.Insert(vaccine);
         }
         catch (Exception ex)
         {
@@ -17,5 +23,5 @@ public class InsertVaccinesServices(LoggerService logger, IVaccinesRepository va
 }
 public interface IInsertVaccinesServices
 {
-    Task Insert(Vaccines vaccines);
+    Task Insert(VaccinesDto vaccines);
 }

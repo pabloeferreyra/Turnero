@@ -8,6 +8,7 @@
     string viModalUrl = string.Format("/Visits/{0}?id={1}", methods[2], Model.Id);
     string alModalUrl = string.Format("/Allergies/{0}?id={1}", methods[2], Model.Id);
     string vaModalUrl = string.Format("/Vaccines/{0}?id={1}", methods[2], Model.Id);
+	string pmModalUrl = string.Format("/PermMed/{0}?id={1}", methods[2], Model.Id);
 	string vmModalUrl = string.Format("/Vademecum/Index");
 }
 
@@ -17,24 +18,24 @@
 
  
     <div class="row">
-        <div class="col-md-4 col-sm-12 btn-group" role="group">
+        <div class="col-md-1 col-sm-12 btn-group" role="group">
             <button data-open-modal
                     data-modal-id="GlobalModal"
                     data-url="@edModalUrl"
                     data-title="Editar paciente"
                     class="btn btn-sm btn-primary me-1">
-                Editar
+                <i class="fa-solid fa-pen-to-square"></i> Editar
             </button>
         </div>
 
-        <div class="col-md-4 col-sm-12 btn-group ms-auto" role="group" style="text-align:right">
+        <div class="col-md-6 col-sm-12 btn-group ms-auto" role="group" style="text-align:right">
             <button type="button"
                     data-open-modal
                     data-modal-id="GlobalModal"
                     class="btn btn-sm btn-secondary me-1"
                     data-url="@peModalUrl"
                     data-title="Antecedentes personales">
-                <i class="fa-solid fa-notes-medical"></i> Antecedentes Personales
+                <i class="fa-solid fa-notes-medical"></i> Ant. Personales
             </button>
 
             <button type="button"
@@ -43,9 +44,16 @@
                     class="btn btn-sm btn-secondary me-1"
                     data-url="@naModalUrl"
                     data-title="Antecedentes perinatales">
-                <i class="fa-solid fa-user-nurse"></i> Antecedentes Perinatales
+                <i class="fa-solid fa-user-nurse"></i> Ant. Perinatales
             </button>
-            
+            <button type="button"
+                    data-open-modal
+                    data-modal-id="GlobalModal"
+                    class="btn btn-sm btn-primary me-1"
+                    data-url="@vmModalUrl"
+                    data-title="Vademecum">
+                <i class="fa-solid fa-pills"></i> Vademecum
+            </button>
         </div>
     </div>
 
@@ -59,8 +67,8 @@
         <hr />
 
         <div class="col-md-4 col-sm-12 row">
-            <h5 class="col-md-2 col-sm-12"><i class="fa-solid fa-id-card"></i> Dni</h5>
-            <p class="col-md-10 col-sm-12">@Html.DisplayFor(model => model.Dni)</p>
+            <h5 class="col-md-3 col-sm-12"><i class="fa-solid fa-id-card"></i> Dni</h5>
+            <p class="col-md-9 col-sm-12">@Html.DisplayFor(model => model.Dni)</p>
         </div>
 
         <div class="col-md-5 col-sm-12 row">
@@ -69,58 +77,50 @@
         </div>
 
         <div class="col-md-3 col-sm-12 row">
-            <h5 class="col-md-7 cool-sm-12"><i class="fa-solid fa-droplet"></i> Grupo sanguineo</h5>
-            <p class="col-md-5 col-sm-12">@Html.DisplayFor(model => model.BloodType)</p>
+            <h5 class="col-md-10 cool-sm-12"><i class="fa-solid fa-droplet"></i> Grupo sanguineo</h5>
+            <p class="col-md-2 col-sm-12">@Html.DisplayFor(model => model.BloodType)</p>
         </div>
 
         <hr />
 
         <div class="col-md-4 col-sm-12 row">
-            <h5 class="col-md-3 col-sm-12"><i class="fa-solid fa-phone"></i> Teléfono</h5>
-            <p class="col-md-9 col-sm-12">@Html.DisplayFor(model => model.ContactInfo.Phone)</p>
+            <h5 class="col-md-4 col-sm-12"><i class="fa-solid fa-phone"></i> Teléfono</h5>
+            <p class="col-md-8 col-sm-12">@Html.DisplayFor(model => model.ContactInfo.Phone)</p>
         </div>
 
         <div class="col-md-4 col-sm-12 row">
-            <h5 class="col-md-2 col-sm-12"><i class="fa-solid fa-envelope"></i> Email</h5>
-            <p class="col-md-10 col-sm-12">@Html.DisplayTextFor(model => model.ContactInfo.Email)</p>
+            <h5 class="col-md-4 col-sm-12"><i class="fa-solid fa-envelope"></i> Email</h5>
+            <p class="col-md-8 col-sm-12">@Html.DisplayTextFor(model => model.ContactInfo.Email)</p>
         </div>
 
         <div class="col-md-4 col-sm-12 row">
-            <h5 class="col-md-3 col-sm-12"><i class="fa-solid fa-map-pin"></i> Dirección</h5>
-            <p class="col-md-9 col-sm-12">@Html.DisplayFor(model => model.ContactInfo.Address)</p>
+            <h5 class="col-md-5 col-sm-12"><i class="fa-solid fa-map-pin"></i> Dirección</h5>
+            <p class="col-md-7 col-sm-12">@Html.DisplayFor(model => model.ContactInfo.Address)</p>
         </div>
 
         <div class="col-md-4 col-sm-12 row">
-            <h5 class="col-md-3 col-sm-12"><i class="fa-solid fa-location-arrow"></i> Ciudad</h5>
-            <p class="col-md-9 col-sm-12">@Html.DisplayFor(model => model.ContactInfo.City)</p>
+            <h5 class="col-md-4 col-sm-12"><i class="fa-solid fa-location-arrow"></i> Ciudad</h5>
+            <p class="col-md-8 col-sm-12">@Html.DisplayFor(model => model.ContactInfo.City)</p>
         </div>
 
         <div class="col-md-4 col-sm-12 row">
-            <h5 class="col-md-4 col-sm-12"><i class="fa-solid fa-envelope-open"></i> Código Postal</h5>
-            <p class="col-md-8 col-sm-12">@Html.DisplayFor(model => model.ContactInfo.PostalCode)</p>
+            <h5 class="col-md-6 col-sm-12"><i class="fa-solid fa-envelope-open"></i> Código Postal</h5>
+            <p class="col-md-6 col-sm-12">@Html.DisplayFor(model => model.ContactInfo.PostalCode)</p>
         </div>
 
         <hr />
 
         <div class="col-md-4 col-sm-12 row">
-            <h5 class="col-md-4 col-sm-12"><i class="fa-solid fa-hospital"></i> Obra Social</h5>
-            <p class="col-md-8 col-sm-12">@Html.DisplayFor(model => model.SocialWork)</p>
+            <h5 class="col-md-5 col-sm-12"><i class="fa-solid fa-hospital"></i> Obra Social</h5>
+            <p class="col-md-7 col-sm-12">@Html.DisplayFor(model => model.SocialWork)</p>
         </div>
 
         <div class="col-md-4 col-sm-12 row">
-            <h5 class="col-md-5 col-sm-12"><i class="fa-solid fa-hashtag"></i> Número de Afiliado</h5>
-            <p class="col-md-7 col-sm-12">@Html.DisplayFor(model => model.AffiliateNumber)</p>
+            <h5 class="col-md-7 col-sm-12"><i class="fa-solid fa-hashtag"></i> Número de Afiliado</h5>
+            <p class="col-md-5 col-sm-12">@Html.DisplayFor(model => model.AffiliateNumber)</p>
         </div>
     </div>
-    <button type="button"
-            data-open-modal
-            data-modal-id="GlobalModal"
-            class="btn btn-sm btn-primary me-1"
-            data-url="@vmModalUrl"
-            data-title="Vademecum">
-        <i class="fa-solid fa-pills"></i>Vademecum
-    </button>
-  
+    
     <div class="row">
         <ul class="nav nav-tabs" role="tablist" id="myTabs">
             <li class="nav-item">
@@ -152,6 +152,13 @@
                     <i class="fa-solid fa-syringe"></i>
 					Vacunas
 				</button>
+            </li>
+            <li class="nav-item">
+                <button type="button" class="nav-link" id="permMedTab"
+                        data-url='@Url.Action("Index", "PermMed", new { id = Model.Id })'>
+                    <i class="fa-solid fa-capsules"></i>
+					Medicación Permanente
+                </button>
             </li>
         </ul>
 
@@ -195,6 +202,15 @@
                                     Vacuna
                             </button>
                         </li>
+                        <li>
+                            <button data-open-modal
+                                    data-modal-id="GlobalModal"
+                                    data-url="@pmModalUrl"
+                                    data-title="Nueva medicación permanente"
+                                    class="btn btn-sm btn-secondary me-1 dropdown-item">
+                                Medicación permanente
+                            </button>
+                        </li>
                     </ul>
                 </li>
             </ul>
@@ -212,6 +228,7 @@
     <script src="~/js/visits.js" asp-append-version="true"></script>
     <script src="~/js/allergies.js" asp-append-version="true"></script>
 	<script src="~/js/vaccines.js" asp-append-version="true"></script>
+	<script src="~/js/permMed.js" asp-append-version="true"></script>
     <script src="~/js/personalBackground.js" asp-append-version="true"></script>
     <script src="~/js/perinatalBackground.js" asp-append-version="true"></script>
 

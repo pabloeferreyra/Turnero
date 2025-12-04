@@ -2,11 +2,18 @@
 
 public class UpdateVaccinesServices(LoggerService logger, IVaccinesRepository vaccinesRepository) : IUpdateVaccinesServices
 {
-    public async Task Update(Vaccines vaccines)
+    public async Task Update(VaccinesDto vaccines)
     {
         try
         {
-            await vaccinesRepository.Update(vaccines);
+            Vaccines vaccine = new()
+            {
+                Id = vaccines.Id,
+                Description = vaccines.Description != "Otra" ? vaccines.Description : vaccines.OtherDescription,
+                DateApplied = vaccines.DateApplied,
+                PatientId = vaccines.PatientId
+            };
+            await vaccinesRepository.Update(vaccine);
         }
         catch (Exception ex)
         {
@@ -18,5 +25,5 @@ public class UpdateVaccinesServices(LoggerService logger, IVaccinesRepository va
 
 public interface IUpdateVaccinesServices
 {
-    Task Update(Vaccines vaccines);
+    Task Update(VaccinesDto vaccines);
 }

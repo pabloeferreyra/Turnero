@@ -50,4 +50,5 @@ global using Turnero.SL.Services.Repositories;
 global using Turnero.SL.Services.TurnsServices;
 global using Turnero.SL.Services.VaccinesServices;
 global using Turnero.SL.Services.VisitServices;
+global using Turnero.SL.Services.PermMedServices;
 global using Turnero.Utilities.Utilities;

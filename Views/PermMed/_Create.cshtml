@@ -1,0 +1,26 @@
+﻿@model PermMed
+
+<form method="post" id="CreatePermMedForm" autocapitalize="on" autocomplete="off">
+	<input type="hidden" name="__RequestVerificationToken" value="@ViewData["RequestVerificationToken"]" />
+	<div class="modal-body row">
+		<input type="hidden" asp-for="PatientId" id="PatientId" />
+		<input type="hidden" asp-for="Id" id="Id" />
+		<div class="form-group col-md-12 col-sm-12">
+			<label asp-for="Description" class="control-label">Descripcion</label>
+			<input asp-for="Description" id="Description" class="form-control" />
+		</div>
+	</div>
+	<div class="modal-footer">
+		<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+		@{
+			if (Model.Id == new Guid())
+			{
+				<button type="button" id="btnCreatePermMed" class="btn btn-primary">Crear</button>
+			}
+			else
+			{
+				<button type="button" id="btnEditPermMed" class="btn btn-primary">Editar</button>
+			}
+		}
+	</div>
+</form>

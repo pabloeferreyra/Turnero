@@ -79,14 +79,18 @@
 
         currentData.forEach(item => {
             const id = item.id;
-            const description = escapeHtml(item.Description);
-            const dateApplied = escapeHtml(item.DateApplied);
+            const description = escapeHtml(item.description);
+            const dateApplied = escapeHtml(AppUtils.toDisplayDate(item.dateApplied));
 
             tbody.insertAdjacentHTML('beforeend', `
             <tr>
                 <td>${description}</td>
                 <td>${dateApplied}</td>
-                <td>futuroboton</td>
+                <td><button class="btn btn-sm btn-danger me-1 btn-deleteva"
+                        data-id="${id}">
+                        Eliminar
+                    </button>
+                </td>
             </tr>
             `);
         });
@@ -115,30 +119,30 @@
             return;
         }
 
-        if (target.matches('.btn-delete')) {
+        if (target.matches('.btn-deleteva')) {
             const id = target.dataset.id;
             const cell = target.closest('td');
 
             target.classList.add('btn-fade-out');
             setTimeout(() => {
                 cell.innerHTML = `
-                    <button data-id="${id}" class="btn btn-danger btn-sm me-1 btn-confirm-delete">Si</button>
-                    <button class="btn btn-secondary btn-sm btn-cancel-delete">No</button>
+                    <button data-id="${id}" class="btn btn-danger btn-sm me-1 btn-confirm-deleteva">Si</button>
+                    <button class="btn btn-secondary btn-sm btn-cancel-deleteva">No</button>
                 `;
             }, 200);
 
             return;
         }
 
-        if (target.matches('.btn-cancel-delete')) {
+        if (target.matches('.btn-cancel-deleteva')) {
             loadData();
             return;
         }
 
-        if (target.matches('.btn-confirm-delete')) {
+        if (target.matches('.btn-confirm-deleteva')) {
             const id = target.dataset.id;
 
-            fetch(`/Allergies/Delete/${id}`, { method: "DELETE" })
+            fetch(`/Vaccines/Delete/${id}`, { method: "DELETE" })
                 .then(r => {
                     if (!r.ok)
                         AppUtils.showToast("error", "Error eliminando vacuna");
@@ -187,7 +191,6 @@
     });
 
     function initCreate() {
-        console.log("initCreate CORRE");
         AppUtils.initFlatpickr("#DateApplied", { maxToday: true });
 
         AppUtils.FormValidationRules("#btnCreateVaccine", {

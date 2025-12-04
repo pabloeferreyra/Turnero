@@ -177,6 +177,12 @@ builder.Services.AddScoped<IUpdatePerinatalBackgroundService, UpdatePerinatalBac
 builder.Services.AddScoped<IGetVaccinesServices, GetVaccinesServices>();
 builder.Services.AddScoped<IUpdateVaccinesServices, UpdateVaccinesServices>();
 builder.Services.AddScoped<IInsertVaccinesServices, InsertVaccinesServices>();
+builder.Services.AddScoped<IDeleteVacinesServices, DeleteVacinesServices>();
+
+//PermMed Services
+builder.Services.AddScoped<IGetPermMedService, GetPermMedService>();
+builder.Services.AddScoped<IInsertPermMedService, InsertPermMedService>();
+builder.Services.AddScoped<IDeletePermMedService, DeletePermMedService>();
 #endregion
 
 #region Dependency Injection - Repositories
@@ -191,6 +197,7 @@ builder.Services.AddScoped<IParentsDataRepository, ParentsDataRepository>();
 builder.Services.AddScoped<IPersonalBackgroundRepository, PersonalBackgroundRepository>();
 builder.Services.AddScoped<IPerinatalBackgroundRepository, PerinatalBackgroundRepositroy>();
 builder.Services.AddScoped<IVaccinesRepository, VaccinesRepository>();
+builder.Services.AddScoped<IPermMedRepository, PermMedRepository>();
 #endregion
 
 #region HTTP Client

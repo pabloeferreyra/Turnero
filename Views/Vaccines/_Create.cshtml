@@ -7,7 +7,7 @@
 		<input type="hidden" asp-for="Id" id="Id" />
 		<div class="form-group col-md-12 col-sm-12">
 			<label asp-for="Description" class="control-label">Descripcion</label>
-			<select id="Description" title="Description" class="form-control form-select" asp-items="@ViewBag.Description"></select>
+			<select id="Description" name="Description" title="Description" class="form-control form-select" asp-items="@ViewBag.Description"></select>
 			<div id="OtherDescription" style="display:none;">
 				<label for="OtherDescription">Especifique:</label>
 				<input id="OtherDescription" name="OtherDescription" class="form-control" />

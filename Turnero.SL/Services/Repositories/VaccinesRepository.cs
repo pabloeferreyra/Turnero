@@ -23,6 +23,11 @@ public class VaccinesRepository(ApplicationDbContext context, IMemoryCache cache
     {
         Create(vaccines);
     }
+
+    public void Remove(Vaccines vaccines)
+    {
+        Delete(vaccines);
+    }
 }
 
 public interface IVaccinesRepository
@@ -31,4 +36,5 @@ public interface IVaccinesRepository
     Task<List<Vaccines>> GetByPatientId(Guid patientId);
     Task Update(Vaccines vaccines);
     Task Insert(Vaccines vaccines);
+    void Remove(Vaccines vaccines);
 }

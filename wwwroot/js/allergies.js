@@ -14,12 +14,6 @@
             || '';
     }
 
-    function toDisplayDate(raw) {
-        if (!raw) return "";
-        const [y, m, d] = raw.split('-').map(Number);
-        return new Date(y, m - 1, d).toLocaleDateString("es-AR");
-    }
-
     function escapeHtml(s) {
         return s ? String(s)
             .replace(/&/g, "&amp;")
@@ -98,8 +92,8 @@
 
             const id = item.id;
             const name = escapeHtml(item.name);
-            const begin = escapeHtml(toDisplayDate(item.begin));
-            const end = escapeHtml(toDisplayDate(item.end));
+            const begin = escapeHtml(AppUtils.toDisplayDate(item.begin));
+            const end = escapeHtml(AppUtils.toDisplayDate(item.end));
             const severity = escapeHtml(item.severity);
 
             tbody.insertAdjacentHTML('beforeend', `
@@ -127,7 +121,7 @@
                         </button>
 
                         <button
-                            class="btn btn-sm btn-danger me-1 btn-delete"
+                            class="btn btn-sm btn-danger me-1 btn-deleteal"
                             data-id="${id}">
                             Eliminar
                         </button>
@@ -168,27 +162,27 @@
             return;
         }
 
-        if (target.matches('.btn-delete')) {
+        if (target.matches('.btn-deleteal')) {
             const id = target.dataset.id;
             const cell = target.closest('td');
 
             target.classList.add('btn-fade-out');
             setTimeout(() => {
                 cell.innerHTML = `
-                    <button data-id="${id}" class="btn btn-danger btn-sm me-1 btn-confirm-delete">Si</button>
-                    <button class="btn btn-secondary btn-sm btn-cancel-delete">No</button>
+                    <button data-id="${id}" class="btn btn-danger btn-sm me-1 btn-confirm-deleteal">Si</button>
+                    <button class="btn btn-secondary btn-sm btn-cancel-deleteal">No</button>
                 `;
             }, 200);
 
             return;
         }
 
-        if (target.matches('.btn-cancel-delete')) {
+        if (target.matches('.btn-cancel-deleteal')) {
             loadData();
             return;
         }
 
-        if (target.matches('.btn-confirm-delete')) {
+        if (target.matches('.btn-confirm-deleteal')) {
             const id = target.dataset.id;
 
             fetch(`/Allergies/Delete/${id}`, { method: "DELETE" })

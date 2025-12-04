@@ -1,33 +1,26 @@
 ﻿namespace Turnero.Controllers;
 
 [Authorize(Roles = RolesConstants.Medico)]
-public class VaccinesController(IGetVaccinesServices get,
-    IUpdateVaccinesServices update,
-    IInsertVaccinesServices insert,
-    IDeleteVacinesServices delete,
-    ILogger<VaccinesController> logger) : Controller
+public class PermMedController(IGetPermMedService get, 
+    IInsertPermMedService insert, 
+    IDeletePermMedService delete,
+    ILogger<PermMedController> logger) : Controller
 {
     public async Task<IActionResult> Index(Guid? id)
     {
         if (id == null)
-        {
-            return BadRequest("El ID del paciente es obligatorio.");
-        }
-        var data = await get.GetByPatientId(id.Value);
+            return BadRequest("El ID del paciente es requerido.");
+        var data = await get.Get(id.Value);
         return PartialView("_Table", data);
     }
 
     [HttpPost]
-    public async Task<IActionResult> InitializeVaccines(Guid? patientId)
+    public async Task<IActionResult> Initialize(Guid? patientId)
     {
-        if (logger.IsEnabled(LogLevel.Information))
-        {
-            logger.LogInformation("Initializing vaccines for patient {PatientId}", patientId);
-        }
         if (patientId == Guid.Empty)
-        {
-            return BadRequest("Patient ID is required.");
-        }
+            return BadRequest("El ID del paciente es requerido.");
+        if (logger.IsEnabled(LogLevel.Information))
+            logger.LogInformation("Initializing PermMed for PatientId: {PatientId}", patientId);
 
         try
         {
@@ -41,108 +34,51 @@ public class VaccinesController(IGetVaccinesServices get,
                 data
             };
             if (logger.IsEnabled(LogLevel.Information))
-            {
-                logger.LogInformation("Successfully initialized vaccines for patient {PatientId}", patientId);
-            }
+                logger.LogInformation("Successfully intialized Permanent medication for patient {PatientId}", patientId);
             return Ok(json);
         }
         catch (Exception ex)
         {
             if (logger.IsEnabled(LogLevel.Error))
-            {
-                logger.LogError(ex, "Error initializing vaccines for patient {PatientId}", patientId);
-            }
-            return StatusCode(500, "An error occurred while initializing vaccines.");
+                logger.LogError(ex, "Error initializing Permanent medication for patient {PatientId}", patientId);
+            return StatusCode(500, "An error occurred while initializing Permanent medication.");
         }
     }
-
 
     [HttpGet]
     public IActionResult Create(Guid? id)
     {
-        if(id == null || id == Guid.Empty)
+        if (id == null || id == Guid.Empty)
             return BadRequest("El ID del paciente es obligatorio.");
         ViewData["PatientId"] = id.Value.ToString();
-        var vaccine = new Vaccines { PatientId = id.Value };
+        var permed = new PermMed { PatientId = id.Value };
         var token = HttpContext.RequestServices.GetRequiredService<IAntiforgery>()
             .GetAndStoreTokens(HttpContext)
             .RequestToken;
         ViewData["RequestVerificationToken"] = token;
-        ViewBag.Description = Enum.GetNames<VaccinesEnum>().Select(v => new SelectListItem
-        {
-            Text = v.Replace("_", " "),
-            Value = v
-        }).ToList();
-        return PartialView("_Create", vaccine);
+        return PartialView("_Create", permed);
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<StatusCodeResult> Create(VaccinesDto dto)
+    public async Task<StatusCodeResult> Create(PermMed permMed)
     {
-        if (dto == null || dto.PatientId == Guid.Empty)
+        if (permMed == null || permMed.PatientId == Guid.Empty)
             return BadRequest();
-
         try
         {
-            await insert.Insert(dto);
+            await insert.Create(permMed);
             if (logger.IsEnabled(LogLevel.Information))
             {
-                logger.LogInformation("Vaccine created successfully for patient {PatientId}", dto.PatientId);
+                logger.LogInformation("Permanent medication created successfully for patient {PatientId}", permMed.PatientId);
             }
             return Ok();
         }
-        catch
+        catch (Exception ex)
         {
-            if (logger.IsEnabled(LogLevel.Warning))
+            if (logger.IsEnabled(LogLevel.Error))
             {
-                logger.LogWarning("Failed to create Vaccine for patient {PatientId}", dto.PatientId);
-            }
-            return StatusCode(500);
-        }
-    }
-
-    [HttpGet]
-    public async Task<IActionResult> Edit(Guid? id)
-    {
-        if (id == null || id == Guid.Empty)
-            return BadRequest("El ID de la vacuna es obligatorio.");
-        var vaccine = await get.Get(id.Value);
-        if (vaccine == null)
-            return NotFound("Vacuna no encontrada.");
-        var token = HttpContext.RequestServices.GetRequiredService<IAntiforgery>()
-            .GetAndStoreTokens(HttpContext)
-            .RequestToken;
-        ViewData["RequestVerificationToken"] = token;
-        ViewBag.Description = Enum.GetNames<VaccinesEnum>().Select(v => new SelectListItem
-        {
-            Text = v.Replace("_", " "),
-            Value = v
-        }).ToList();
-        return PartialView("_Create", vaccine);
-    }
-
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<StatusCodeResult> Edit(VaccinesDto dto)
-    {
-        if (dto == null || dto.Id == Guid.Empty || dto.PatientId == Guid.Empty)
-            return BadRequest();
-        
-        try
-        {
-            await update.Update(dto);
-            if (logger.IsEnabled(LogLevel.Information))
-            {
-                logger.LogInformation("Vaccine updated successfully for patient {PatientId}", dto.PatientId);
-            }
-            return Ok();
-        }
-        catch
-        {
-            if (logger.IsEnabled(LogLevel.Warning))
-            {
-                logger.LogWarning("Failed to update Vaccine for patient {PatientId}", dto.PatientId);
+                logger.LogError(ex, "Error creating Permanent medication for patient {PatientId}", permMed.PatientId);
             }
             return StatusCode(500);
         }
@@ -158,22 +94,23 @@ public class VaccinesController(IGetVaccinesServices get,
             await delete.Delete(id.Value);
             if (logger.IsEnabled(LogLevel.Information))
             {
-                logger.LogInformation("Vaccine with ID {VaccineId} deleted successfully", id);
+                logger.LogInformation("Permanent medication with ID {PermMedId} deleted successfully", id);
             }
             return Ok();
         }
-        catch
+        catch (Exception ex)
         {
-            if (logger.IsEnabled(LogLevel.Warning))
+            if (logger.IsEnabled(LogLevel.Error))
             {
-                logger.LogWarning("Failed to delete Vaccine with ID {VaccineId}", id);
+                logger.LogError(ex, "Error deleting Permanent medication with ID {PermMedId}", id);
             }
             return StatusCode(500);
+
         }
     }
 
     #region private methods
-    private async Task<(string draw, int pageSize, int skip, List<Vaccines> data, int recordsTotal)> SetTable(Guid? patientIdFromQuery = null)
+    private async Task<(string draw, int pageSize, int skip, List<PermMed> data, int recordsTotal)> SetTable(Guid? patientIdFromQuery = null)
     {
         var draw = Request.Form["draw"].FirstOrDefault() ?? "1";
         var start = Request.Form["start"].FirstOrDefault();
@@ -261,11 +198,11 @@ public class VaccinesController(IGetVaccinesServices get,
 
         searchCandidate ??= string.Empty;
 
-        IQueryable<Vaccines> allergiesQueryable = Enumerable.Empty<Vaccines>().AsQueryable();
+        IQueryable<PermMed> allergiesQueryable = Enumerable.Empty<PermMed>().AsQueryable();
         if (Guid.TryParse(searchCandidate, out var patientGuid))
         {
-            var result = await get.GetByPatientId(patientGuid);
-            allergiesQueryable = result.AsQueryable() ?? Enumerable.Empty<Vaccines>().AsQueryable();
+            var result = await get.Get(patientGuid);
+            allergiesQueryable = result.AsQueryable() ?? Enumerable.Empty<PermMed>().AsQueryable();
         }
 
         var list = allergiesQueryable.ToList();
@@ -297,7 +234,7 @@ public class VaccinesController(IGetVaccinesServices get,
         return (draw, pageSize, skip, list, recordsTotal);
     }
 
-    private static List<Vaccines> SetPage(int pageSize, int skip, List<Vaccines> data)
+    private static List<PermMed> SetPage(int pageSize, int skip, List<PermMed> data)
     {
         if (data == null) return [];
         if (pageSize == -1) return data;
