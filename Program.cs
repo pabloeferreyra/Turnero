@@ -183,6 +183,12 @@ builder.Services.AddScoped<IDeleteVacinesServices, DeleteVacinesServices>();
 builder.Services.AddScoped<IGetPermMedService, GetPermMedService>();
 builder.Services.AddScoped<IInsertPermMedService, InsertPermMedService>();
 builder.Services.AddScoped<IDeletePermMedService, DeletePermMedService>();
+
+//GrowthChart Services
+builder.Services.AddScoped<IGetGrowthChartService, GetGrowthChartService>();
+builder.Services.AddScoped<IUpdateGrowthChartService, UpdateGrowthChartService>();
+builder.Services.AddScoped<IInsertGrowthChartService, InsertGrowthChartService>();
+builder.Services.AddScoped<IDeleteGrowthChartService, DeleteGrowthChartService>();
 #endregion
 
 #region Dependency Injection - Repositories
@@ -198,6 +204,7 @@ builder.Services.AddScoped<IPersonalBackgroundRepository, PersonalBackgroundRepo
 builder.Services.AddScoped<IPerinatalBackgroundRepository, PerinatalBackgroundRepositroy>();
 builder.Services.AddScoped<IVaccinesRepository, VaccinesRepository>();
 builder.Services.AddScoped<IPermMedRepository, PermMedRepository>();
+builder.Services.AddScoped<IGrowthChartRepository, GrowthChartRepository>();
 #endregion
 
 #region HTTP Client

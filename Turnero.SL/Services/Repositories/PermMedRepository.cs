@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace Turnero.SL.Services.Repositories;
+﻿namespace Turnero.SL.Services.Repositories;
 
 public class PermMedRepository(ApplicationDbContext context, IMemoryCache cache) : RepositoryBase<PermMed>(context, cache), IPermMedRepository
 {

@@ -25,6 +25,7 @@ public class Patient : BaseEntity
     public ICollection<Vaccines>? Vaccines { get; set; }
     public ICollection<Allergies>? Allergies { get; set; }
     public ICollection<PermMed>? PermMeds { get; set; }
+    public ICollection<GrowthChart>? GrowthCharts { get; set; }
 }
 
 public class PatientDTO : BaseEntity

@@ -60,7 +60,7 @@ public class VaccinesController(IGetVaccinesServices get,
     [HttpGet]
     public IActionResult Create(Guid? id)
     {
-        if(id == null || id == Guid.Empty)
+        if (id == null || id == Guid.Empty)
             return BadRequest("El ID del paciente es obligatorio.");
         ViewData["PatientId"] = id.Value.ToString();
         var vaccine = new Vaccines { PatientId = id.Value };
@@ -128,7 +128,7 @@ public class VaccinesController(IGetVaccinesServices get,
     {
         if (dto == null || dto.Id == Guid.Empty || dto.PatientId == Guid.Empty)
             return BadRequest();
-        
+
         try
         {
             await update.Update(dto);

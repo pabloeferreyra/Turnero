@@ -97,4 +97,5 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<PerinatalBackground> PerinatalBackground { get; set; }
     public DbSet<Vaccines> Vaccines { get; set; }
     public DbSet<PermMed> PermMeds { get; set; }
+    public DbSet<GrowthChart> GrowthCharts { get; set; }
 }

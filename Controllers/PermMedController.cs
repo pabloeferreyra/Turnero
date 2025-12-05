@@ -1,8 +1,8 @@
 ﻿namespace Turnero.Controllers;
 
 [Authorize(Roles = RolesConstants.Medico)]
-public class PermMedController(IGetPermMedService get, 
-    IInsertPermMedService insert, 
+public class PermMedController(IGetPermMedService get,
+    IInsertPermMedService insert,
     IDeletePermMedService delete,
     ILogger<PermMedController> logger) : Controller
 {
