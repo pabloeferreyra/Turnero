@@ -1,4 +1,23 @@
-﻿a.navbar-brand {
+﻿.table-group-header th {
+    background: #f1f3f5;
+    border-bottom: 2px solid #ccc;
+    font-weight: 600;
+    text-align: center;
+}
+
+.group-border-left {
+    border-left: 3px solid #adb5bd !important;
+}
+
+.group-border-right {
+    border-right: 3px solid #adb5bd !important;
+}
+
+thead tr:nth-child(2) th {
+    border-top: none !important;
+}
+
+a.navbar-brand {
   white-space: normal;
   text-align: center;
   word-break: break-all;

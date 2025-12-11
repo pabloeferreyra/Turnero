@@ -5,31 +5,20 @@
 	<div class="modal-body row">
 		<input type="hidden" asp-for="PatientId" id="PatientId" />
 		<input type="hidden" asp-for="Id" id="Id" />
-		<div class="row border p-3 rounded bg-light">
-			<div class="container">
-			<div class="form-group col-md-2 col-sm-6">
+			<div class="form-group col-md-3 col-sm-12 border p-3 rounded bg-light">
 				<label asp-for="Age" class="control-label">Edad</label>
 				<input asp-for="Age" id="AgeInMonths" type="number" class="form-control"
 				value="@Model.Age" min="0" placeholder="0" />
-			</div>
-		
-			<div class="form-group col-md-2 col-sm-6">
-				<label asp-for="Time" class="control-label">Tiempo</label>
 				<select asp-for="Time" id="Time" class="form-control form-select">
 					<option value="Dias">Días</option>
 					<option value="Meses">Meses</option>
 					<option value="Años">Años</option>
 				</select>
 			</div>
-			</div>
-		</div>
-		<div class="form-group col-md-2 col-sm-6">
+		<div class="form-group col-md-3 col-sm-12 border p-3 rounded bg-light">
 			<label asp-for="Weight" class="control-label">Peso (Kg)</label>
 			<input asp-for="Weight" id="WeightInKg" type="number" step="0.01" class="form-control"
 			value="@Model.Weight" min="0" />
-		</div>
-		<div class="form-group col-md-2 col-sm-6">
-			<label asp-for="WPerc" class="control-label">Perc</label>
 			<select asp-for="WPerc" id="WPerc" class="form-control form-select">
 				<option value="P-3">P-3</option>
 				<option value="P3">P3</option>
@@ -40,13 +29,10 @@
 				<option value="P+97">P+97</option>
 			</select>
 		</div>
-		<div class="form-group col-md-2 col-sm-6">
+		<div class="form-group col-md-3 col-sm-12 border p-3 rounded bg-light">
 			<label asp-for="Height" class="control-label">Talla (cm)</label>
 			<input asp-for="Height" id="HeightInCm" type="number" step="0.1" class="form-control"
 			value="@Model.Height" min="0" />
-		</div>
-		<div class="form-group col-md-2 col-sm-6">
-			<label asp-for="HPerc" class="control-label">Perc</label>
 			<select asp-for="HPerc" id="HPerc" class="form-control form-select">
 				<option value="P-3">P-3</option>
 				<option value="P3">P3</option>
@@ -57,20 +43,17 @@
 				<option value="P+97">P+97</option>
 			</select>
 		</div>
-		<div class="form-group col-md-2 col-sm-6">
+		<div class="form-group col-md-3 col-sm-12 border p-3 rounded bg-light">
 			<label asp-for="HeadCircumference" class="control-label">PC (cm)</label>
 			<input asp-for="HeadCircumference" id="HeadCircumferenceInCm" type="number" step="0.1" class="form-control"
 			value="@Model.HeadCircumference" min="0" />
-		</div>
-		<div class="form-group col-md-2 col-sm-6">
-			<label asp-for="HCPerc" class="control-label">Perc</label>
 			<select asp-for="HCPerc" id="HCPerc" class="form-control form-select">
 				<option value="P-2Ds">P-2Ds</option>
 				<option value="P50">P50</option>
 				<option value="P+2Ds">P+2Ds</option>
 			</select>
 		</div>
-		<div class="form-group col-md-2 col-sm-6">
+		<div class="form-group col-md-3 col-sm-12 border p-3 rounded bg-light">
 			<label asp-for="Bmi" class="control-label">IMC</label>
 			<input asp-for="Bmi" id="Bmi" type="number" step="0.01" class="form-control"
 				   value="@Model.Bmi" min="0"  readonly />

@@ -91,15 +91,16 @@
 
 			tbody.insertAdjacentHTML('beforeend', `
 			<tr>
-				<td>${age}</td>
-				<td>${weight}</td>
-				<td>${wPerc}</td>
-				<td>${height}</td>
-				<td>${hPerc}</td>
-				<td>${headCircumference}</td>
-				<td>${hcPerc}</td>
-				<td>${bmi}</td>
-				<td><button class="btn btn-sm btn-danger me-1 btn-deletegc"
+				<td class="group-border-right">${age}</td>
+				<td class="group-border-left">${weight}</td>
+				<td class="group-border-right">${wPerc}</td>
+				<td class="group-border-left">${height}</td>
+				<td class="group-border-right">${hPerc}</td>
+				<td class="group-border-left">${headCircumference}</td>
+				<td class="group-border-right">${hcPerc}</td>
+				<td class="group-border-left">${bmi}</td>
+				<td class="group-border-left">
+					<button class="btn btn-sm btn-danger me-1 btn-deletegc"
 						data-id="${id}">
 							<i class="fa-solid fa-trash"></i> Eliminar
 					</button>
@@ -189,6 +190,26 @@
 				<button class="btn btn-secondary btn-sm btn-cancel-deletegc">No</button>
 				`;
 			}, 200);
+		}
+
+		if (target.matches('.btn-cancel-deletegc')) {
+			loadData();
+			return;
+		}
+
+		if (target.matches('.btn-confirm-deletegc')) {
+			const id = target.dataset.id;
+
+			fetch(`/GrowthChart/Delete/${id}`, { method: "DELETE" })
+				.then(r => {
+					if (!r.ok)
+						AppUtils.showToast("error", "Error eliminando registro");
+
+					loadData();
+					AppUtils.showToast("success", "registro eliminado");
+				});
+
+			return;
 		}
 	})
 
