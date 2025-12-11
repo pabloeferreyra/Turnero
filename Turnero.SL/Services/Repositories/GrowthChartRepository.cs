@@ -8,6 +8,14 @@ public class GrowthChartRepository(ApplicationDbContext context, IMemoryCache ca
             .Include(g => g.Patient)
             .ToListAsync();
     }
+
+    public async Task<GrowthChart?> GetById(Guid id)
+    {
+        return await FindByCondition(g => g.Id == id)
+            .Include(g => g.Patient)
+            .FirstOrDefaultAsync();
+    }
+
     public async Task Insert(GrowthChart growthChart)
     {
         await CreateAsync(growthChart);
@@ -25,6 +33,7 @@ public class GrowthChartRepository(ApplicationDbContext context, IMemoryCache ca
 public interface IGrowthChartRepository
 {
     Task<List<GrowthChart>> GetByPatientId(Guid patientId);
+    Task<GrowthChart?> GetById(Guid id);
     Task Insert(GrowthChart growthChart);
     Task Edit(GrowthChart growthChart);
     Task Remove(Guid id);

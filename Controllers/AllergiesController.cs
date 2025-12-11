@@ -71,7 +71,7 @@ public class AllergiesController(IInsertAllergiesServices insertAllergies,
     }
 
     [HttpGet]
-    public IActionResult GetAllergies(Guid id)
+    public IActionResult Index(Guid id)
     {
         logger.LogInformation("GetAllergies called for patient {patientId}", id);
         ViewData["PatientId"] = id.ToString();

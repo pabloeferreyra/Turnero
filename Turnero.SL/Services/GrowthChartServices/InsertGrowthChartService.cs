@@ -2,7 +2,7 @@
 
 public class InsertGrowthChartService(IGrowthChartRepository repository) : IInsertGrowthChartService
 {
-    public async Task Insert(GrowthChart growthChart)
+    public async Task Create(GrowthChart growthChart)
     {
         await repository.Insert(growthChart);
     }
@@ -10,5 +10,5 @@ public class InsertGrowthChartService(IGrowthChartRepository repository) : IInse
 
 public interface IInsertGrowthChartService
 {
-    Task Insert(GrowthChart growthChart);
+    Task Create(GrowthChart growthChart);
 }

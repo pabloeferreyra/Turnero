@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Turnero.DAL.Data;
@@ -11,9 +12,11 @@ using Turnero.DAL.Data;
 namespace Turnero.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251211004328_Change time value type")]
+    partial class Changetimevaluetype
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -312,11 +315,11 @@ namespace Turnero.Migrations
                     b.Property<double>("Bmi")
                         .HasColumnType("double precision");
 
-                    b.Property<string>("HCPerc")
-                        .HasColumnType("text");
+                    b.Property<int>("HCPerc")
+                        .HasColumnType("integer");
 
-                    b.Property<string>("HPerc")
-                        .HasColumnType("text");
+                    b.Property<int>("HPerc")
+                        .HasColumnType("integer");
 
                     b.Property<int>("HeadCircumference")
                         .HasColumnType("integer");
@@ -330,8 +333,8 @@ namespace Turnero.Migrations
                     b.Property<string>("Time")
                         .HasColumnType("text");
 
-                    b.Property<string>("WPerc")
-                        .HasColumnType("text");
+                    b.Property<int>("WPerc")
+                        .HasColumnType("integer");
 
                     b.Property<double>("Weight")
                         .HasColumnType("double precision");

@@ -64,7 +64,7 @@ public class VisitsController(IGetVisitService getVisit,
     }
 
     [HttpGet]
-    public IActionResult GetVisits(Guid id)
+    public IActionResult Index(Guid id)
     {
         logger.LogInformation("GetVisits called for patient {PatientId}", id);
         ViewData["PatientId"] = id.ToString();

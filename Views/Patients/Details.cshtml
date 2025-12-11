@@ -6,10 +6,17 @@
     string naModalUrl = string.Format("/PerinatalBackground/{0}?id={1}", methods[0], Model.Id);
     string edModalUrl = string.Format("/Patients/{0}?id={1}", methods[1], Model.Id);
     string viModalUrl = string.Format("/Visits/{0}?id={1}", methods[2], Model.Id);
+    string viUrl = string.Format("/Visits/{0}?id={1}", methods[0], Model.Id);
     string alModalUrl = string.Format("/Allergies/{0}?id={1}", methods[2], Model.Id);
+    string alUrl = string.Format("/Allergies/{0}?id={1}", methods[0], Model.Id);
     string vaModalUrl = string.Format("/Vaccines/{0}?id={1}", methods[2], Model.Id);
-	string pmModalUrl = string.Format("/PermMed/{0}?id={1}", methods[2], Model.Id);
-	string vmModalUrl = string.Format("/Vademecum/Index");
+    string vaUrl = string.Format("/Vaccines/{0}?id={1}", methods[0], Model.Id);
+    string pmModalUrl = string.Format("/PermMed/{0}?id={1}", methods[2], Model.Id);
+    string pmUrl = string.Format("/PermMed/{0}?id={1}", methods[0], Model.Id);
+    string pdUrl = string.Format("/ParentsData/{0}?id={1}", methods[0], Model.Id);
+    string gcUrl = string.Format("/GrowthChart/{0}?id={1}", methods[0], Model.Id);
+    string gcModalUrl = string.Format("/GrowthChart/{0}?id={1}", methods[2], Model.Id);
+    string vmModalUrl = string.Format("/Vademecum/Index");
 }
 
 <input type="hidden" name="patientId" id="patientId" value="@Model.Id" />
@@ -133,7 +140,7 @@
 
             <li class="nav-item">
                 <button type="button" class="nav-link" id="allergiesTab"
-                        data-url='@Url.Action("GetAllergies", "Allergies", new { id = Model.Id })'>
+                        data-url='@alUrl'>
                     <i class="fa-solid fa-bacteria"></i>
                     Alergias
                 </button>
@@ -141,23 +148,30 @@
 
             <li class="nav-item">
                 <button type="button" class="nav-link" id="parentsTab"
-                        data-url='@Url.Action("Index", "ParentsData", new { id = Model.Id })'>
+                        data-url='@pdUrl'>
                     <i class="fa-solid fa-people-group"></i>
                     Familia
                 </button>
             </li>
             <li class="nav-item">
                 <button type="button" class="nav-link" id="vaccinesTab"
-						data-url='@Url.Action("Index", "Vaccines", new { id = Model.Id })'>
+						data-url='@vaUrl'>
                     <i class="fa-solid fa-syringe"></i>
 					Vacunas
 				</button>
             </li>
             <li class="nav-item">
                 <button type="button" class="nav-link" id="permMedTab"
-                        data-url='@Url.Action("Index", "PermMed", new { id = Model.Id })'>
+                        data-url='@pmUrl'>
                     <i class="fa-solid fa-capsules"></i>
 					Medicación Permanente
+                </button>
+            </li>
+            <li class="nav-item">
+				<button type="button" class="nav-link" id="growthChartsTab"
+                    data-url='@gcUrl'>
+                    <i class="fa-solid fa-chart-line"></i>
+                    Tablas de crecimiento
                 </button>
             </li>
         </ul>
@@ -211,6 +225,15 @@
                                 Medicación permanente
                             </button>
                         </li>
+                        <li>
+                            <button data-open-modal
+                                    data-modal-id="GlobalModal"
+                                    data-url="@gcModalUrl"
+                                    data-title="Nuevo registro Crecimiento"
+                                    class="btn btn-sm btn-secondary me-1 dropdown-item">
+                                    Registro Crecimiento
+                                </button>
+                        </li>
                     </ul>
                 </li>
             </ul>
@@ -231,7 +254,8 @@
 	<script src="~/js/permMed.js" asp-append-version="true"></script>
     <script src="~/js/personalBackground.js" asp-append-version="true"></script>
     <script src="~/js/perinatalBackground.js" asp-append-version="true"></script>
-
+    <script src="/js/growthCharts.js" asp-append-version="true"></script>
+    
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }

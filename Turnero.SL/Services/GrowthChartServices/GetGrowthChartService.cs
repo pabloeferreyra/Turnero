@@ -6,9 +6,14 @@ public class GetGrowthChartService(IGrowthChartRepository repository) : IGetGrow
     {
         return await repository.GetByPatientId(patientId);
     }
+    public async Task<GrowthChart?> GetById(Guid id)
+    {
+        return await repository.GetById(id);
+    }
 }
 
 public interface IGetGrowthChartService
 {
     Task<List<GrowthChart>> Get(Guid patientId);
+    Task<GrowthChart?> GetById(Guid id);
 }
