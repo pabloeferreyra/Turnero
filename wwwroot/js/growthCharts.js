@@ -80,14 +80,14 @@
 
 		currentData.forEach(item => {
 			const id = item.id;
-			const age = escapeHtml(item.Age + " " + item.Time);
-			const weight = escapeHtml(item.Weight);
-			const wPerc = escapeHtml(item.WPerc);
-			const height = escapeHtml(item.Height);
-			const hPerc = escapeHtml(item.HPerc);
-			const headCircumference = escapeHtml(item.HeadCircumference);
-			const hcPerc = escapeHtml(item.HCPerc);
-			const bmi = escapeHtml(item.Bmi);
+			const age = escapeHtml(item.age + " " + item.time);
+			const weight = escapeHtml(item.weight);
+			const wPerc = escapeHtml(item.wPerc);
+			const height = escapeHtml(item.height);
+			const hPerc = escapeHtml(item.hPerc);
+			const headCircumference = escapeHtml(item.headCircumference);
+			const hcPerc = escapeHtml(item.hcPerc);
+			const bmi = escapeHtml(item.bmi);
 
 			tbody.insertAdjacentHTML('beforeend', `
 			<tr>
@@ -160,7 +160,6 @@
 			});
 		}
 
-
 		loadData();
 
 	})
@@ -212,6 +211,32 @@
 					"/GrowthChart/Create",
 					"POST",
 					"Nuevo registro"
+				);
+
+				loadData();
+			});
+		}
+	}
+
+	function initEdit() {
+		const w = document.getElementById('WeightInKg');
+		const h = document.getElementById('HeightInCm');
+
+		if (w) w.addEventListener('input', calculateBmi);
+		if (h) h.addEventListener('input', calculateBmi);
+
+	const btn = document.querySelector("#btnEditGrowthChart");
+		if (btn) {
+			btn.addEventListener("click", async function (e) {
+				e.preventDefault();
+				if (!AppUtils.validateAll()) return;
+				await ModalUtils.submitForm(
+					"GlobalModal",
+					"EditGrowthChartForm",
+					"/GrowthChart/Edit",
+					"POST",
+					"Editar registro",
+					false
 				);
 
 				loadData();
