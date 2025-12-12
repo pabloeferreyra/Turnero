@@ -1,16 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using Turnero.DAL.Models;
-using Turnero.Utilities.Utilities;
-
-namespace Turnero.Controllers;
+﻿namespace Turnero.Controllers;
 
 [Authorize(Roles = RolesConstants.Admin)]
 public class AdministrationController(RoleManager<IdentityRole> roleManager,
@@ -24,7 +12,7 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
     public async Task<IActionResult> ManageUserClaims(string userId)
     {
         var user = await userManager.FindByIdAsync(userId);
-        if(user == null)
+        if (user == null)
         {
             ViewBag.ErrorMessage = $"User with Id = {userId} cannot be found";
             return View("NotFound");
@@ -42,7 +30,7 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
             {
                 ClaimType = claim.Type
             };
-            if(existingUserClaims.Any(c => c.Type == claim.Type))
+            if (existingUserClaims.Any(c => c.Type == claim.Type))
             {
                 userClaim.IsSelected = true;
             }
@@ -141,7 +129,7 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
 
                 return View(model);
             }
-            catch(DbUpdateException ex)
+            catch (DbUpdateException ex)
             {
                 Logger.LogError("Error updating user: {Exception}", ex);
                 return View("Error");
@@ -346,7 +334,7 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
     }
 
     [HttpPost]
-    public async Task<IActionResult> EditUsersInRole(List<UserRoleViewModel> model,string roleId)
+    public async Task<IActionResult> EditUsersInRole(List<UserRoleViewModel> model, string roleId)
     {
         var role = await roleManager.FindByIdAsync(roleId);
         if (role == null)
@@ -357,8 +345,8 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
         foreach (var userRole in model)
         {
             var user = await userManager.FindByIdAsync(userRole.UserId);
-            
-            if(userRole.IsSelected && !(await userManager.IsInRoleAsync(user, role.Name)))
+
+            if (userRole.IsSelected && !(await userManager.IsInRoleAsync(user, role.Name)))
             {
                 await userManager.AddToRoleAsync(user, role.Name);
             }
@@ -367,6 +355,6 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
                 await userManager.RemoveFromRoleAsync(user, role.Name);
             }
         }
-       return RedirectToAction(nameof(EditRole), new { Id = roleId });
+        return RedirectToAction(nameof(EditRole), new { Id = roleId });
     }
 }

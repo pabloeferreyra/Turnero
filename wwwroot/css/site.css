@@ -1,5 +1,21 @@
-﻿/* Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
-for details on configuring this project to bundle and minify static web assets. */
+﻿.table-group-header th {
+    background: #f1f3f5;
+    border-bottom: 2px solid #ccc;
+    font-weight: 600;
+    text-align: center;
+}
+
+.group-border-left {
+    border-left: 3px solid #adb5bd !important;
+}
+
+.group-border-right {
+    border-right: 3px solid #adb5bd !important;
+}
+
+thead tr:nth-child(2) th {
+    border-top: none !important;
+}
 
 a.navbar-brand {
   white-space: normal;
@@ -7,7 +23,6 @@ a.navbar-brand {
   word-break: break-all;
 }
 
-/* Provide sufficient contrast against white background */
 a {
     color: #fff;
     text-decoration: none;
@@ -41,6 +56,10 @@ input[type="password"] {
     border-radius: 1.5rem;
 }
 
+.btn-link, .btn-link:hover {
+    color: #000 !important;
+}
+
 .btn-primary:hover, .btn-primary:focus, .dropdown-item:focus {
     color: #fff;
     background-color: #0B5066;
@@ -71,8 +90,6 @@ input[type="password"] {
     color: #0B5066;
 }
 
-/* Sticky footer styles
--------------------------------------------------- */
 html {
   font-size: 14px;
 }
@@ -98,15 +115,13 @@ button.accept-policy {
   line-height: inherit;
 }
 
-/* Sticky footer styles
--------------------------------------------------- */
+
 html {
   position: relative;
   min-height: 100%;
 }
 
 body {
-  /* Margin bottom by footer height */
   margin-bottom: 60px;
 }
 .footer {
@@ -114,5 +129,138 @@ body {
   bottom: 0;
   width: 100%;
   white-space: nowrap;
-  line-height: 60px; /* Vertically center the text there */
+  line-height: 60px;
+}
+
+.btn-fade-out {
+    transition: opacity 0.25s ease-in-out;
+    opacity: 0;
+}
+
+.btn-fade-in {
+    opacity: 0;
+    transition: opacity 0.25s ease-in-out;
+}
+
+.btn-fade-in.show {
+    opacity: 1;
+}
+
+.switch-ios {
+    position: relative;
+    display: inline-block;
+    width: 46px;
+    height: 26px;
+    margin: 0;
+}
+
+.switch-ios input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider-ios {
+    position: absolute;
+    cursor: pointer;
+    background-color: #ccc;
+    transition: .3s;
+    border-radius: 34px;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* ← NECESARIO */
+    pointer-events: none;
+}
+
+.slider-ios:before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+}
+
+.switch-ios input:checked + .slider-ios {
+    background-color: #4cd964;
+}
+
+.switch-ios input:checked + .slider-ios:before {
+    transform: translateX(20px);
+}
+
+.timeline {
+    position: relative;
+    margin-left: 20px;
+    border-left: 3px solid #0d6efd33;
+    padding-left: 20px;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 25px;
+    padding-left: 10px;
+}
+
+.timeline-item::before {
+    content: "";
+    position: absolute;
+    left: -31px;
+    top: 5px;
+    width: 14px;
+    height: 14px;
+    background-color: #0d6efd;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 0 0 2px #0d6efd;
+}
+
+.timeline-card {
+    background: #f8f9fa;
+    border-radius: 6px;
+    padding: 15px;
+    border: 1px solid #e0e0e0;
+}
+
+#tabContent {
+    position: relative;
+    transition: opacity .25s ease-in-out;
+}
+
+.tab-loading {
+    opacity: 0.3;
+}
+
+.tab-loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255,255,255,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+    z-index: 10;
+}
+
+.tab-loading-spinner {
+    width: 36px;
+    height: 36px;
+    border: 4px solid #ccc;
+    border-top-color: #007bff;
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
 }

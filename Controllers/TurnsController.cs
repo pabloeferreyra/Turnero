@@ -37,8 +37,8 @@ public class TurnsController(UserManager<IdentityUser> userManager,
     {
 
         string isMedic = await CheckMedic();
-        var turns = getTurnDTO.GetTurnsDto();
-        _ = SetTable(isMedic, turns, out string draw, out int pageSize, out int skip, out List<TurnDTO> data, out int recordsTotal);
+
+        _ = SetTable(isMedic, out string draw, out int pageSize, out int skip, out List<TurnDTO> data, out int recordsTotal);
 
         data = SetPage(pageSize, skip, data);
 
@@ -52,33 +52,46 @@ public class TurnsController(UserManager<IdentityUser> userManager,
         return await Task.FromResult<IActionResult>(Ok(json));
     }
 
-    private IQueryable<TurnDTO> SetTable(string isMedic, IQueryable<TurnDTO> turns, out string draw, out int pageSize, out int skip, out List<TurnDTO> data, out int recordsTotal)
+    private IQueryable<TurnDTO> SetTable(string isMedic, out string draw, out int pageSize, out int skip, out List<TurnDTO> data, out int recordsTotal)
     {
         draw = Request.Form["draw"].FirstOrDefault();
         var start = Request.Form["start"].FirstOrDefault();
         var length = Request.Form["length"].FirstOrDefault();
         var searchValue = Request.Form["search[value]"].FirstOrDefault();
-        pageSize = length != null ? int.Parse(length) : 0;
+        pageSize = length == null || int.Parse(length) == 0 ? -1 : int.Parse(length);
         skip = start != null ? int.Parse(start) : 0;
         var medic = isMedic ?? Request.Form["Columns[5][search][value]"].FirstOrDefault();
-        var dateTurn = Request.Form["Columns[6][search][value]"].FirstOrDefault();
+
+        var dateTurnStr = Request.Form["Columns[6][search][value]"].FirstOrDefault();
+        _ = DateOnly.MinValue;
+        DateOnly dateTurn;
+        if (!string.IsNullOrEmpty(dateTurnStr) && DateOnly.TryParse(dateTurnStr, out var dt))
+        {
+            dateTurn = dt;
+        }
+        else
+        {
+            dateTurn = DateOnly.Parse(DateTime.Today.ToShortDateString());
+        }
+
         var sortColumn = Request.Form["columns[" + Request.Form["order[0][column]"].FirstOrDefault() + "][name]"].FirstOrDefault();
         var sortColumnDirection = Request.Form["order[0][dir]"].FirstOrDefault();
-        var defa = DateTime.Today.ToString("dd/MM/yyyy");
 
+        IQueryable<TurnDTO> turns;
+        if ((dateTurn != DateOnly.MinValue) && !string.IsNullOrEmpty(medic))
+        {
+            turns = getTurnDTO.GetTurnsDtoByDateAndId(dateTurn, Guid.Parse(medic));
+        }
+        else
+        {
+            turns = getTurnDTO.GetTurnsDto();
+        }
         if (!(string.IsNullOrEmpty(sortColumn) && string.IsNullOrEmpty(sortColumnDirection)))
         {
             turns = turns.OrderBy(sortColumn + " " + sortColumnDirection);
         }
 
         data = [.. turns];
-        if (!string.IsNullOrEmpty(medic))
-        {
-            data = [.. data.Where(a => a.MedicId == Guid.Parse(medic))];
-        }
-
-        data = !string.IsNullOrEmpty(dateTurn) ? [.. data.Where(a => a.Date == dateTurn)] : [.. data.Where(a => a.Date == defa)];
-
         recordsTotal = data.Count;
         return turns;
     }
@@ -93,7 +106,6 @@ public class TurnsController(UserManager<IdentityUser> userManager,
         {
             data = [.. data.Take(pageSize)];
         }
-
         return data;
     }
 
@@ -182,7 +194,7 @@ public class TurnsController(UserManager<IdentityUser> userManager,
     {
         try
         {
-            turn.Reason = turn.Reason.TrimEnd('\"');
+            turn.Reason = string.IsNullOrWhiteSpace(turn.Reason) ? string.Empty : turn.Reason.TrimEnd('\"');
             var t = turn.Adapt<Turn>();
             await insertTurns.CreateTurnAsync(t);
             var medic = await getMedics.GetMedicById(turn.MedicId);
@@ -276,7 +288,7 @@ public class TurnsController(UserManager<IdentityUser> userManager,
         ViewBag.Medics = new SelectList(medics, "Id", "Name", turn.MedicId);
         ViewBag.TimeEdit = new SelectList(time, "Id", "Time", turn.TimeId);
 
-        return PartialView("Edit", turn);
+        return PartialView("_Edit", turn);
     }
 
     [Authorize(Roles = RolesConstants.Ingreso)]
@@ -291,6 +303,7 @@ public class TurnsController(UserManager<IdentityUser> userManager,
         if (ModelState.IsValid)
         {
             var t = turn.Adapt<Turn>();
+
             updateTurns.Update(t);
             var users = await userManager.GetUsersInRoleAsync(RolesConstants.Ingreso);
             foreach (var u in users) { await hubContext.Clients.User(u.Id).SendAsync("UpdateTableDirected", "La tabla se ha actualizado"); }

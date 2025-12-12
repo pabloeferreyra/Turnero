@@ -1,13 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.WebUtilities;
-using Turnero.SL.Services.Interfaces;
+﻿using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace Turnero.Areas.Identity.Pages.Account
 {
@@ -36,7 +27,7 @@ namespace Turnero.Areas.Identity.Pages.Account
                 }
 
                 await firebaseService.SendPasswordResetLinkAsync(Input.Email);
-                
+
                 return RedirectToPage("./ForgotPasswordConfirmation");
             }
 

@@ -1,0 +1,36 @@
+﻿@model Vaccines
+
+<form method="post" id="CreateVaccineForm" autocomplete="off">
+	<input type="hidden" name="__RequestVerificationToken" value="@ViewData["RequestVerificationToken"]" />
+	<div class="modal-body row">
+		<input type="hidden" asp-for="PatientId" id="PatientId" />
+		<input type="hidden" asp-for="Id" id="Id" />
+		<div class="form-group col-md-12 col-sm-12">
+			<label asp-for="Description" class="control-label">Descripcion</label>
+			<select id="Description" name="Description" title="Description" class="form-control form-select" asp-items="@ViewBag.Description"></select>
+			<div id="OtherDescription" style="display:none;">
+				<label for="OtherDescription">Especifique:</label>
+				<input id="OtherDescription" name="OtherDescription" class="form-control" />
+			</div>
+		</div>
+		<div class="form-group col-md-12 col-sm-12">
+			<label asp-for="DateApplied" class="control-label">Fecha Aplicacion</label>
+			<input asp-for="DateApplied" id="DateApplied" type="text" class="form-control"
+			value="@Model.DateApplied" max="@DateTime.Now.ToString("yyyy-MM-dd")" />
+		</div>
+	</div>
+
+	<div class="modal-footer">
+		<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+		@{
+			if (Model.Id == new Guid())
+			{
+				<button type="button" id="btnCreateVaccine" class="btn btn-primary">Crear</button>
+			}
+			else
+			{
+				<button type="button" id="btnEditVaccine" class="btn btn-primary">Editar</button>
+			}
+		}
+	</div>
+</form>

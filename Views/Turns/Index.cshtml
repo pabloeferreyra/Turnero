@@ -1,27 +1,22 @@
 ﻿@model TurnDTO;
-
-@using Microsoft.AspNetCore.Identity;
-@using Turnero.DAL.Models;
-@using Turnero.Utilities.Utilities
-
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
 @{
 
-    ViewData["Title"] = "Turnos - Turnero";
-    if (ViewBag.Date == null)
-        ViewBag.Date = String.Format("{0:dd/MM/yyyy}", DateTime.Now);
-    else
-        String.Format("{0:dd/M/yyyy}", DateTime.Now);
+    ViewData["Title"] = "Turnos ";
+    string[] methods = ["Index", "Edit", "Create"];
+    string tuModalUrl = string.Format("/Turns/{0}", methods[2]);
+    // string edModalUrl = string.Format("/TUrns/{0}?id={1}", methods[1], Model.id);
+
 }
 
 
 <div class="back container-fluid">
     <div class="form-group row">
-        <div class="col-lg-2 col-md-2 col-sm-12">
-            <input id="DateTurn" name="dateTurn" type="text" class="form-control" placeholder="Fecha" value="@ViewBag.Date" data-date-format="dd/MM/yyyy" />
+        <div class="col-md-2 col-sm-12">
+            <input id="DateTurn" type="text" class="form-control" placeholder="Selecciona una fecha" />
         </div>
-        <div class="col-lg-2 col-md-5 col-sm-12">
+        <div class="col-md-3 col-sm-12">
             @if(User.IsInRole(RolesConstants.Ingreso))
             {
             <select id="Medics" title="Medico" class="form-control" asp-items="@ViewBag.Medics">
@@ -34,13 +29,19 @@
                 </select>
             }
         </div>
-        <div class="col-lg-2 col-md-2 col-sm-12">
+        <div class="col-md-2 col-sm-12">
             <button class="form-control btn btn-primary" id="btnSearch">Buscar</button>
         </div>
         @{
             if (SignInManager.IsSignedIn(User)) {
-                <div class="col-lg-2 col-md-3 col-sm-12">
-                    <button type="button" id="createTurn" class="form-control btn btn-secondary">Nuevo Turno</button>
+                <div class="col-md-3 col-sm-12">
+                    <button data-open-modal 
+                    data-modal-id="GlobalModal"
+                    data-url="@tuModalUrl" 
+                    type="button" id="createTurn" 
+                    class="form-control btn btn-secondary">
+                    Nuevo Turno
+                    </button>
                 </div>
             }
         }
@@ -52,21 +53,9 @@
     </div>
 
     <!-- Modal -->
-    <div class="modal modal-lg fade" id="Create" role="dialog">
-        <div class="modal-dialog modal-xl modal-dialog-centered">
-            <!-- Modal content-->
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Nuevo</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div id="CreateFormContent"></div>
-            </div>
-
-        </div>
-    </div>
+   
     
-     <div class="modal modal-lg fade" id="Edit" role="dialog">
+    <div class="modal modal-lg fade" id="Edit" role="dialog">
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -90,9 +79,9 @@
 
 
 @section scripts{
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+    <script src="~/js/turn.js" asp-append-version="true"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/9.0.6/signalr.min.js"></script>
     <script src="~/js/signalR.js"></script>
-    <script src="~/js/turn.js"></script>
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }

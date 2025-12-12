@@ -1,21 +1,21 @@
 ﻿using Moq;
 using Turnero.DAL.Models;
-using Turnero.SL.Services.Interfaces;
-using Turnero.SL.Services.Repositories;
 using Turnero.SL.Services;
+using Turnero.SL.Services.Repositories;
+using Turnero.SL.Services.TurnsServices;
 using Xunit;
 
 namespace Turnero.Test;
 
 public class GetTurnsServicesTests
 {
-    private readonly Mock<ILoggerServices> _loggerMock;
+    private readonly Mock<LoggerService> _loggerMock;
     private readonly Mock<ITurnRepository> _turnRepositoryMock;
     private readonly GetTurnsServices _getTurnsServices;
 
     public GetTurnsServicesTests()
     {
-        _loggerMock = new Mock<ILoggerServices>();
+        _loggerMock = new Mock<LoggerService>();
         _turnRepositoryMock = new Mock<ITurnRepository>();
         _getTurnsServices = new GetTurnsServices(_loggerMock.Object, _turnRepositoryMock.Object);
     }
@@ -26,7 +26,7 @@ public class GetTurnsServicesTests
         // Arrange
         var dateTurn = DateTime.Now;
         var medicId = Guid.NewGuid();
-        var turns = new List<Turn> { new Turn { Id = Guid.NewGuid(), Name = "Turn1" } };
+        var turns = new List<Turn> { new() { Id = Guid.NewGuid(), Name = "Turn1" } };
         _turnRepositoryMock.Setup(repo => repo.GetList(dateTurn, medicId)).Returns(turns);
 
         // Act

@@ -8,8 +8,8 @@ public class Turn
     [Display(Name = "Nombre"), Required]
     public string? Name { get; set; }
 
-    [StringLength(10, MinimumLength = 6), Required]
-    public string? Dni { get; set; }
+    [Required]
+    public long? Dni { get; set; }
 
     [Display(Name = "Médico")]
     public Medic? Medic { get; set; }
@@ -39,7 +39,7 @@ public class TurnDTO
     public Guid Id { get; set; }
     [Display(Name = "Nombre")]
     public string? Name { get; set; }
-    public string? Dni { get; set; }
+    public long? Dni { get; set; }
     public Guid MedicId { get; set; }
     [Display(Name = "Médico")]
     public string? MedicName { get; set; }

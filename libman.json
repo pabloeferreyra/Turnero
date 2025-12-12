@@ -2,18 +2,5 @@
   "version": "1.0",
   "defaultProvider": "cdnjs",
   "libraries": [
-    {
-      "library": "toastr.js@2.1.4",
-      "destination": "wwwroot/toastr.js/",
-      "files": [
-        "toastr.min.js",
-        "toastr.min.css",
-        "toastr.css"
-      ]
-    },
-    {
-      "library": "datatables@1.10.21",
-      "destination": "wwwroot/lib/datatables/"
-    }
   ]
 }
