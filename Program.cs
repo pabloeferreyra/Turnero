@@ -38,9 +38,10 @@ if (builder.Environment.IsDevelopment())
 #endregion
 
 #region Database Configuration
-AppSettings.ConnectionString = builder.Configuration.GetConnectionString("LocalConnection");
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(AppSettings.ConnectionString));
+
+AppSettings.ConnectionString = builder.Configuration.GetConnectionString("PostgresConnection");
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseNpgsql(AppSettings.ConnectionString));
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 {
