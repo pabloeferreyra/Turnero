@@ -1,9 +1,5 @@
 ﻿using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 using Turnero.SL.Services.Repositories;
 using Xunit;
 
@@ -144,7 +140,7 @@ namespace Turnero.Test
             // Arrange
             var procedureName = "TestProcedure";
             var parameters = new object[] { 1, "param" };
-            var data = new List<TestEntity> { new TestEntity(), new TestEntity() };
+            var data = new List<TestEntity> { new(), new() };
             _repositoryMock.Setup(repo => repo.CallStoredProcedure(procedureName, parameters)).Returns(data);
 
             // Act
@@ -160,7 +156,7 @@ namespace Turnero.Test
             // Arrange
             var connectionString = "TestConnectionString";
             var procedureName = "TestProcedure";
-            var data = new List<TestEntity> { new TestEntity(), new TestEntity() }.AsQueryable();
+            var data = new List<TestEntity> { new(), new() }.AsQueryable();
             _repositoryMock.Setup(repo => repo.CallStoredProcedureDTO(connectionString, procedureName)).Returns(data);
 
             // Act

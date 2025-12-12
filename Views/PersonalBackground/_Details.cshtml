@@ -1,0 +1,55 @@
+﻿@model PersonalBackground
+@{
+    string[] methods = ["Index", "Edit"];
+    string peModalUrl = string.Format("/PersonalBackground/{0}?id={1}", methods[1], Model.Id);
+
+}
+<div class="container px-3">
+    <div class="text-end mb-3">
+        <button type="button" data-open-modal data-modal-id="GlobalModal"
+                class="btn btn-sm btn-secondary me-1"
+                data-url="@peModalUrl"
+                data-title="Editar antecedentes personales">
+            Editar
+        </button>
+    </div>
+    <div class="row g-3">
+        <div class="col-md-6">
+            @foreach (var prop in ViewData.ModelMetadata.Properties.Where(p => p.ModelType == typeof(bool)).Take(8))
+            {
+                bool value = (bool)Model.GetType().GetProperty(prop.PropertyName)!.GetValue(Model)!;
+                <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                    <span class="fw-semibold">@prop.DisplayName</span>
+                    <span>
+                        @(value
+                                            ? Html.Raw("<i class='bi bi-check-circle-fill text-success fs-5'></i>")
+                                            : Html.Raw("<i class='bi bi-x-circle-fill text-danger fs-5'></i>")
+                                            )
+                    </span>
+                </div>
+            }
+        </div>
+        <div class="col-md-6">
+            @foreach (var prop in ViewData.ModelMetadata.Properties.Where(p => p.ModelType == typeof(bool)).Skip(8))
+            {
+                bool value = (bool)Model.GetType().GetProperty(prop.PropertyName)!.GetValue(Model)!;
+                <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                    <span class="fw-semibold">@prop.DisplayName</span>
+                    <span>
+                        @(value
+                                            ? Html.Raw("<i class='bi bi-check-circle-fill text-success fs-5'></i>")
+                                            : Html.Raw("<i class='bi bi-x-circle-fill text-danger fs-5'></i>")
+                                            )
+                    </span>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="mt-4">
+        <label class="fw-semibold">@Html.DisplayNameFor(m => m.Other)</label>
+        <div class="border p-2 bg-light rounded" style="min-height:40px">
+            @Model.Other
+        </div>
+    </div>
+
+</div>

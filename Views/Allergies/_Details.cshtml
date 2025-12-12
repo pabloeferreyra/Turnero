@@ -1,0 +1,47 @@
+﻿@model Allergies
+@{
+    ViewData["Title"] = "Detalle de Alergia";
+}
+
+<div class="container mt-2">
+
+    <h4 class="mb-3">Alergia</h4>
+
+    <div class="row border p-3 rounded bg-light mb-4">
+
+        <div class="col-md-4"><strong>Nombre:</strong></div>
+        <div class="col-md-8">@Model.Name</div>
+
+        <div class="col-md-4 mt-2"><strong>Inicio:</strong></div>
+        <div class="col-md-8 mt-2">@Model.Begin.ToString("dd/MM/yyyy")</div>
+
+        <div class="col-md-4 mt-2"><strong>Fin:</strong></div>
+        <div class="col-md-8 mt-2">
+            @(Model.End.HasValue
+                        ? Model.End.Value.ToString("dd/MM/yyyy")
+                        : "N/A")
+        </div>
+
+        <div class="col-md-4 mt-2"><strong>Severidad:</strong></div>
+        <div class="col-md-8 mt-2">@Model.Severity</div>
+
+        <div class="col-md-4 mt-2"><strong>Tipo:</strong></div>
+        <div class="col-md-8 mt-2">@Model.Type</div>
+
+        <div class="col-md-4 mt-2"><strong>Descripción:</strong></div>
+        <div class="col-md-8 mt-2">
+            @(!string.IsNullOrWhiteSpace(Model.Description) ? Model.Description : "—")
+        </div>
+
+        <div class="col-md-4 mt-2"><strong>Observaciones:</strong></div>
+        <div class="col-md-8 mt-2">
+            @(!string.IsNullOrWhiteSpace(Model.Comments) ? Model.Comments : "—")
+        </div>
+
+    </div>
+
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+</div>

@@ -1,0 +1,10 @@
+﻿@model bool
+
+@if (Model)
+{
+    @Html.Raw("<i class='bi bi-check-circle-fill text-success'></i>")
+}
+else
+{
+    @Html.Raw("<i class='bi bi-x-circle-fill text-danger'></i>")
+}

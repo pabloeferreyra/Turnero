@@ -1,11 +1,4 @@
-﻿using FirebaseAdmin.Auth;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration;
-using System.Net;
-using System.Net.Http.Json;
-using System.Text.Json;
-
-namespace Turnero.SL.Services;
+﻿namespace Turnero.SL.Services;
 
 public class FirebaseService(HttpClient httpClient, IConfiguration configuration, UserManager<IdentityUser> userManager) : IFirebaseService
 {
@@ -155,4 +148,13 @@ public class FirebaseService(HttpClient httpClient, IConfiguration configuration
             return HttpStatusCode.InternalServerError;
         }
     }
+}
+
+public interface IFirebaseService
+{
+    Task<UserRecord> RegisterAsync(UserFirebaseDTO usrDto);
+    Task<IdentityResult> RegisterAdminAsync(UserFirebaseDTO usrDto);
+    Task<AuthFirebase> LoginAsync(UserLoginRequestDTO usrDto);
+    Task<HttpStatusCode> SendPasswordResetLinkAsync(string email);
+    Task<HttpStatusCode> UpdatePasswordAsync(UserResetPasswordDTO userReset);
 }

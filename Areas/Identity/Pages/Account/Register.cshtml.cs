@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication;
-using Turnero.Utilities.Utilities;
-
-namespace Turnero.Areas.Identity.Pages.Account
+﻿namespace Turnero.Areas.Identity.Pages.Account
 {
     [Authorize(Roles = "Admin")]
     public class RegisterModel : PageModel
@@ -62,7 +59,7 @@ namespace Turnero.Areas.Identity.Pages.Account
 
         public async Task OnGetAsync(string returnUrl = null)
         {
-            ViewData["roles"] = _roleManager.Roles.ToList();    
+            ViewData["roles"] = _roleManager.Roles.ToList();
             ReturnUrl = returnUrl;
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
         }
@@ -78,8 +75,8 @@ namespace Turnero.Areas.Identity.Pages.Account
                 {
                     _logger.LogInformation("User created a new account with password.");
 
-                    
-                    
+
+
                     if (_signInManager.IsSignedIn(User) && User.IsInRole(RolesConstants.Admin))
                     {
                         return RedirectToAction("ListUsers", "Administration");

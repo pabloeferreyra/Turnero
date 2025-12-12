@@ -1,25 +1,21 @@
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Turnero.DAL.Models;
 using Turnero.SL.Services;
-using Turnero.SL.Services.Interfaces;
 using Turnero.SL.Services.Repositories;
+using Turnero.SL.Services.TurnsServices;
 using Xunit;
 
 namespace Turnero.Test;
 
 public class GetTimeTurnsServicesTests
 {
-    private readonly Mock<ILoggerServices> _loggerMock;
+    private readonly Mock<LoggerService> _loggerMock;
     private readonly Mock<ITimeTurnRepository> _timeTurnRepositoryMock;
     private readonly GetTimeTurnsServices _getTimeTurnsServices;
 
     public GetTimeTurnsServicesTests()
     {
-        _loggerMock = new Mock<ILoggerServices>();
+        _loggerMock = new Mock<LoggerService>();
         _timeTurnRepositoryMock = new Mock<ITimeTurnRepository>();
         _getTimeTurnsServices = new GetTimeTurnsServices(_loggerMock.Object, _timeTurnRepositoryMock.Object);
     }
@@ -28,7 +24,7 @@ public class GetTimeTurnsServicesTests
     public async Task GetTimeTurns_ShouldReturnTimeTurnsList()
     {
         // Arrange
-        var timeTurns = new List<TimeTurn> { new TimeTurn { Id = Guid.NewGuid(), Time = "10:00" } };
+        var timeTurns = new List<TimeTurn> { new() { Id = Guid.NewGuid(), Time = "10:00" } };
         _timeTurnRepositoryMock.Setup(repo => repo.GetList()).ReturnsAsync(timeTurns);
 
         // Act
@@ -43,7 +39,7 @@ public class GetTimeTurnsServicesTests
     public void GetTimeTurnsQ_ShouldReturnTimeTurnsQueryable()
     {
         // Arrange
-        var timeTurns = new List<TimeTurn> { new TimeTurn { Id = Guid.NewGuid(), Time = "10:00" } }.AsQueryable();
+        var timeTurns = new List<TimeTurn> { new() { Id = Guid.NewGuid(), Time = "10:00" } }.AsQueryable();
         _timeTurnRepositoryMock.Setup(repo => repo.GetQueryable()).Returns(timeTurns);
 
         // Act
@@ -87,7 +83,7 @@ public class GetTimeTurnsServicesTests
     public async Task GetCachedTimes_ShouldReturnCachedTimeTurnsList()
     {
         // Arrange
-        var cachedTimeTurns = new List<TimeTurn> { new TimeTurn { Id = Guid.NewGuid(), Time = "10:00" } };
+        var cachedTimeTurns = new List<TimeTurn> { new() { Id = Guid.NewGuid(), Time = "10:00" } };
         _timeTurnRepositoryMock.Setup(repo => repo.GetCachedTimes()).ReturnsAsync(cachedTimeTurns);
 
         // Act

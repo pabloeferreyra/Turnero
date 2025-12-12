@@ -4,22 +4,43 @@ MapsterConfig.RegisterMappings();
 #region Path Configuration
 string firebasePath = GetFirebasePath(builder.Configuration["secretsFolder"]);
 
-static string GetFirebasePath(string secretsFolder) =>
-    RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+static string GetFirebasePath(string secretsFolder)
+{
+    return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
         ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                       "Microsoft", "UserSecrets", secretsFolder, "firebase.json")
         : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
                       ".microsoft", "usersecrets", secretsFolder, "firebase.json");
+}
 #endregion
 
 #region Configuration
 builder.Configuration.AddUserSecrets<Program>();
 #endregion
 
+#region validations
+builder.Host.UseDefaultServiceProvider(options =>
+{
+    options.ValidateScopes = true;
+    options.ValidateOnBuild = true;
+});
+
+// Diagnóstico adicional (solo en desarrollo)
+if (builder.Environment.IsDevelopment())
+{
+    builder.Logging.AddConsole();
+    builder.Logging.AddDebug();
+
+    // Validación manual para servicios críticos
+    builder.Services.AddHostedService<DependencyDiagnosticsHostedService>();
+}
+
+#endregion
+
 #region Database Configuration
 AppSettings.ConnectionString = builder.Configuration.GetConnectionString("LocalConnection");
-    builder.Services.AddDbContext<ApplicationDbContext>(options =>
-        options.UseNpgsql(AppSettings.ConnectionString));
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(AppSettings.ConnectionString));
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 {
@@ -77,8 +98,15 @@ builder.Services.AddControllersWithViews(options =>
         .RequireAuthenticatedUser()
         .Build();
     options.Filters.Add(new AuthorizeFilter(policy));
+
+}).AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
 })
-.AddXmlSerializerFormatters();
+.AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 
 builder.Services.AddRazorPages();
 #endregion
@@ -93,9 +121,9 @@ if (File.Exists(firebasePath))
 }
 #endregion
 
-#region Dependency Injection - Services
-builder.Services.AddSingleton<ILoggerServices, LoggerServices>();
+builder.Services.AddScoped<LoggerService>();
 
+#region Dependency Injection - Services
 // Turn Services
 builder.Services.AddScoped<IInsertTurnsServices, InsertTurnsServices>();
 builder.Services.AddScoped<IUpdateTurnsServices, UpdateTurnsServices>();
@@ -111,6 +139,56 @@ builder.Services.AddScoped<IGetMedicsServices, GetMedicsServices>();
 builder.Services.AddScoped<IInsertTimeTurnServices, InsertTimeTurnServices>();
 builder.Services.AddScoped<IDeleteTimeTurnServices, DeleteTimeTurnServices>();
 builder.Services.AddScoped<IGetTimeTurnsServices, GetTimeTurnsServices>();
+
+// Patient Services
+builder.Services.AddScoped<IInsertPatientService, InsertPatientService>();
+builder.Services.AddScoped<IGetPatientService, GetPatientService>();
+builder.Services.AddScoped<IUpdatePatientService, UpdatePatientService>();
+
+//History Services
+
+// Visit Services
+builder.Services.AddScoped<IGetVisitService, GetVisitService>();
+builder.Services.AddScoped<IInsertVisitService, InsertVisitService>();
+
+//Allergies Services
+builder.Services.AddScoped<IGetAllergiesServices, GetAllergiesServices>();
+builder.Services.AddScoped<IInsertAllergiesServices, InsertAllergiesServices>();
+builder.Services.AddScoped<IUpdateAllergiesServices, UpdateAllergiesServices>();
+builder.Services.AddScoped<IDeleteAllergiesServices, DeleteAllergiesServices>();
+
+//ParentsDataServices
+builder.Services.AddScoped<IGetParentsDataService, GetParentsDataService>();
+builder.Services.AddScoped<IInsertParentsDataService, InsertParentsDataService>();
+builder.Services.AddScoped<IUpdateParentsDataService, UpdateParentsDataService>();
+builder.Services.AddScoped<IDeleteParentsDataService, DeleteParentsDataService>();
+
+//PersonalBackgroundServices
+builder.Services.AddScoped<IGetPersonalBackgroundService, GetPersonalBackgroundService>();
+builder.Services.AddScoped<IInsertPersonalBackgroundService, InsertPersonalBackgroundService>();
+builder.Services.AddScoped<IUpdatePersonalBackgroundService, UpdatePersonalBackgroundService>();
+builder.Services.AddScoped<IDeletePersonalBackgroundService, DeletePersonalBackgroundService>();
+
+//PerinatalBackgroundServices
+builder.Services.AddScoped<IGetPerinatalBackgroundService, GetPerinatalBackgroundService>();
+builder.Services.AddScoped<IUpdatePerinatalBackgroundService, UpdatePerinatalBackgroundService>();
+
+//VaccinesServices
+builder.Services.AddScoped<IGetVaccinesServices, GetVaccinesServices>();
+builder.Services.AddScoped<IUpdateVaccinesServices, UpdateVaccinesServices>();
+builder.Services.AddScoped<IInsertVaccinesServices, InsertVaccinesServices>();
+builder.Services.AddScoped<IDeleteVacinesServices, DeleteVacinesServices>();
+
+//PermMed Services
+builder.Services.AddScoped<IGetPermMedService, GetPermMedService>();
+builder.Services.AddScoped<IInsertPermMedService, InsertPermMedService>();
+builder.Services.AddScoped<IDeletePermMedService, DeletePermMedService>();
+
+//GrowthChart Services
+builder.Services.AddScoped<IGetGrowthChartService, GetGrowthChartService>();
+builder.Services.AddScoped<IUpdateGrowthChartService, UpdateGrowthChartService>();
+builder.Services.AddScoped<IInsertGrowthChartService, InsertGrowthChartService>();
+builder.Services.AddScoped<IDeleteGrowthChartService, DeleteGrowthChartService>();
 #endregion
 
 #region Dependency Injection - Repositories
@@ -118,6 +196,15 @@ builder.Services.AddScoped<ITimeTurnRepository, TimeTurnRepository>();
 builder.Services.AddScoped<IMedicRepository, MedicRepository>();
 builder.Services.AddScoped<ITurnRepository, TurnsRepository>();
 builder.Services.AddScoped<ITurnDTORepository, TurnDTORepository>();
+builder.Services.AddScoped<IPatientRepository, PatientRepository>();
+builder.Services.AddScoped<IVisitRepository, VisitRepository>();
+builder.Services.AddScoped<IAllergiesRepository, AllergiesRepository>();
+builder.Services.AddScoped<IParentsDataRepository, ParentsDataRepository>();
+builder.Services.AddScoped<IPersonalBackgroundRepository, PersonalBackgroundRepository>();
+builder.Services.AddScoped<IPerinatalBackgroundRepository, PerinatalBackgroundRepositroy>();
+builder.Services.AddScoped<IVaccinesRepository, VaccinesRepository>();
+builder.Services.AddScoped<IPermMedRepository, PermMedRepository>();
+builder.Services.AddScoped<IGrowthChartRepository, GrowthChartRepository>();
 #endregion
 
 #region HTTP Client

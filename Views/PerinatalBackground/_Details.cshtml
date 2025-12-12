@@ -1,0 +1,72 @@
+﻿@model PerinatalBackground
+@{
+	string[] methods = ["Index", "Edit"];
+	string peModalUrl = string.Format("/PerinatalBackground/{0}?id={1}", methods[1], Model.Id);
+}
+<div class="container px-3">
+	<div class="text-end mb-3">
+		<button type="button" data-open-modal data-modal-id="GlobalModal"
+				class="btn btn-sm btn-secondary me-1"
+				data-url="@peModalUrl"
+				data-title="Editar antecedentes perinatales">
+			Editar
+		</button>
+	</div>
+	<div class="row g-3">
+		<div class="col-md-6">
+			<div class="d-flex justify-content-between align-items-center border-bottom py-2">
+				<span class="fw-semibold">@Html.DisplayNameFor(m => m.Feat)</span>
+				<span>@Html.DisplayFor(m => m.Feat)</span>
+			</div>
+			<div class="d-flex justify-content-between align-items-center border-bottom py-2">
+				<span class="fw-semibold">@Html.DisplayNameFor(m => m.Delivery)</span>
+				<span>@Html.DisplayFor(m => m.Delivery)</span>
+			</div>
+			<div class="d-flex justify-content-between align-items-center border-bottom py-2">
+				<span class="fw-semibold">@Html.DisplayNameFor(m => m.Cesarean)</span>
+				<span>@Html.DisplayFor(m => m.Cesarean)</span>
+			</div>
+			<div class="d-flex justify-content-between align-items-center border-bottom py-2">
+				<span class="fw-semibold">@Html.DisplayNameFor(m => m.Abort)</span>
+				<span>@Html.DisplayFor(m => m.Abort)</span>
+			</div>
+			<div class="d-flex justify-content-between align-items-center border-bottom py-2">
+				<span class="fw-semibold">@Html.DisplayNameFor(m => m.GestAge)</span>
+				<span>@Html.DisplayFor(m => m.GestAge)</span>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="d-flex justify-content-between align-items-center border-bottom py-2">
+				<span class="fw-semibold">@Html.DisplayNameFor(m => m.Weight)</span>
+				<span>@Html.DisplayFor(m => m.Weight) gr.</span>
+			</div>
+			<div class="d-flex justify-content-between align-items-center border-bottom py-2">
+				<span class="fw-semibold">@Html.DisplayNameFor(m => m.Height)</span>
+				<span>@Html.DisplayFor(m => m.Height) cm.</span>
+			</div>
+			<div class="d-flex justify-content-between align-items-center border-bottom py-2">
+				<span class="fw-semibold">@Html.DisplayNameFor(m => m.CefPer)</span>
+				<span>@Html.DisplayFor(m => m.CefPer) cm.</span>
+			</div>
+			<div class="d-flex justify-content-between align-items-center border-bottom py-2">
+				<span class="fw-semibold">@Html.DisplayNameFor(m => m.Apgar1)</span>
+				<span>@Html.DisplayFor(m => m.Apgar1)</span>
+			</div>
+			<div class="d-flex justify-content-between align-items-center border-bottom py-2">
+				<span class="fw-semibold">@Html.DisplayNameFor(m => m.Apgar5)</span>
+				<span>@Html.DisplayFor(m => m.Apgar5)</span>
+			</div>
+		</div>
+	</div>
+	<div class="mt-4">
+		<label class="fw-semibold">@Html.DisplayNameFor(m => m.Pathologies)</label>
+		<div class="border p-2 bg-light rounded" style="min-height:40px">
+			@Model.Pathologies
+		</div>
+	</div>
+	<div class="mt-4">
+		<label class="fw-semibold">@Html.DisplayNameFor(m => m.CongErrors)</label>
+		<div class="border p-2 bg-light rounded" style="min-height:40px">
+			@Model.CongErrors
+		</div>
+	</div>

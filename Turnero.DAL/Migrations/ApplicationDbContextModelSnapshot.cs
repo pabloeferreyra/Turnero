@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Turnero.DAL.Data;
 
-
 #nullable disable
 
 namespace Turnero.Migrations
@@ -18,7 +17,7 @@ namespace Turnero.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.8")
+                .HasAnnotation("ProductVersion", "10.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -223,7 +222,128 @@ namespace Turnero.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("Turnero.Models.Medic", b =>
+            modelBuilder.Entity("Turnero.DAL.Models.Allergies", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly>("Begin")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Comments")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<DateOnly?>("End")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Occurrency")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Severity")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PatientId");
+
+                    b.ToTable("Allergies");
+                });
+
+            modelBuilder.Entity("Turnero.DAL.Models.ContactInfo", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PostalCode")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PatientId")
+                        .IsUnique();
+
+                    b.ToTable("ContactInfo");
+                });
+
+            modelBuilder.Entity("Turnero.DAL.Models.GrowthChart", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Age")
+                        .HasColumnType("integer");
+
+                    b.Property<double>("Bmi")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("HCPerc")
+                        .HasColumnType("text");
+
+                    b.Property<string>("HPerc")
+                        .HasColumnType("text");
+
+                    b.Property<int>("HeadCircumference")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Height")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Time")
+                        .HasColumnType("text");
+
+                    b.Property<string>("WPerc")
+                        .HasColumnType("text");
+
+                    b.Property<double>("Weight")
+                        .HasColumnType("double precision");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PatientId");
+
+                    b.ToTable("GrowthCharts");
+                });
+
+            modelBuilder.Entity("Turnero.DAL.Models.Medic", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -240,7 +360,269 @@ namespace Turnero.Migrations
                     b.ToTable("Medics");
                 });
 
-            modelBuilder.Entity("Turnero.Models.TimeTurn", b =>
+            modelBuilder.Entity("Turnero.DAL.Models.ParentsData", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("BrothersCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<DateOnly>("FatherBirthDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("date")
+                        .HasDefaultValue(new DateOnly(1, 1, 1));
+
+                    b.Property<int>("FatherBloodType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("FatherName")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("");
+
+                    b.Property<string>("FatherWork")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("");
+
+                    b.Property<DateOnly>("MotherBirthDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("date")
+                        .HasDefaultValue(new DateOnly(1, 1, 1));
+
+                    b.Property<int>("MotherBloodType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("MotherName")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("");
+
+                    b.Property<string>("MotherWork")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ParentsData");
+                });
+
+            modelBuilder.Entity("Turnero.DAL.Models.Patient", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AffiliateNumber")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("BirthDate")
+                        .HasColumnType("date");
+
+                    b.Property<int>("BloodType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Dni")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("SocialWork")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Patients");
+                });
+
+            modelBuilder.Entity("Turnero.DAL.Models.PerinatalBackground", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Abort")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("Apgar1")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("Apgar5")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("CefPer")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("Cesarean")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<string>("CongErrors")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Delivery")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("Feat")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("GestAge")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("Height")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<string>("Pathologies")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Weight")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PerinatalBackground");
+                });
+
+            modelBuilder.Entity("Turnero.DAL.Models.PermMed", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PatientId");
+
+                    b.ToTable("PermMeds");
+                });
+
+            modelBuilder.Entity("Turnero.DAL.Models.PersonalBackground", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Accidents")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("Allergy")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("Asthma")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("Chickenpox")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("Diabetes")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("Digestive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("HematOnc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("Measles")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("Mumps")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("Other")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("Otitis")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("Pneumonia")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("Psicologicals")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("Pulmonologist")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("Rubella")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("Surgeries")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("UrinaryInfections")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PersonalBackground");
+                });
+
+            modelBuilder.Entity("Turnero.DAL.Models.TimeTurn", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -254,7 +636,7 @@ namespace Turnero.Migrations
                     b.ToTable("TimeTurns");
                 });
 
-            modelBuilder.Entity("Turnero.Models.Turn", b =>
+            modelBuilder.Entity("Turnero.DAL.Models.Turn", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -264,14 +646,10 @@ namespace Turnero.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<DateTime>("DateTurn")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("CURRENT_DATE");
+                        .HasColumnType("date");
 
-                    b.Property<string>("Dni")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)");
+                    b.Property<long>("Dni")
+                        .HasColumnType("bigint");
 
                     b.Property<Guid>("MedicId")
                         .HasColumnType("uuid");
@@ -279,6 +657,9 @@ namespace Turnero.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<Guid?>("PatientId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Reason")
                         .HasColumnType("text");
@@ -293,9 +674,97 @@ namespace Turnero.Migrations
 
                     b.HasIndex("MedicId");
 
+                    b.HasIndex("PatientId");
+
                     b.HasIndex("TimeId");
 
                     b.ToTable("Turns");
+                });
+
+            modelBuilder.Entity("Turnero.DAL.Models.Vaccines", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly?>("DateApplied")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PatientId");
+
+                    b.ToTable("Vaccines");
+                });
+
+            modelBuilder.Entity("Turnero.DAL.Models.Visit", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("DiagDescription")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("");
+
+                    b.Property<string>("Diagnosis")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("");
+
+                    b.Property<string>("EvolutionNotes")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("");
+
+                    b.Property<string>("LabResults")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("");
+
+                    b.Property<Guid>("MedicId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Observations")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("");
+
+                    b.Property<string>("OtherStudies")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Reason")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("");
+
+                    b.Property<string>("Treatment")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("");
+
+                    b.Property<DateTime>("VisitDate")
+                        .HasColumnType("date");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MedicId");
+
+                    b.HasIndex("PatientId");
+
+                    b.ToTable("Visits");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -349,15 +818,96 @@ namespace Turnero.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Turnero.Models.Turn", b =>
+            modelBuilder.Entity("Turnero.DAL.Models.Allergies", b =>
                 {
-                    b.HasOne("Turnero.Models.Medic", "Medic")
+                    b.HasOne("Turnero.DAL.Models.Patient", "Patient")
+                        .WithMany("Allergies")
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Patient");
+                });
+
+            modelBuilder.Entity("Turnero.DAL.Models.ContactInfo", b =>
+                {
+                    b.HasOne("Turnero.DAL.Models.Patient", "Patient")
+                        .WithOne("ContactInfo")
+                        .HasForeignKey("Turnero.DAL.Models.ContactInfo", "PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Patient");
+                });
+
+            modelBuilder.Entity("Turnero.DAL.Models.GrowthChart", b =>
+                {
+                    b.HasOne("Turnero.DAL.Models.Patient", "Patient")
+                        .WithMany("GrowthCharts")
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Patient");
+                });
+
+            modelBuilder.Entity("Turnero.DAL.Models.ParentsData", b =>
+                {
+                    b.HasOne("Turnero.DAL.Models.Patient", "Patient")
+                        .WithOne("Parent")
+                        .HasForeignKey("Turnero.DAL.Models.ParentsData", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Patient");
+                });
+
+            modelBuilder.Entity("Turnero.DAL.Models.PerinatalBackground", b =>
+                {
+                    b.HasOne("Turnero.DAL.Models.Patient", "Patient")
+                        .WithOne("PerinatalBackground")
+                        .HasForeignKey("Turnero.DAL.Models.PerinatalBackground", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Patient");
+                });
+
+            modelBuilder.Entity("Turnero.DAL.Models.PermMed", b =>
+                {
+                    b.HasOne("Turnero.DAL.Models.Patient", "Patient")
+                        .WithMany("PermMeds")
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Patient");
+                });
+
+            modelBuilder.Entity("Turnero.DAL.Models.PersonalBackground", b =>
+                {
+                    b.HasOne("Turnero.DAL.Models.Patient", "Patient")
+                        .WithOne("PersonalBackground")
+                        .HasForeignKey("Turnero.DAL.Models.PersonalBackground", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Patient");
+                });
+
+            modelBuilder.Entity("Turnero.DAL.Models.Turn", b =>
+                {
+                    b.HasOne("Turnero.DAL.Models.Medic", "Medic")
                         .WithMany("Turns")
                         .HasForeignKey("MedicId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Turnero.Models.TimeTurn", "Time")
+                    b.HasOne("Turnero.DAL.Models.Patient", null)
+                        .WithMany("Turns")
+                        .HasForeignKey("PatientId");
+
+                    b.HasOne("Turnero.DAL.Models.TimeTurn", "Time")
                         .WithMany("Turns")
                         .HasForeignKey("TimeId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -368,12 +918,67 @@ namespace Turnero.Migrations
                     b.Navigation("Time");
                 });
 
-            modelBuilder.Entity("Turnero.Models.Medic", b =>
+            modelBuilder.Entity("Turnero.DAL.Models.Vaccines", b =>
                 {
-                    b.Navigation("Turns");
+                    b.HasOne("Turnero.DAL.Models.Patient", "Patient")
+                        .WithMany("Vaccines")
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Patient");
                 });
 
-            modelBuilder.Entity("Turnero.Models.TimeTurn", b =>
+            modelBuilder.Entity("Turnero.DAL.Models.Visit", b =>
+                {
+                    b.HasOne("Turnero.DAL.Models.Medic", "Medic")
+                        .WithMany("Visits")
+                        .HasForeignKey("MedicId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Turnero.DAL.Models.Patient", "Patient")
+                        .WithMany("Visits")
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Medic");
+
+                    b.Navigation("Patient");
+                });
+
+            modelBuilder.Entity("Turnero.DAL.Models.Medic", b =>
+                {
+                    b.Navigation("Turns");
+
+                    b.Navigation("Visits");
+                });
+
+            modelBuilder.Entity("Turnero.DAL.Models.Patient", b =>
+                {
+                    b.Navigation("Allergies");
+
+                    b.Navigation("ContactInfo");
+
+                    b.Navigation("GrowthCharts");
+
+                    b.Navigation("Parent");
+
+                    b.Navigation("PerinatalBackground");
+
+                    b.Navigation("PermMeds");
+
+                    b.Navigation("PersonalBackground");
+
+                    b.Navigation("Turns");
+
+                    b.Navigation("Vaccines");
+
+                    b.Navigation("Visits");
+                });
+
+            modelBuilder.Entity("Turnero.DAL.Models.TimeTurn", b =>
                 {
                     b.Navigation("Turns");
                 });

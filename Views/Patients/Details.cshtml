@@ -1,0 +1,262 @@
+﻿@model Patient
+@{
+    ViewData["Title"] = "Paciente " + Model.Name;
+    string[] methods = ["Index", "Edit", "Create"];
+    string peModalUrl = string.Format("/PersonalBackground/{0}?id={1}", methods[0], Model.Id);
+    string naModalUrl = string.Format("/PerinatalBackground/{0}?id={1}", methods[0], Model.Id);
+    string edModalUrl = string.Format("/Patients/{0}?id={1}", methods[1], Model.Id);
+    string viModalUrl = string.Format("/Visits/{0}?id={1}", methods[2], Model.Id);
+    string viUrl = string.Format("/Visits/{0}?id={1}", methods[0], Model.Id);
+    string alModalUrl = string.Format("/Allergies/{0}?id={1}", methods[2], Model.Id);
+    string alUrl = string.Format("/Allergies/{0}?id={1}", methods[0], Model.Id);
+    string vaModalUrl = string.Format("/Vaccines/{0}?id={1}", methods[2], Model.Id);
+    string vaUrl = string.Format("/Vaccines/{0}?id={1}", methods[0], Model.Id);
+    string pmModalUrl = string.Format("/PermMed/{0}?id={1}", methods[2], Model.Id);
+    string pmUrl = string.Format("/PermMed/{0}?id={1}", methods[0], Model.Id);
+    string pdUrl = string.Format("/ParentsData/{0}?id={1}", methods[0], Model.Id);
+    string gcUrl = string.Format("/GrowthChart/{0}?id={1}", methods[0], Model.Id);
+    string gcModalUrl = string.Format("/GrowthChart/{0}?id={1}", methods[2], Model.Id);
+    string vmModalUrl = string.Format("/Vademecum/Index");
+}
+
+<input type="hidden" name="patientId" id="patientId" value="@Model.Id" />
+
+<div class="back container-fluid">
+
+ 
+    <div class="row">
+        <div class="col-md-1 col-sm-12 btn-group" role="group">
+            <button data-open-modal
+                    data-modal-id="GlobalModal"
+                    data-url="@edModalUrl"
+                    data-title="Editar paciente"
+                    class="btn btn-sm btn-primary me-1">
+                <i class="fa-solid fa-pen-to-square"></i> Editar
+            </button>
+        </div>
+
+        <div class="col-md-6 col-sm-12 btn-group ms-auto" role="group" style="text-align:right">
+            <button type="button"
+                    data-open-modal
+                    data-modal-id="GlobalModal"
+                    class="btn btn-sm btn-secondary me-1"
+                    data-url="@peModalUrl"
+                    data-title="Antecedentes personales">
+                <i class="fa-solid fa-notes-medical"></i> Ant. Personales
+            </button>
+
+            <button type="button"
+                    data-open-modal
+                    data-modal-id="GlobalModal"
+                    class="btn btn-sm btn-secondary me-1"
+                    data-url="@naModalUrl"
+                    data-title="Antecedentes perinatales">
+                <i class="fa-solid fa-user-nurse"></i> Ant. Perinatales
+            </button>
+            <button type="button"
+                    data-open-modal
+                    data-modal-id="GlobalModal"
+                    class="btn btn-sm btn-primary me-1"
+                    data-url="@vmModalUrl"
+                    data-title="Vademecum">
+                <i class="fa-solid fa-pills"></i> Vademecum
+            </button>
+        </div>
+    </div>
+
+    <hr />
+
+    <div class="row">
+        <div class="col-12 row">
+            <h5 class="col-md-2 col-sm-12">Nombre</h5>
+            <p class="col-md-10 col-sm-12">@Html.DisplayFor(model => model.Name)</p>
+        </div>
+        <hr />
+
+        <div class="col-md-4 col-sm-12 row">
+            <h5 class="col-md-3 col-sm-12"><i class="fa-solid fa-id-card"></i> Dni</h5>
+            <p class="col-md-9 col-sm-12">@Html.DisplayFor(model => model.Dni)</p>
+        </div>
+
+        <div class="col-md-5 col-sm-12 row">
+            <h5 class="col-md-7 col-sm-12"><i class="fa-solid fa-calendar-day"></i> Fecha de Nacimiento</h5>
+            <p class="col-md-5 col-sm-12">@Html.DisplayFor(model => model.BirthDate) - @ViewBag.Age Años</p>
+        </div>
+
+        <div class="col-md-3 col-sm-12 row">
+            <h5 class="col-md-10 cool-sm-12"><i class="fa-solid fa-droplet"></i> Grupo sanguineo</h5>
+            <p class="col-md-2 col-sm-12">@Html.DisplayFor(model => model.BloodType)</p>
+        </div>
+
+        <hr />
+
+        <div class="col-md-4 col-sm-12 row">
+            <h5 class="col-md-4 col-sm-12"><i class="fa-solid fa-phone"></i> Teléfono</h5>
+            <p class="col-md-8 col-sm-12">@Html.DisplayFor(model => model.ContactInfo.Phone)</p>
+        </div>
+
+        <div class="col-md-4 col-sm-12 row">
+            <h5 class="col-md-4 col-sm-12"><i class="fa-solid fa-envelope"></i> Email</h5>
+            <p class="col-md-8 col-sm-12">@Html.DisplayTextFor(model => model.ContactInfo.Email)</p>
+        </div>
+
+        <div class="col-md-4 col-sm-12 row">
+            <h5 class="col-md-5 col-sm-12"><i class="fa-solid fa-map-pin"></i> Dirección</h5>
+            <p class="col-md-7 col-sm-12">@Html.DisplayFor(model => model.ContactInfo.Address)</p>
+        </div>
+
+        <div class="col-md-4 col-sm-12 row">
+            <h5 class="col-md-4 col-sm-12"><i class="fa-solid fa-location-arrow"></i> Ciudad</h5>
+            <p class="col-md-8 col-sm-12">@Html.DisplayFor(model => model.ContactInfo.City)</p>
+        </div>
+
+        <div class="col-md-4 col-sm-12 row">
+            <h5 class="col-md-6 col-sm-12"><i class="fa-solid fa-envelope-open"></i> Código Postal</h5>
+            <p class="col-md-6 col-sm-12">@Html.DisplayFor(model => model.ContactInfo.PostalCode)</p>
+        </div>
+
+        <hr />
+
+        <div class="col-md-4 col-sm-12 row">
+            <h5 class="col-md-5 col-sm-12"><i class="fa-solid fa-hospital"></i> Obra Social</h5>
+            <p class="col-md-7 col-sm-12">@Html.DisplayFor(model => model.SocialWork)</p>
+        </div>
+
+        <div class="col-md-4 col-sm-12 row">
+            <h5 class="col-md-7 col-sm-12"><i class="fa-solid fa-hashtag"></i> Número de Afiliado</h5>
+            <p class="col-md-5 col-sm-12">@Html.DisplayFor(model => model.AffiliateNumber)</p>
+        </div>
+    </div>
+    
+    <div class="row">
+        <ul class="nav nav-tabs" role="tablist" id="myTabs">
+            <li class="nav-item">
+                <button type="button" class="nav-link" id="visitsTab"
+                        data-url='@Url.Action("GetVisits", "Visits", new { id = Model.Id })'>
+                    <i class="fa-solid fa-calendar-day"></i>
+                    Visitas
+                </button>
+            </li>
+
+            <li class="nav-item">
+                <button type="button" class="nav-link" id="allergiesTab"
+                        data-url='@alUrl'>
+                    <i class="fa-solid fa-bacteria"></i>
+                    Alergias
+                </button>
+            </li>
+
+            <li class="nav-item">
+                <button type="button" class="nav-link" id="parentsTab"
+                        data-url='@pdUrl'>
+                    <i class="fa-solid fa-people-group"></i>
+                    Familia
+                </button>
+            </li>
+            <li class="nav-item">
+                <button type="button" class="nav-link" id="vaccinesTab"
+						data-url='@vaUrl'>
+                    <i class="fa-solid fa-syringe"></i>
+					Vacunas
+				</button>
+            </li>
+            <li class="nav-item">
+                <button type="button" class="nav-link" id="permMedTab"
+                        data-url='@pmUrl'>
+                    <i class="fa-solid fa-capsules"></i>
+					Medicación Permanente
+                </button>
+            </li>
+            <li class="nav-item">
+				<button type="button" class="nav-link" id="growthChartsTab"
+                    data-url='@gcUrl'>
+                    <i class="fa-solid fa-chart-line"></i>
+                    Tablas de crecimiento
+                </button>
+            </li>
+        </ul>
+
+        <div class="col-md-4 col-sm-12 btn-group" role="group" style="margin-top:10px;">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle"
+                       href="#"
+                       role="button"
+                       data-bs-toggle="dropdown"
+                       aria-expanded="false">
+                        Crear
+                    </a>
+
+                    <ul class="dropdown-menu">
+                        <li>
+                            <button data-open-modal
+                                    data-modal-id="GlobalModal"
+                                    data-url="@viModalUrl"
+                                    data-title="Nueva visita"
+                                    class="btn btn-sm btn-secondary me-1 dropdown-item">
+                                Visita
+                            </button>
+                        </li>
+
+                        <li>
+                            <button data-open-modal
+                                    data-modal-id="GlobalModal"
+                                    data-url="@alModalUrl"
+                                    data-title="Nueva alergia"
+                                    class="btn btn-sm btn-secondary me-1 dropdown-item">
+                                Alergia
+                            </button>
+                        </li>
+                        <li>
+                            <button data-open-modal
+                                    data-modal-id="GlobalModal"
+                                    data-url="@vaModalUrl"
+                                    data-title="Nueva vacuna"
+                                    class="btn btn-sm btn-secondary me-1 dropdown-item">
+                                    Vacuna
+                            </button>
+                        </li>
+                        <li>
+                            <button data-open-modal
+                                    data-modal-id="GlobalModal"
+                                    data-url="@pmModalUrl"
+                                    data-title="Nueva medicación permanente"
+                                    class="btn btn-sm btn-secondary me-1 dropdown-item">
+                                Medicación permanente
+                            </button>
+                        </li>
+                        <li>
+                            <button data-open-modal
+                                    data-modal-id="GlobalModal"
+                                    data-url="@gcModalUrl"
+                                    data-title="Nuevo registro Crecimiento"
+                                    class="btn btn-sm btn-secondary me-1 dropdown-item">
+                                    Registro Crecimiento
+                                </button>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <div class="tab-content" id="myTabContent">
+            <div id="tabContent"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/parentsData.js" asp-append-version="true"></script>
+    <script src="~/js/patients.js" asp-append-version="true"></script>
+    <script src="~/js/visits.js" asp-append-version="true"></script>
+    <script src="~/js/allergies.js" asp-append-version="true"></script>
+	<script src="~/js/vaccines.js" asp-append-version="true"></script>
+	<script src="~/js/permMed.js" asp-append-version="true"></script>
+    <script src="~/js/personalBackground.js" asp-append-version="true"></script>
+    <script src="~/js/perinatalBackground.js" asp-append-version="true"></script>
+    <script src="/js/growthCharts.js" asp-append-version="true"></script>
+    
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

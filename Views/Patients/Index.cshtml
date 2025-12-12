@@ -1,0 +1,47 @@
+﻿@model PatientDTO
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+@{
+	ViewData["Title"] = "Pacientes ";
+	string[] methods = ["Index", "Edit", "Create"];
+	string paModalUrl = string.Format("/Patients/{0}", methods[2]);
+}
+
+ <div class="back container-fluid">
+	<div class="form-group row">
+		<div class="col-lg-8 col-md-8 col-sm-12">
+			<input id="searchBox" name="NameOrDni" type="text" class="form-control" placeholder="Nombre o Dni" />
+		</div>
+		<div class="col-lg-2 col-md-6 col-sm-12">
+			<button class="form-control btn btn-primary" id="btnSearch">Buscar</button>
+		</div>
+		@{
+			if (SignInManager.IsSignedIn(User)) {
+				<div class="col-lg-2 col-md-6 col-sm-12">
+					<button type="button" data-open-modal 
+					data-modal-id="GlobalModal" 
+					data-url="@paModalUrl" 
+					data-title="Nuevo Paciente" 
+					class="form-control btn btn-secondary">Nuevo Paciente</button>
+				</div>
+			}
+		}
+	</div>
+	<div class="row">
+		<div id="control" class="col"></div>
+	</div>
+		
+</div>
+<div class="back contianer-fluid" id="PatientsPartial">
+	<partial name="_Table" />
+</div>
+
+@section Scripts {
+	<script src="~/js/patients.js" asp-append-version="true"></script>
+	<script src="~/js/visits.js" asp-append-version="true"></script>
+	<script src="~/js/allergies.js" asp-append-version="true"></script>
+	<script src="~/js/personalBackground.js" asp-append-version="true"></script>
+	@{
+		await Html.RenderPartialAsync("_ValidationScriptsPartial");
+	}
+}

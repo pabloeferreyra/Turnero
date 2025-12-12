@@ -1,22 +1,22 @@
-﻿using Moq;
+﻿using Microsoft.EntityFrameworkCore;
+using Moq;
 using Turnero.DAL.Models;
-using Turnero.SL.Services.Interfaces;
-using Turnero.SL.Services.Repositories;
 using Turnero.SL.Services;
-using Microsoft.EntityFrameworkCore;
+using Turnero.SL.Services.MedicServices;
+using Turnero.SL.Services.Repositories;
 using Xunit;
 
 namespace Turnero.Test;
 
 public class UpdateMedicServicesTests
 {
-    private readonly Mock<ILoggerServices> _loggerMock;
+    private readonly Mock<LoggerService> _loggerMock;
     private readonly Mock<IMedicRepository> _medicRepositoryMock;
     private readonly UpdateMedicServices _updateMedicServices;
     private readonly Medic medic = new() { Id = Guid.NewGuid(), Name = "Medic1" };
     public UpdateMedicServicesTests()
     {
-        _loggerMock = new Mock<ILoggerServices>();
+        _loggerMock = new Mock<LoggerService>();
         _medicRepositoryMock = new Mock<IMedicRepository>();
         _updateMedicServices = new UpdateMedicServices(_loggerMock.Object, _medicRepositoryMock.Object);
     }
@@ -42,7 +42,7 @@ public class UpdateMedicServicesTests
         var result = await _updateMedicServices.Update(medic);
 
         // Assert
-        _loggerMock.Verify(logger => logger.Error(It.IsAny<string>(), It.IsAny<DbUpdateConcurrencyException>()), Times.Once);
+        _loggerMock.Verify(logger => logger.Log(It.IsAny<string>()), Times.Once);
         Assert.False(result);
     }
 
@@ -66,6 +66,6 @@ public class UpdateMedicServicesTests
         _updateMedicServices.Delete(medic);
 
         // Assert
-        _loggerMock.Verify(logger => logger.Error(It.IsAny<string>(), It.IsAny<DbUpdateConcurrencyException>()), Times.Once);
+        _loggerMock.Verify(logger => logger.Log(It.IsAny<string>()), Times.Once);
     }
 }

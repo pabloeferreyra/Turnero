@@ -1,0 +1,75 @@
+﻿@model GrowthChart
+
+<form method="post" id="CreateGrowthChartForm" autocomplete="off">
+	<input type="hidden" name="__RequestVerificationToken" value="@ViewData["RequestVerificationToken"]" />
+	<div class="modal-body row">
+		<input type="hidden" asp-for="PatientId" id="PatientId" />
+		<input type="hidden" asp-for="Id" id="Id" />
+			<div class="form-group col-md-3 col-sm-12 border p-3 rounded bg-light">
+				<label asp-for="Age" class="control-label">Edad</label>
+				<input asp-for="Age" id="AgeInMonths" type="number" class="form-control"
+				value="@Model.Age" min="0" placeholder="0" />
+				<select asp-for="Time" id="Time" class="form-control form-select">
+					<option value="Dias">Días</option>
+					<option value="Meses">Meses</option>
+					<option value="Años">Años</option>
+				</select>
+			</div>
+		<div class="form-group col-md-3 col-sm-12 border p-3 rounded bg-light">
+			<label asp-for="Weight" class="control-label">Peso (Kg)</label>
+			<input asp-for="Weight" id="WeightInKg" type="number" step="0.01" class="form-control"
+			value="@Model.Weight" min="0" />
+			<select asp-for="WPerc" id="WPerc" class="form-control form-select">
+				<option value="P-3">P-3</option>
+				<option value="P3">P3</option>
+				<option value="P15">P15</option>
+				<option value="P50">P50</option>
+				<option value="P85">P85</option>
+				<option value="P97">P97</option>
+				<option value="P+97">P+97</option>
+			</select>
+		</div>
+		<div class="form-group col-md-3 col-sm-12 border p-3 rounded bg-light">
+			<label asp-for="Height" class="control-label">Talla (cm)</label>
+			<input asp-for="Height" id="HeightInCm" type="number" step="0.1" class="form-control"
+			value="@Model.Height" min="0" />
+			<select asp-for="HPerc" id="HPerc" class="form-control form-select">
+				<option value="P-3">P-3</option>
+				<option value="P3">P3</option>
+				<option value="P15">P15</option>
+				<option value="P50">P50</option>
+				<option value="P85">P85</option>
+				<option value="P97">P97</option>
+				<option value="P+97">P+97</option>
+			</select>
+		</div>
+		<div class="form-group col-md-3 col-sm-12 border p-3 rounded bg-light">
+			<label asp-for="HeadCircumference" class="control-label">PC (cm)</label>
+			<input asp-for="HeadCircumference" id="HeadCircumferenceInCm" type="number" step="0.1" class="form-control"
+			value="@Model.HeadCircumference" min="0" />
+			<select asp-for="HCPerc" id="HCPerc" class="form-control form-select">
+				<option value="P-2Ds">P-2Ds</option>
+				<option value="P50">P50</option>
+				<option value="P+2Ds">P+2Ds</option>
+			</select>
+		</div>
+		<div class="form-group col-md-3 col-sm-12 border p-3 rounded bg-light">
+			<label asp-for="Bmi" class="control-label">IMC</label>
+			<input asp-for="Bmi" id="Bmi" type="number" step="0.01" class="form-control"
+				   value="@Model.Bmi" min="0"  readonly />
+		</div>
+	</div>
+	<div class="modal-footer">
+		<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+		@{
+			if (Model.Id == new Guid())
+			{
+				<button type="button" id="btnCreateGrowthChart" class="btn btn-primary">Crear</button>
+			}
+			else
+			{
+				<button type="button" id="btnEditGrowthChart" class="btn btn-primary">Editar</button>
+			}
+		}
+	</div>
+</form>
