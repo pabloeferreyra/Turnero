@@ -51,8 +51,6 @@
         const length = st.pageSize;
 
         const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || "";
-        const medics = document.querySelector('#Medics')?.value ?? "";
-        const dateTurn = document.querySelector('#DateTurn')?.value ?? "";
 
         const form = new URLSearchParams();
 
@@ -66,8 +64,12 @@
         const columnsMap = ['Name', 'Dni', 'SocialWork', 'Reason', 'Medic', 'MedicId', 'Date', 'Time'];
         columnsMap.forEach((name, i) => form.append(`columns[${i}][name]`, name));
 
-        form.append('columns[5][search][value]', medics);
-        form.append('columns[6][search][value]', dateTurn);
+        const filters = getCurrentTurnFilters();
+        st.filters = filters;
+
+        Object.entries(filters).forEach(([k, v]) => {
+            form.append(k.toLowerCase(), v);
+        });
 
         try {
             const res = await fetch("/Turns/InitializeTurns", {
@@ -230,6 +232,34 @@
     });
 
 
+    document.addEventListener("DOMContentLoaded", () => {
+
+        const btnExcel = document.querySelector("#btnExportExcel");
+        const btnPdf = document.querySelector("#btnExportPdf");
+        
+
+        if (btnExcel) {
+            btnExcel.addEventListener("click", () => {
+                const date = getTurnExportDate();
+                AppUtils.Export.post({
+                    url: "/Turns/ExportExcel",
+                    filename: `turnos_${date}.xlsx`,
+                    params: getCurrentTurnFilters
+                });
+            });
+        }
+
+        if (btnPdf) {
+            btnPdf.addEventListener("click", () => {
+                const date = getTurnExportDate();
+                AppUtils.Export.post({
+                    url: "/Turns/ExportPdf",
+                    filename: `turnos_${date}.pdf`,
+                    params: getCurrentTurnFilters
+                });
+            });
+        }
+    });
 
     // ======================================================
     // BOTONERA: ingreso / eliminar (sin jQuery)
@@ -362,5 +392,45 @@
         });
     }
 
+    function getCurrentTurnFilters() {
+        const filters = {};
+
+        const medicEl = document.querySelector("#Medics");
+        const dateEl = document.querySelector("#DateTurn");
+
+        const medic = medicEl?.value?.trim();
+        let date = dateEl?.value?.trim();
+
+        if (medic) {
+            filters["Columns[5][search][value]"] = medic;
+        }
+
+        // ===============================
+        // REGLA DE NEGOCIO: fecha por defecto = hoy
+        // ===============================
+        if (!date) {
+            const today = new Date();
+            const y = today.getFullYear();
+            const m = String(today.getMonth() + 1).padStart(2, "0");
+            const d = String(today.getDate()).padStart(2, "0");
+            date = `${y}-${m}-${d}`;
+        }
+
+        filters["Columns[6][search][value]"] = date;
+
+        return filters;
+    }
+
+    function getTurnExportDate() {
+        const state = AppUtils.Pagination.getState(key);
+        const dateStr = state?.filters?.["Columns[6][search][value]"];
+
+        if (!dateStr) {
+            return AppUtils.Date.ddMMyyyy();
+        }
+
+        const [y, m, d] = dateStr.split("-");
+        return `${d}${m}${y}`;
+    }
 
 })();

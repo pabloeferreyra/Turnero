@@ -3,6 +3,7 @@
 
 window.AppUtils = window.AppUtils || {};
 AppUtils.Pagination = AppUtils.Pagination || {};
+AppUtils.Date = AppUtils.Date || {};
 
 AppUtils.todayString = function () {
     const d = new Date();
@@ -262,6 +263,146 @@ AppUtils.Sort = {
     }
 };
 
+AppUtils.Pagination.init = function (key, opts = {}) {
+
+    AppUtils._tables = AppUtils._tables || {};
+    AppUtils._tables[key] = AppUtils._tables[key] || {
+        currentPage: 1,
+        pageSize: 25,
+        recordsTotal: 0,
+        order: { column: 0, dir: 'asc' }
+    };
+
+    const st = AppUtils._tables[key];
+
+    if (opts.defaultPageSize != null) {
+        st.pageSize = parseInt(opts.defaultPageSize, 10) || st.pageSize;
+    }
+
+    if (opts.defaultOrder) {
+        st.order = {
+            column: Number(opts.defaultOrder.column) || 0,
+            dir: (opts.defaultOrder.dir || 'asc') === 'desc' ? 'desc' : 'asc'
+        };
+    }
+
+    if (opts.pageSizeSelector) {
+        const sel = opts.pageSizeSelector;
+        document.addEventListener("change", (e) => {
+            if (!e.target.matches(sel)) return;
+            const v = parseInt(e.target.value, 10);
+            st.pageSize = isNaN(v) ? st.pageSize : v;
+            st.currentPage = 1;
+            opts.onChange?.();
+        });
+    }
+};
+
+AppUtils.Pagination.getState = function (key) {
+    AppUtils._tables = AppUtils._tables || {};
+    return AppUtils._tables[key];
+};
+
+AppUtils.Pagination.getOrder = function (key) {
+    const st = AppUtils.Pagination.getState(key);
+    return st?.order || { column: 0, dir: 'asc' };
+};
+
+AppUtils.Pagination.setRecordsTotal = function (key, total) {
+    const st = AppUtils.Pagination.getState(key);
+    if (st) {
+        st.recordsTotal = Number(total) || 0;
+    }
+};
+
+AppUtils.Pagination.goTo = function (key, page, onChange) {
+    const st = AppUtils.Pagination.getState(key);
+    if (!st) return;
+    st.currentPage = Math.max(1, Number(page) || 1);
+    onChange?.();
+};
+
+AppUtils.Pagination.renderWithState = function (selector, key, onPageChange) {
+
+    const container = document.querySelector(selector);
+    if (!container) return;
+
+    const st = AppUtils.Pagination.getState(key);
+    if (!st) return;
+
+    const totalPages = Math.max(1, Math.ceil(st.recordsTotal / st.pageSize));
+    const current = st.currentPage;
+
+    const MAX_VISIBLE = 7;
+    const half = Math.floor(MAX_VISIBLE / 2);
+
+    container.innerHTML = "";
+
+    const ul = document.createElement("ul");
+    ul.className = "pagination justify-content-center";
+
+    function add(label, page, disabled = false, active = false) {
+        const li = document.createElement("li");
+        li.className = "page-item"
+            + (disabled ? " disabled" : "")
+            + (active ? " active" : "");
+
+        const a = document.createElement("a");
+        a.className = "page-link";
+        a.href = "#";
+        a.textContent = label;
+
+        if (!disabled && typeof page === "number") {
+            a.addEventListener("click", e => {
+                e.preventDefault();
+                AppUtils.Pagination.goTo(key, page, onPageChange);
+            });
+        }
+
+        li.appendChild(a);
+        ul.appendChild(li);
+    }
+
+    // «
+    add("«", current - 1, current === 1);
+
+    // Rango visible
+    let start = Math.max(1, current - half);
+    let end = Math.min(totalPages, current + half);
+
+    // Ajustes para bordes
+    if (end - start + 1 < MAX_VISIBLE) {
+        if (start === 1) {
+            end = Math.min(totalPages, start + MAX_VISIBLE - 1);
+        } else if (end === totalPages) {
+            start = Math.max(1, end - MAX_VISIBLE + 1);
+        }
+    }
+
+    // Primera página + elipsis
+    if (start > 1) {
+        add(1, 1);
+        if (start > 2) add("…", null, true);
+    }
+
+    // Páginas centrales
+    for (let i = start; i <= end; i++) {
+        add(i, i, false, i === current);
+    }
+
+    // Última página + elipsis
+    if (end < totalPages) {
+        if (end < totalPages - 1) add("…", null, true);
+        add(totalPages, totalPages);
+    }
+
+    // »
+    add("»", current + 1, current === totalPages);
+
+    container.appendChild(ul);
+};
+
+
 AppUtils.Pagination.attach = function (paginationSelector, loadFunc, getPageFunc, getPageSizeFunc, getRecordsTotalFunc) {
 
     const $pagination = $(paginationSelector);
@@ -424,131 +565,55 @@ document.addEventListener("click", (e) => {
     ModalUtils.close(modalId);
 });
 
-(function () {
-    const AU = window.AppUtils;
+AppUtils.Export = {
 
-    // key -> { currentPage, pageSize, recordsTotal, order:{column,dir} }
-    AU._tables = AU._tables || Object.create(null);
+    async post({ url, params, filename }) {
+        if (!url) throw new Error("Export.post: url requerida");
 
-    function ensureKey(key) {
-        if (!AU._tables[key]) {
-            AU._tables[key] = {
-                currentPage: 1,
-                pageSize: 25,
-                recordsTotal: 0,
-                order: { column: 0, dir: 'asc' }
-            };
+        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+        const form = new URLSearchParams();
+
+        if (token) {
+            form.append("__RequestVerificationToken", token);
         }
-        return AU._tables[key];
+
+        const data = (typeof params === "function")
+            ? params()
+            : (params || {});
+
+        Object.entries(data).forEach(([k, v]) => {
+            if (v !== undefined && v !== null && v !== "") {
+                form.append(k, v);
+            }
+        });
+
+        const res = await fetch(url, {
+            method: "POST",
+            body: form
+        });
+
+        if (!res.ok) {
+            AppUtils.showToast("error", "Error exportando datos");
+            return;
+        }
+
+        const blob = await res.blob();
+        const blobUrl = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = blobUrl;
+        a.download = filename || "export";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        URL.revokeObjectURL(blobUrl);
     }
+};
 
-    // ---------------- Pagination ----------------
-    AU.Pagination = {
-        init(key, opts = {}) {
-            const st = ensureKey(key);
-            if (opts.defaultPageSize != null) st.pageSize = parseInt(opts.defaultPageSize, 10) || st.pageSize;
-            if (opts.defaultOrder) {
-                st.order = {
-                    column: Number(opts.defaultOrder.column) || 0,
-                    dir: (opts.defaultOrder.dir || 'asc').toLowerCase() === 'desc' ? 'desc' : 'asc'
-                };
-            }
-            if (opts.pageSizeSelector) {
-                const sel = opts.pageSizeSelector;
-                $(document).off(`change.pageSize.${key}`, sel).on(`change.pageSize.${key}`, sel, () => {
-                    const v = parseInt($(sel).val(), 10);
-                    st.pageSize = isNaN(v) ? st.pageSize : v;
-                    st.currentPage = 1;
-                    if (typeof opts.onChange === 'function') opts.onChange();
-                });
-            }
-        },
-
-        // Nuevo: order vive acá
-        setOrder(key, column, dir, onChange) {
-            const st = ensureKey(key);
-            st.order = { column: Number(column) || 0, dir: (dir || 'asc').toLowerCase() === 'desc' ? 'desc' : 'asc' };
-            st.currentPage = 1;
-            if (typeof onChange === 'function') onChange();
-        },
-
-        getOrder(key) {
-            return ensureKey(key).order;
-        },
-
-        // Back-compat helpers
-        setRecordsTotal(key, n) { ensureKey(key).recordsTotal = Number(n) || 0; },
-        getState(key) { return ensureKey(key); },
-
-        goTo(key, page, onChange) {
-            const st = ensureKey(key);
-            st.currentPage = Math.max(1, Number(page) || 1);
-            if (typeof onChange === 'function') onChange();
-        },
-        next(key, onChange) {
-            const st = ensureKey(key);
-            if (st.currentPage * st.pageSize < st.recordsTotal) {
-                st.currentPage++;
-                if (typeof onChange === 'function') onChange();
-            }
-        },
-        prev(key, onChange) {
-            const st = ensureKey(key);
-            if (st.currentPage > 1) {
-                st.currentPage--;
-                if (typeof onChange === 'function') onChange();
-            }
-        },
-
-        // Render de paginación leyendo el state unificado
-        renderWithState(paginationSelector, key, reloadFn) {
-            const st = ensureKey(key);
-            const $p = $(paginationSelector).empty();
-            if (st.pageSize <= 0 || st.pageSize === -1) return;
-
-            const totalPages = Math.max(1, Math.ceil(st.recordsTotal / st.pageSize));
-            const startPage = Math.max(1, st.currentPage - 2);
-            const endPage = Math.min(totalPages, st.currentPage + 2);
-
-            function li(p, text, active) {
-                const $li = $('<li>').addClass('page-item' + (active ? ' active' : ''));
-                const $a = $('<a href="#" class="page-link">').text(text);
-                $a.on('click', (e) => {
-                    e.preventDefault();
-                    AU.Pagination.goTo(key, p, reloadFn);
-                });
-                $li.append($a);
-                return $li;
-            }
-
-            if (st.currentPage > 1) $p.append(li(st.currentPage - 1, 'Anterior', false));
-            for (let i = startPage; i <= endPage; i++) $p.append(li(i, i, i === st.currentPage));
-            if (st.currentPage < totalPages) $p.append(li(st.currentPage + 1, 'Siguiente', false));
-        }
-    };
-
-    // ---------------- Sort ----------------
-    AU.Sort = {
-        // headerSelector: botones con data-index, ej: '#visits thead .sort-btn'
-        attachHeaderSorting(tableSelector, key, reloadFn) {
-            const headerSelector = `${tableSelector} thead .sort-btn`;
-            $(document).off(`click.sort.${key}`, headerSelector).on(`click.sort.${key}`, headerSelector, function (e) {
-                e.preventDefault();
-                const idx = Number($(this).data('index')) || 0;
-                const cur = AU.Pagination.getOrder(key);
-                const dir = (cur.column === idx && cur.dir === 'asc') ? 'desc' : 'asc';
-                AU.Pagination.setOrder(key, idx, dir, reloadFn);
-                // Visual
-                const $btns = $(headerSelector);
-                $btns.removeClass('active').attr('aria-sort', 'none').find('.sort-indicator').text('');
-                $(this).addClass('active').attr('aria-sort', dir === 'asc' ? 'ascending' : 'descending')
-                    .find('.sort-indicator').text(dir === 'asc' ? '▲' : '▼');
-            });
-        },
-
-        // Mantengo getOrder por compatibilidad, ahora lee desde Pagination
-        getOrder(key) {
-            return AU.Pagination.getOrder(key);
-        }
-    };
-})();
+AppUtils.Date.ddMMyyyy = function (date = new Date()) {
+    const d = String(date.getDate()).padStart(2, '0');
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    return `${d}${m}${date.getFullYear()}`;
+};
