@@ -19,7 +19,7 @@ public class GetTurnDTOServices(ITurnDTORepository turnRepository) : IGetTurnDTO
             throw new ApplicationException("Error inesperado al obtener TurnDTOs.", ex);
         }
     }
-    public IQueryable<TurnDTO> GetTurnsDtoByDateAndId(DateOnly date, Guid id)
+    public IQueryable<TurnDTO> GetTurnsDtoByDateAndId(DateOnly date, Guid? id)
     {
         try
         {
@@ -39,5 +39,5 @@ public class GetTurnDTOServices(ITurnDTORepository turnRepository) : IGetTurnDTO
 public interface IGetTurnDTOServices
 {
     IQueryable<TurnDTO> GetTurnsDto();
-    IQueryable<TurnDTO> GetTurnsDtoByDateAndId(DateOnly date, Guid id);
+    IQueryable<TurnDTO> GetTurnsDtoByDateAndId(DateOnly date, Guid? id);
 }

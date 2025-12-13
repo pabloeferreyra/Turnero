@@ -82,6 +82,10 @@ public class TurnsController(UserManager<IdentityUser> userManager,
         {
             turns = getTurnDTO.GetTurnsDtoByDateAndId(dateTurn, Guid.Parse(medic));
         }
+        else if((dateTurn != DateOnly.MinValue) && string.IsNullOrEmpty(medic))
+        {
+            turns = getTurnDTO.GetTurnsDtoByDateAndId(dateTurn, null);
+        }
         else
         {
             turns = getTurnDTO.GetTurnsDto();
@@ -327,5 +331,93 @@ public class TurnsController(UserManager<IdentityUser> userManager,
     public bool CheckTurn(Guid medicId, DateTime date, Guid timeTurn)
     {
         return getTurns.CheckTurn(medicId, date, timeTurn);
+    }
+
+    [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
+    [HttpPost]
+    public async Task<IActionResult> ExportExcel()
+    {
+        string isMedic = await CheckMedic();
+
+        _ = SetTable(isMedic, out _, out _, out _, out List<TurnDTO> data, out _);
+
+        using var wb = new ClosedXML.Excel.XLWorkbook();
+        var ws = wb.AddWorksheet("Turnos");
+
+        ws.Cell(1, 1).Value = "Nombre";
+        ws.Cell(1, 2).Value = "DNI";
+        ws.Cell(1, 3).Value = "Obra Social";
+        ws.Cell(1, 4).Value = "Motivo";
+        ws.Cell(1, 5).Value = "Médico";
+        ws.Cell(1, 6).Value = "Fecha";
+        ws.Cell(1, 7).Value = "Hora";
+
+        int row = 2;
+        foreach (var t in data)
+        {
+            ws.Cell(row, 1).Value = t.Name;
+            ws.Cell(row, 2).Value = t.Dni;
+            ws.Cell(row, 3).Value = t.SocialWork;
+            ws.Cell(row, 4).Value = t.Reason;
+            ws.Cell(row, 5).Value = t.MedicName;
+            ws.Cell(row, 6).Value = t.Date;
+            ws.Cell(row, 7).Value = t.Time;
+            row++;
+        }
+
+        using var ms = new MemoryStream();
+        wb.SaveAs(ms);
+        var bytes = ms.ToArray();
+
+        return File(bytes,
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "turnos.xlsx");
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> ExportPdf()
+    {
+        string isMedic = await CheckMedic();
+        _ = SetTable(isMedic, out _, out _, out _, out List<TurnDTO> data, out _);
+
+        var pdf = QuestPDF.Fluent.Document.Create(container =>
+        {
+            container.Page(page =>
+            {
+                page.Margin(20);
+                page.Header().Text("Turnos del día").FontSize(20).Bold();
+                page.Content().Table(table =>
+                {
+                    table.ColumnsDefinition(cols =>
+                    {
+                        cols.RelativeColumn(2);
+                        cols.RelativeColumn(1);
+                        cols.RelativeColumn(1);
+                        cols.RelativeColumn(2);
+                        cols.RelativeColumn(2);
+                    });
+
+                    table.Header(header =>
+                    {
+                        header.Cell().Text("Nombre").Bold();
+                        header.Cell().Text("DNI").Bold();
+                        header.Cell().Text("Obra").Bold();
+                        header.Cell().Text("Médico").Bold();
+                        header.Cell().Text("Hora").Bold();
+                    });
+
+                    foreach (var t in data)
+                    {
+                        table.Cell().Text(t.Name);
+                        table.Cell().Text(t.Dni);
+                        table.Cell().Text(t.SocialWork);
+                        table.Cell().Text(t.MedicName);
+                        table.Cell().Text(t.Time);
+                    }
+                });
+            });
+        }).GeneratePdf();
+
+        return File(pdf, "application/pdf", "turnos.pdf");
     }
 }

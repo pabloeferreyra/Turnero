@@ -38,10 +38,9 @@ if (builder.Environment.IsDevelopment())
 #endregion
 
 #region Database Configuration
-
 AppSettings.ConnectionString = builder.Configuration.GetConnectionString("PostgresConnection");
-    builder.Services.AddDbContext<ApplicationDbContext>(options =>
-        options.UseNpgsql(AppSettings.ConnectionString));
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(AppSettings.ConnectionString));
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 {
@@ -280,6 +279,9 @@ Directory.SetCurrentDirectory(app.Environment.ContentRootPath);
 #endregion
 
 #region Middleware Pipeline
+
+QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
