@@ -20,7 +20,7 @@
             <input asp-for="Dni"
                    class="form-control"
                    id="Dni"
-                   disabled
+                   readonly
                    maxlength="8"
                    inputmode="numeric"
                    pattern="\d*" />
@@ -32,7 +32,7 @@
             <input asp-for="BirthDate"
                    class="form-control"
                    id="BirthDateEdit"
-                   type="text" />
+                   type="text" value="@Model.BirthDate.ToString("yyyy-MM-dd")" />
             <span asp-validation-for="BirthDate" class="text-danger"></span>
         </div>
 

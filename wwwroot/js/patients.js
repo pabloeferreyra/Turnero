@@ -8,17 +8,28 @@
     // =============== EVENTOS GLOBALES =======================
     // =======================================================
 
+    const modalEl = document.getElementById("GlobalModal");
+
+    if (modalEl) {
+        modalEl.addEventListener("shown.bs.modal", () => {
+            const body = modalEl.querySelector(".modal-body");
+            if (!body) return;
+
+            if (body.querySelector("#PatientCreateForm")) {
+                initCreate();
+            }
+
+            if (body.querySelector("#PatientEditForm")) {
+                initEdit();
+            }
+        });
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
 
-        // Inicializar búsqueda + tabla
         initTable();
         loadData();
 
-        // Eventos CREATE / EDIT
-        document.addEventListener("patients:createLoaded", initCreate);
-        document.addEventListener("patients:editLoaded", initEdit);
-
-        // Buscar por texto
         let searchTimer = null;
         document.addEventListener("input", (e) => {
             if (!e.target.matches("#searchBox")) return;
@@ -29,7 +40,6 @@
             }, 250);
         });
 
-        // Enter en la búsqueda
         document.addEventListener("keydown", (e) => {
             if (e.target.matches("#searchBox") && e.key === "Enter") {
                 e.preventDefault();
@@ -37,14 +47,12 @@
             }
         });
 
-        // Botón búsqueda
         document.addEventListener("click", (e) => {
             if (e.target.matches("#btnSearch")) {
                 AppUtils.Pagination.goTo(key, 1, loadData);
             }
         });
 
-        // Botón "Crear"
         document.addEventListener("click", (e) => {
             const btn = e.target.closest("[data-create-patient]");
             if (!btn) return;
@@ -52,7 +60,6 @@
             ModalUtils.load("GlobalModal", "/Patients/Create", "Crear paciente");
         });
 
-        // Botón "Editar"
         document.addEventListener("click", (e) => {
             const btn = e.target.closest("[data-edit-patient]");
             if (!btn) return;
@@ -61,7 +68,6 @@
             ModalUtils.load("GlobalModal", `/Patients/Edit?id=${id}`, "Editar paciente");
         });
 
-        // Personal Background (solo abre el modal)
         document.addEventListener("click", (e) => {
             const btn = e.target.closest("[personal-background]");
             if (!btn) return;
@@ -69,7 +75,19 @@
             const id = btn.getAttribute("data-id");
             ModalUtils.load("GlobalModal", `/PersonalBackground/Index?id=${id}`, "Antecedentes personales");
         });
+    });
 
+    document.addEventListener("modal:updated", (e) => {
+        const body = document.getElementById(`${e.detail.modalId}-body`);
+        if (!body) return;
+
+        if (body.querySelector("#PatientCreateForm")) {
+            initCreate();
+        }
+
+        if (body.querySelector("#PatientEditForm")) {
+            initEdit();
+        }
     });
 
     // =======================================================
@@ -92,7 +110,6 @@
     // =======================================================
 
     async function loadData() {
-
         const st = AppUtils.Pagination.getState(key);
         const order = AppUtils.Pagination.getOrder(key);
 
@@ -133,8 +150,7 @@
             AppUtils.Pagination.renderWithState("#patients-pagination", key, loadData);
 
         } catch (err) {
-            console.error("Error loading patients:", err);
-
+            console.error(err);
             document.querySelector("#patients-body").innerHTML =
                 `<tr><td colspan="6" class="text-center text-danger">Error cargando pacientes.</td></tr>`;
         }
@@ -156,7 +172,7 @@
 
         tbody.innerHTML = rows.map(p => {
             const birth = p.birthDate
-                ? new Date(p.birthDate).toLocaleDateString("es-AR")
+                ? formatDateDMY(p.birthDate)
                 : "";
 
             return `
@@ -197,27 +213,31 @@
 
     function initCreate() {
 
-        requestAnimationFrame(() => {
-
-            AppUtils.initFlatpickr("#BirthDate", { maxToday: true });
-
-            AppUtils.FormValidationRules("#btnCreatePatient", {
-                Name: { required: true },
-                Dni: { required: true },
-                BirthDate: { required: true },
-                "ContactInfo.Email": { email: true }
+        const input = document.querySelector("#BirthDate");
+        if (input && !input._flatpickr) {          // ✅ FIX
+            AppUtils.initFlatpickr("#BirthDate", {
+                maxToday: true,
+                defaultToday: true
             });
+        }
 
-            const btn = document.querySelector("#btnCreatePatient");
-            if (!btn) return;
+        const btn = document.querySelector("#btnCreatePatient");
+        if (!btn || btn._hooked) return;            // ✅ FIX
 
-            btn.addEventListener("click", async (e) => {
-                e.preventDefault();
-                if (!AppUtils.validateAll()) return;
-
-                await CreatePatientSubmit();
-            });
+        AppUtils.FormValidationRules("#btnCreatePatient", {
+            Name: { required: true },
+            Dni: { required: true },
+            BirthDate: { required: true },
+            "ContactInfo.Email": { email: true }
         });
+
+        btn.addEventListener("click", async (e) => {
+            e.preventDefault();
+            if (!AppUtils.validateAll()) return;
+            await CreatePatientSubmit();
+        });
+
+        btn._hooked = true;                         // ✅ FIX
     }
 
     // =======================================================
@@ -226,34 +246,34 @@
 
     function initEdit() {
 
-        requestAnimationFrame(() => {
-
-            AppUtils.initFlatpickr("#BirthDateEdit", { maxToday: true });
-
-            AppUtils.FormValidationRules("#btnEditPatient", {
-                Name: { required: true },
-                BirthDate: { required: true },
-                "ContactInfo.Email": { email: true }
-            });
-
-            const btn = document.querySelector("#btnEditPatient");
-            if (!btn) return;
-
-            btn.addEventListener("click", async (e) => {
-                e.preventDefault();
-                if (!AppUtils.validateAll()) return;
-
-                await EditPatientSubmit();
-            });
+        AppUtils.initFlatpickr("#BirthDateEdit", {
+            maxToday: true
         });
+
+        AppUtils.FormValidationRules("#btnEditPatient", {
+            Name: { required: true },
+            BirthDate: { required: true },
+            "ContactInfo.Email": { email: true }
+        });
+
+        const btn = document.querySelector("#btnEditPatient");
+        if (!btn || btn._hooked) return;
+
+        btn.addEventListener("click", async (e) => {
+            e.preventDefault();
+            if (!AppUtils.validateAll()) return;
+            await EditPatientSubmit();
+        });
+
+        btn._hooked = true;
     }
 
+
     // =======================================================
-    // =============== SUBMIT CREATE =========================
+    // =============== SUBMITS ===============================
     // =======================================================
 
     async function CreatePatientSubmit() {
-
         await ModalUtils.submitForm(
             "GlobalModal",
             "PatientCreateForm",
@@ -262,45 +282,37 @@
             "Pacientes"
         );
 
-        if (window.reloadPatientsTable) {
-            window.reloadPatientsTable();
-        }
+        window.reloadPatientsTable?.();
     }
-
-    // =======================================================
-    // =============== SUBMIT EDIT ===========================
-    // =======================================================
 
     async function EditPatientSubmit() {
+        await ModalUtils.submitForm(
+            "GlobalModal",
+            "PatientEditForm",
+            "/Patients/Edit",
+            "PUT",
+            "Pacientes"
+        );
 
-        const form = document.querySelector("#PatientEditForm");
-        const token = form.querySelector('input[name="__RequestVerificationToken"]').value;
-        const data = new FormData(form);
-
-        const resp = await fetch(`/Patients/Edit?id=${data.get("Id")}`, {
-            method: "POST",
-            headers: { "RequestVerificationToken": token },
-            body: data
-        });
-
-        if (!resp.ok) {
-            AppUtils.showToast("error", "Error editando paciente");
-            return;
-        }
-
-        ModalUtils.close("GlobalModal");
-
-        AppUtils.showToast("success", "Paciente actualizado correctamente", 900);
-
-        if (window.reloadPatientsTable) {
-            window.reloadPatientsTable();
-        }
+        window.reloadPatientsTable?.();
     }
 
-    // =======================================================
-    // =============== EXPOSE ================================
-    // =======================================================
+    function formatDateDMY(value) {
+        if (!value) return "";
+
+        // corta la hora si viene incluida
+        const datePart = value.split(" ")[0];
+
+        const parts = datePart.split("/");
+        if (parts.length !== 3) return datePart;
+
+        let [day, month, year] = parts;
+
+        day = day.padStart(2, "0");
+        month = month.padStart(2, "0");
+
+        return `${day}/${month}/${year}`;
+    }
 
     window.reloadPatientsTable = loadData;
-
 })();
