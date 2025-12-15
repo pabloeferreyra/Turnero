@@ -2,6 +2,7 @@
 'use strict';
 
 window.ModalUtils = {
+
     load(modalId, url, title = null) {
         const modalEl = document.getElementById(modalId);
         if (!modalEl) {
@@ -17,7 +18,6 @@ window.ModalUtils = {
             })
             .catch(err => {
                 console.error("Error cargando modal:", err);
-
                 if (window.Swal) AppUtils.showToast('error', 'No se puede cargar el modal');
             });
     },
@@ -29,9 +29,7 @@ window.ModalUtils = {
             return null;
         }
 
-        // Reutilizar instancia si ya está creada
         let instance = bootstrap.Modal.getInstance(el);
-
         if (!instance) {
             instance = new bootstrap.Modal(el, { backdrop: "static" });
         }
@@ -41,7 +39,23 @@ window.ModalUtils = {
 
     open(modalId) {
         const modal = this.getModal(modalId);
-        if (modal) modal.show();
+        if (!modal) return;
+
+        const el = document.getElementById(modalId);
+
+        // Registrar UNA SOLA VEZ el evento shown
+        if (!el._shownHookAttached) {
+            el.addEventListener("shown.bs.modal", () => {
+                document.dispatchEvent(
+                    new CustomEvent("modal:shown", {
+                        detail: { modalId }
+                    })
+                );
+            });
+            el._shownHookAttached = true;
+        }
+
+        modal.show();
     },
 
     close(modalId) {
@@ -58,6 +72,7 @@ window.ModalUtils = {
 
         if (html !== null) body.innerHTML = html;
         if (title !== null && t) t.textContent = title;
+
         document.dispatchEvent(
             new CustomEvent("modal:updated", { detail: { modalId } })
         );
@@ -66,43 +81,43 @@ window.ModalUtils = {
     async submitForm(modalId, formId, url, method = "POST", title = null, showSuccess = true, update = false) {
 
         const form = document.getElementById(formId);
-        
         if (!form) throw new Error("Formulario no encontrado: " + formId);
 
         const formData = new FormData(form);
 
-        const checkboxes = form.querySelectorAll('input[type="checkbox"][name]');
-        checkboxes.forEach(cb => {
+        form.querySelectorAll('input[type="checkbox"][name]').forEach(cb => {
             formData.delete(cb.name);
             formData.append(cb.name, cb.checked ? "true" : "false");
         });
 
         try {
-            var response = null;
-            if(method === "PUT"){
+            let response;
+
+            if (method === "PUT") {
                 response = await fetch(url, { method, body: formData });
-            } else if (method === "POST") {
+            } else {
                 const token = form.querySelector('input[name="__RequestVerificationToken"]').value;
-                response = await fetch(url, { method, headers: {"RequestVerificationToken": token}, body: formData });
+                response = await fetch(url, {
+                    method,
+                    headers: { "RequestVerificationToken": token },
+                    body: formData
+                });
             }
+
             if (!response.ok) {
-                error = await response.text();
+                const error = await response.text();
                 throw new Error(error || "Error en el guardado");
             }
 
             const html = await response.text();
 
-            if (update) {
-                this.update(modalId, { html, title });
-            }
+            if (update) this.update(modalId, { html, title });
 
             if (showSuccess && window.Swal) {
                 AppUtils.showToast('success', 'Guardado correctamente', false, 900);
             }
 
-            if (!update) {
-                this.close(modalId);
-            }
+            if (!update) this.close(modalId);
 
         } catch (err) {
             if (window.Swal) {
