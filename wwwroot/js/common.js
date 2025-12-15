@@ -470,32 +470,41 @@ AppUtils.initFlatpickr = function (selector, opts) {
         return;
     }
 
+    const el = typeof selector === "string"
+        ? document.querySelector(selector)
+        : selector;
+
+    if (!el || el._flatpickr) return;
+
     let base = {
-        dateFormat: "Y-m-d",
-        defaultDate: new Date(),
+        dateFormat: "Y-mm-d",
         locale: "es",
         allowInput: true,
         disableMobile: false,
         altInput: true,
-        altFormat: "d/m/Y"
+        altFormat: "d/mm/Y"
     };
 
-    if (opts && opts.maxToday === true) {
+    if (opts?.maxToday === true) {
         base.maxDate = new Date();
     }
-    if (opts && opts.minToday === true) {
+
+    if (opts?.minToday === true) {
         base.minDate = new Date();
     }
-    if (opts && opts.blockSundays === true) {
+
+    if (opts?.blockSundays === true) {
         base.disable = [
-            function (date) { return (date.getDay() === 0); }
+            date => date.getDay() === 0
         ];
     }
-    if (opts && opts.defaultDate === true) {
-        base.defaultDate = opts.defaultValue;
+
+    // 👉 SOLO si se pide explícitamente
+    if (opts?.defaultToday === true) {
+        base.defaultDate = new Date();
     }
 
-    flatpickr(selector, base);
+    flatpickr(el, base);
 };
 
 AppUtils.FormValidationRules = function (submitSelector, rules) {
