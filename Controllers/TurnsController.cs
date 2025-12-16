@@ -362,7 +362,7 @@ public class TurnsController(UserManager<IdentityUser> userManager,
             ws.Cell(row, 3).Value = t.SocialWork;
             ws.Cell(row, 4).Value = t.Reason;
             ws.Cell(row, 5).Value = t.MedicName;
-            ws.Cell(row, 6).Value = t.Date.ToDateTime(TimeOnly.MinValue);
+            ws.Cell(row, 6).Value = DateTime.ParseExact(t.Date, "dd/MM/yyyy", CultureInfo.InvariantCulture);
             ws.Cell(row, 6).Style.DateFormat.Format = "dd/MM/yyyy";
             ws.Cell(row, 7).Value = TimeSpan.Parse(t.Time);
             ws.Cell(row, 7).Style.DateFormat.Format = "HH:mm";
