@@ -477,12 +477,12 @@ AppUtils.initFlatpickr = function (selector, opts) {
     if (!el || el._flatpickr) return;
 
     let base = {
-        dateFormat: "Y-mm-d",
+        dateFormat: "Y-m-d",
         locale: "es",
         allowInput: true,
         disableMobile: false,
         altInput: true,
-        altFormat: "d/mm/Y"
+        altFormat: "d/m/Y"
     };
 
     if (opts?.maxToday === true) {

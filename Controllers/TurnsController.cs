@@ -14,7 +14,7 @@ public class TurnsController(UserManager<IdentityUser> userManager,
     [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
     public async Task<IActionResult> Index()
     {
-
+        ViewBag.MedicId = await CheckMedic();
         List<MedicDto> medics = null;
 
         medics = cache.Get<List<MedicDto>>("medics");
@@ -339,7 +339,7 @@ public class TurnsController(UserManager<IdentityUser> userManager,
     {
         string isMedic = await CheckMedic();
 
-        _ = SetTable(isMedic, out _, out _, out _, out List<TurnDTO> data, out _);
+        _ = SetTable(isMedic, out _, out _, out _, out List<TurnDTO> data, out _).OrderBy(p => p.Time);
 
         using var wb = new ClosedXML.Excel.XLWorkbook();
         var ws = wb.AddWorksheet("Turnos");

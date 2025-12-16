@@ -25,7 +25,7 @@
             }
             else if (User.IsInRole(RolesConstants.Medico)) {
                 <select id="Medics" title="Medico" class="form-control" asp-items="@ViewBag.Medics" disabled>
-                    <option value="" selected>@User.Identity.Name</option>
+                    <option value="@ViewBag.MedicId" selected>@User.Identity.Name</option>
                 </select>
             }
         </div>

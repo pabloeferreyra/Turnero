@@ -165,7 +165,8 @@
 
         AppUtils.initFlatpickr("#DateTurnCreate", {
             minToday: true,
-            blockSundays: true
+            blockSundays: true,
+            defaultToday: true
         });
 
         const btn = document.querySelector("#btnCrearTurno");
@@ -388,7 +389,8 @@
         if (!el) return;
 
         AppUtils.initFlatpickr("#DateTurn", {
-            blockSundays: true
+            blockSundays: true,
+            defaultToday: true
         });
     }
 
