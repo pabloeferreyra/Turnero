@@ -339,7 +339,7 @@ public class TurnsController(UserManager<IdentityUser> userManager,
     {
         string isMedic = await CheckMedic();
 
-        _ = SetTable(isMedic, out _, out _, out _, out List<TurnDTO> data, out _).OrderBy(p => p.Time);
+        _ = SetTable(isMedic, out _, out _, out _, out List<TurnDTO> data, out _);
 
         using var wb = new ClosedXML.Excel.XLWorkbook();
         var ws = wb.AddWorksheet("Turnos");
@@ -353,7 +353,9 @@ public class TurnsController(UserManager<IdentityUser> userManager,
         ws.Cell(1, 7).Value = "Hora";
 
         int row = 2;
-        foreach (var t in data)
+        var registres = data.OrderBy(t => t.Time);
+        
+        foreach (var t in registres)
         {
             ws.Cell(row, 1).Value = t.Name;
             ws.Cell(row, 2).Value = t.Dni;
@@ -379,6 +381,8 @@ public class TurnsController(UserManager<IdentityUser> userManager,
     {
         string isMedic = await CheckMedic();
         _ = SetTable(isMedic, out _, out _, out _, out List<TurnDTO> data, out _);
+
+        var registres = data.OrderBy(t => t.Time);
 
         var pdf = QuestPDF.Fluent.Document.Create(container =>
         {
@@ -406,7 +410,7 @@ public class TurnsController(UserManager<IdentityUser> userManager,
                         header.Cell().Text("Hora").Bold();
                     });
 
-                    foreach (var t in data)
+                    foreach (var t in registres)
                     {
                         table.Cell().Text(t.Name);
                         table.Cell().Text(t.Dni);
