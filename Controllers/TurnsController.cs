@@ -339,7 +339,7 @@ public class TurnsController(UserManager<IdentityUser> userManager,
     {
         string isMedic = await CheckMedic();
 
-        _ = SetTable(isMedic, out _, out _, out _, out List<TurnDTO> data, out _).OrderBy(p => p.Time);
+        _ = SetTable(isMedic, out _, out _, out _, out List<TurnDTO> data, out _);
 
         using var wb = new ClosedXML.Excel.XLWorkbook();
         var ws = wb.AddWorksheet("Turnos");
@@ -353,15 +353,19 @@ public class TurnsController(UserManager<IdentityUser> userManager,
         ws.Cell(1, 7).Value = "Hora";
 
         int row = 2;
-        foreach (var t in data)
+        var registres = data.OrderBy(t => TimeSpan.Parse(t.Time));
+        
+        foreach (var t in registres)
         {
             ws.Cell(row, 1).Value = t.Name;
             ws.Cell(row, 2).Value = t.Dni;
             ws.Cell(row, 3).Value = t.SocialWork;
             ws.Cell(row, 4).Value = t.Reason;
             ws.Cell(row, 5).Value = t.MedicName;
-            ws.Cell(row, 6).Value = t.Date;
-            ws.Cell(row, 7).Value = t.Time;
+            ws.Cell(row, 6).Value = DateTime.ParseExact(t.Date, "dd/MM/yyyy", CultureInfo.InvariantCulture);
+            ws.Cell(row, 6).Style.DateFormat.Format = "dd/MM/yyyy";
+            ws.Cell(row, 7).Value = TimeSpan.Parse(t.Time);
+            ws.Cell(row, 7).Style.DateFormat.Format = "HH:mm";
             row++;
         }
 
@@ -379,6 +383,8 @@ public class TurnsController(UserManager<IdentityUser> userManager,
     {
         string isMedic = await CheckMedic();
         _ = SetTable(isMedic, out _, out _, out _, out List<TurnDTO> data, out _);
+
+        var registres = data.OrderBy(t => TimeSpan.Parse(t.Time));
 
         var pdf = QuestPDF.Fluent.Document.Create(container =>
         {
@@ -406,7 +412,7 @@ public class TurnsController(UserManager<IdentityUser> userManager,
                         header.Cell().Text("Hora").Bold();
                     });
 
-                    foreach (var t in data)
+                    foreach (var t in registres)
                     {
                         table.Cell().Text(t.Name);
                         table.Cell().Text(t.Dni);
