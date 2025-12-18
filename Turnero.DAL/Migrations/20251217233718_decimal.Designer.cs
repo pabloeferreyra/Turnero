@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Turnero.DAL.Data;
@@ -11,9 +12,11 @@ using Turnero.DAL.Data;
 namespace Turnero.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251217233718_decimal")]
+    partial class @decimal
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -261,69 +264,6 @@ namespace Turnero.Migrations
                     b.HasIndex("PatientId");
 
                     b.ToTable("Allergies");
-                });
-
-            modelBuilder.Entity("Turnero.DAL.Models.CongErrors", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("Biotinidase")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("CongHypothyroidism")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("FQP")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("Galactosemia")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("OHP")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Other")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
-                        .HasDefaultValue("");
-
-                    b.Property<bool>("Phenylalanine")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("ResultBiot")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
-                        .HasDefaultValue("");
-
-                    b.Property<string>("ResultFQP")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
-                        .HasDefaultValue("");
-
-                    b.Property<string>("ResultFenil")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
-                        .HasDefaultValue("");
-
-                    b.Property<string>("ResultGalac")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
-                        .HasDefaultValue("");
-
-                    b.Property<string>("ResultHipot")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
-                        .HasDefaultValue("");
-
-                    b.Property<string>("ResultOHP")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
-                        .HasDefaultValue("");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CongErrors");
                 });
 
             modelBuilder.Entity("Turnero.DAL.Models.ContactInfo", b =>
@@ -897,17 +837,6 @@ namespace Turnero.Migrations
                     b.Navigation("Patient");
                 });
 
-            modelBuilder.Entity("Turnero.DAL.Models.CongErrors", b =>
-                {
-                    b.HasOne("Turnero.DAL.Models.Patient", "Patient")
-                        .WithOne("CongErrors")
-                        .HasForeignKey("Turnero.DAL.Models.CongErrors", "Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Patient");
-                });
-
             modelBuilder.Entity("Turnero.DAL.Models.ContactInfo", b =>
                 {
                     b.HasOne("Turnero.DAL.Models.Patient", "Patient")
@@ -1037,8 +966,6 @@ namespace Turnero.Migrations
             modelBuilder.Entity("Turnero.DAL.Models.Patient", b =>
                 {
                     b.Navigation("Allergies");
-
-                    b.Navigation("CongErrors");
 
                     b.Navigation("ContactInfo");
 
