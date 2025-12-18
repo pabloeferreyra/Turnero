@@ -6,6 +6,11 @@
 	string[] methods = ["Index", "Edit", "Create"];
 	string paModalUrl = string.Format("/Patients/{0}", methods[2]);
 }
+<script>
+	window.reloadPatients = () => {
+		window.reloadPatientsTable?.();
+	};
+</script>
 
  <div class="back container-fluid">
 	<div class="form-group row">

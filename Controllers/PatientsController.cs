@@ -97,7 +97,7 @@ public class PatientsController(IInsertPatientService insertPatient,
     }
 
     [HttpPost]
-    public async Task<StatusCodeResult> Create([FromBody] Patient patient)
+    public async Task<StatusCodeResult> Create(Patient patient)
     {
         try
         {

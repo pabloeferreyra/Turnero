@@ -18,7 +18,11 @@
     string gcModalUrl = string.Format("/GrowthChart/{0}?id={1}", methods[2], Model.Id);
     string vmModalUrl = string.Format("/Vademecum/Index");
 }
-
+<script>
+    window.reloadPatients = () => {
+        window.location.reload(true);
+    };
+</script>
 <input type="hidden" name="patientId" id="patientId" value="@Model.Id" />
 
 <div class="back container-fluid">

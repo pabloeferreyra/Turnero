@@ -282,7 +282,7 @@
             "Pacientes"
         );
 
-        window.reloadPatientsTable?.();
+        window.reloadPatients?.();
     }
 
     async function EditPatientSubmit() {
@@ -294,7 +294,7 @@
             "Pacientes"
         );
 
-        window.reloadPatientsTable?.();
+        window.reloadPatients?.();
     }
 
     function formatDateDMY(value) {
@@ -314,5 +314,4 @@
         return `${day}/${month}/${year}`;
     }
 
-    window.reloadPatientsTable = loadData;
 })();
