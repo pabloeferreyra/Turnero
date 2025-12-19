@@ -20,6 +20,18 @@ public class CongErrorController(IGetCongErrorService get,
         if (id == null)
             return BadRequest("El ID del error congénito es obligatorio.");
         var data = await get.GetCongError(id.Value);
+        ViewData["PatientId"] = id.Value.ToString();
+        ViewBag.ResultList = new SelectList(
+            new[]
+            {
+                new { Value = CongErrorsResults.NA, Text = CongErrorsResults.NA },
+                new { Value = CongErrorsResults.Normal, Text = CongErrorsResults.Normal },
+                new { Value = CongErrorsResults.Patological, Text = CongErrorsResults.Patological }
+            },
+            "Value",
+            "Text"
+        );
+
         if (data == null)
             return NotFound();
         var token = HttpContext.RequestServices.GetRequiredService<IAntiforgery>()
