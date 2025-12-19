@@ -30,6 +30,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         var stringParents = typeof(ParentsData)
             .GetProperties()
             .Where(p => p.PropertyType == typeof(string));
+        var stringCongErrors = typeof(CongErrors)
+            .GetProperties()
+            .Where(p => p.PropertyType == typeof(string));
         var dateParents = typeof(ParentsData)
             .GetProperties()
             .Where(p => p.PropertyType == typeof(DateOnly));
@@ -61,6 +64,12 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         foreach (var prop in stringParents)
         {
             builder.Entity<ParentsData>()
+                .Property(prop.Name)
+                .HasDefaultValue(string.Empty);
+        }
+        foreach (var prop in stringCongErrors)
+        {
+            builder.Entity<CongErrors>()
                 .Property(prop.Name)
                 .HasDefaultValue(string.Empty);
         }
@@ -98,4 +107,5 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Vaccines> Vaccines { get; set; }
     public DbSet<PermMed> PermMeds { get; set; }
     public DbSet<GrowthChart> GrowthCharts { get; set; }
+    public DbSet<CongErrors> CongErrors { get; set; }
 }

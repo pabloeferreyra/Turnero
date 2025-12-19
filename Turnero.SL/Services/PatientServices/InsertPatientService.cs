@@ -12,6 +12,7 @@ public class InsertPatientService(LoggerService logger, IPatientRepository patie
             patient.PersonalBackground = new();
             patient.PerinatalBackground = new();
             patient.Parent = new();
+            patient.CongErrors = new();
             await _patientRepository.NewPatient(patient);
         }
         catch (Exception ex)

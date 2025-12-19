@@ -18,7 +18,11 @@
     string gcModalUrl = string.Format("/GrowthChart/{0}?id={1}", methods[2], Model.Id);
     string vmModalUrl = string.Format("/Vademecum/Index");
 }
-
+<script>
+    window.reloadPatients = () => {
+        window.location.reload(true);
+    };
+</script>
 <input type="hidden" name="patientId" id="patientId" value="@Model.Id" />
 
 <div class="back container-fluid">
@@ -53,6 +57,10 @@
                     data-title="Antecedentes perinatales">
                 <i class="fa-solid fa-user-nurse"></i> Ant. Perinatales
             </button>
+            <a type="button"
+                    class="btn btn-sm btn-primary me-1"
+                    href="~/extras/optotipos.pdf"
+               target="_blank"><i class="fa-solid fa-glasses"></i> Optotipos</a>
             <button type="button"
                     data-open-modal
                     data-modal-id="GlobalModal"
@@ -254,6 +262,7 @@
 	<script src="~/js/permMed.js" asp-append-version="true"></script>
     <script src="~/js/personalBackground.js" asp-append-version="true"></script>
     <script src="~/js/perinatalBackground.js" asp-append-version="true"></script>
+	<script src="~/js/congError.js" asp-append-version="true"></script>
     <script src="/js/growthCharts.js" asp-append-version="true"></script>
     
     @{

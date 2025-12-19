@@ -1,3 +1,5 @@
+using Turnero.SL.Services.CongErrorServices;
+
 var builder = WebApplication.CreateBuilder(args);
 
 MapsterConfig.RegisterMappings();
@@ -38,7 +40,7 @@ if (builder.Environment.IsDevelopment())
 #endregion
 
 #region Database Configuration
-AppSettings.ConnectionString = builder.Configuration.GetConnectionString("PostgresConnection");
+AppSettings.ConnectionString = builder.Configuration.GetConnectionString("LocalConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(AppSettings.ConnectionString));
 
@@ -189,6 +191,12 @@ builder.Services.AddScoped<IGetGrowthChartService, GetGrowthChartService>();
 builder.Services.AddScoped<IUpdateGrowthChartService, UpdateGrowthChartService>();
 builder.Services.AddScoped<IInsertGrowthChartService, InsertGrowthChartService>();
 builder.Services.AddScoped<IDeleteGrowthChartService, DeleteGrowthChartService>();
+
+//CongErrors Services
+builder.Services.AddScoped<IGetCongErrorService, GetCongErrorService>();
+builder.Services.AddScoped<IUpdateCongErrorService, UpdateCongErrorService>();
+builder.Services.AddScoped<IInsertCongErrorService, InsertCongErrorService>();
+builder.Services.AddScoped<IDeleteCongErrorService, DeleteCongErrorService>();
 #endregion
 
 #region Dependency Injection - Repositories
@@ -205,6 +213,7 @@ builder.Services.AddScoped<IPerinatalBackgroundRepository, PerinatalBackgroundRe
 builder.Services.AddScoped<IVaccinesRepository, VaccinesRepository>();
 builder.Services.AddScoped<IPermMedRepository, PermMedRepository>();
 builder.Services.AddScoped<IGrowthChartRepository, GrowthChartRepository>();
+builder.Services.AddScoped<ICongErrorsRepository, CongErrorsRepository>();
 #endregion
 
 #region HTTP Client

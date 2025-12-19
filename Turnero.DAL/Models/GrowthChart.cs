@@ -2,22 +2,20 @@
 
 public class GrowthChart : BaseEntity
 {
-    public double Age { get; set; }
+    [Precision(6, 3)]
+    public decimal Age { get; set; }
     public string? Time { get; set; }
-    public double Weight { get; set; }
+    [Precision(13, 3)]
+    public decimal Weight { get; set; }
     public string? WPerc { get; set; }
-    public double Height { get; set; }
+    [Precision(13, 3)]
+    public decimal Height { get; set; }
     public string? HPerc { get; set; }
-    public double HeadCircumference { get; set; }
+    [Precision(13, 3)]
+    public decimal HeadCircumference { get; set; }
     public string? HCPerc { get; set; }
-    public double Bmi { get; set; }
+    [Precision(13, 3)]
+    public decimal Bmi { get; set; }
     public Patient? Patient { get; set; }
     public Guid PatientId { get; set; }
-}
-
-public enum HCperc
-{
-    PMinus2Ds = -20,
-    P50 = 50,
-    PPlus2Ds = 99
 }
