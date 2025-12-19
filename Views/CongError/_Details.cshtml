@@ -1,7 +1,7 @@
 ﻿@model CongErrors
 @{
     string[] methods = ["Index", "Edit"];
-    string ceModalUrl = string.Format("/CongErrors/{0}?id={1}", methods[1], Model.Id);
+    string ceModalUrl = string.Format("/CongError/{0}?id={1}", methods[1], Model.Id);
 
     var boolProps = ViewData.ModelMetadata.Properties
         .Where(p => p.ModelType == typeof(bool))

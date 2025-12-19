@@ -27,45 +27,7 @@ public class PatientsController(IInsertPatientService insertPatient,
         return await Task.FromResult<IActionResult>(Ok(json));
     }
 
-    private IQueryable<PatientDTO> SetTable(out string draw, out int pageSize, out int skip, out List<PatientDTO> data, out int recordsTotal)
-    {
-        draw = Request.Form["draw"].FirstOrDefault();
-        var start = Request.Form["start"].FirstOrDefault();
-        var length = Request.Form["length"].FirstOrDefault();
-        var search = Request.Form["Columns[1][search][value]"].FirstOrDefault();
-        var patients = getPatient.SearchPatients(search).Result;
-        pageSize = length != null ? int.Parse(length) : 0;
-        skip = start != null ? int.Parse(start) : 0;
-
-        var sortColumn = Request.Form["columns[" + Request.Form["order[0][column]"].FirstOrDefault() + "][name]"].FirstOrDefault();
-        var sortColumnDirection = Request.Form["order[0][dir]"].FirstOrDefault();
-
-        if (!(string.IsNullOrEmpty(sortColumn) || string.IsNullOrEmpty(sortColumnDirection)))
-        {
-            data = [.. patients.OrderBy(sortColumn + " " + sortColumnDirection)];
-        }
-        else
-        {
-            data = [.. patients];
-        }
-
-        recordsTotal = data.Count;
-        return patients;
-    }
-
-    private static List<PatientDTO> SetPage(int pageSize, int skip, List<PatientDTO> data)
-    {
-        if (skip != 0)
-        {
-            data = [.. data.Skip(skip).Take(pageSize).ToList()];
-        }
-        else if (pageSize != -1)
-        {
-            data = [.. data.Take(pageSize).ToList()];
-        }
-        return data;
-    }
-
+    
     [HttpGet]
     public IActionResult Create()
     {
@@ -152,4 +114,46 @@ public class PatientsController(IInsertPatientService insertPatient,
             return Conflict();
         }
     }
+
+    #region Private Methods
+    private IQueryable<PatientDTO> SetTable(out string draw, out int pageSize, out int skip, out List<PatientDTO> data, out int recordsTotal)
+    {
+        draw = Request.Form["draw"].FirstOrDefault();
+        var start = Request.Form["start"].FirstOrDefault();
+        var length = Request.Form["length"].FirstOrDefault();
+        var search = Request.Form["Columns[1][search][value]"].FirstOrDefault();
+        var patients = getPatient.SearchPatients(search).Result;
+        pageSize = length != null ? int.Parse(length) : 0;
+        skip = start != null ? int.Parse(start) : 0;
+
+        var sortColumn = Request.Form["columns[" + Request.Form["order[0][column]"].FirstOrDefault() + "][name]"].FirstOrDefault();
+        var sortColumnDirection = Request.Form["order[0][dir]"].FirstOrDefault();
+
+        if (!(string.IsNullOrEmpty(sortColumn) || string.IsNullOrEmpty(sortColumnDirection)))
+        {
+            data = [.. patients.OrderBy(sortColumn + " " + sortColumnDirection)];
+        }
+        else
+        {
+            data = [.. patients];
+        }
+
+        recordsTotal = data.Count;
+        return patients;
+    }
+
+    private static List<PatientDTO> SetPage(int pageSize, int skip, List<PatientDTO> data)
+    {
+        if (skip != 0)
+        {
+            data = [.. data.Skip(skip).Take(pageSize).ToList()];
+        }
+        else if (pageSize != -1)
+        {
+            data = [.. data.Take(pageSize).ToList()];
+        }
+        return data;
+    }
+
+    #endregion
 }
