@@ -228,7 +228,7 @@
             Name: { required: true },
             Dni: { required: true },
             BirthDate: { required: true },
-            "ContactInfo.Email": { email: true }
+            "ContactInfo.Email": { email: false }
         });
 
         btn.addEventListener("click", async (e) => {
