@@ -1,4 +1,6 @@
-﻿namespace Turnero.Controllers;
+﻿using DocumentFormat.OpenXml.Office2010.Excel;
+
+namespace Turnero.Controllers;
 
 [Authorize(Roles = RolesConstants.Medico)]
 public class ParentsDataController(
@@ -7,8 +9,10 @@ public class ParentsDataController(
     IGetParentsDataService getParentsData,
     ILogger<ParentsDataController> logger) : Controller
 {
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public async Task<IActionResult> Index(Guid? id)
     {
+        Console.WriteLine(DateTime.Now);
         if (id == null)
             return BadRequest("El ID del paciente es obligatorio.");
         var Data = await getParentsData.GetParentsData(id.Value);
@@ -43,12 +47,13 @@ public class ParentsDataController(
     }
 
     [HttpPut]
-    public async Task<StatusCodeResult> Edit(ParentsData data)
+    public async Task<IActionResult> Edit(ParentsData data)
     {
         try
         {
             await updateParentsData.UpdateParentsData(data);
-            return Ok();
+            var Data = await getParentsData.GetParentsData(data.Id);
+            return PartialView("_Details", Data);
         }
         catch (Exception ex)
         {
