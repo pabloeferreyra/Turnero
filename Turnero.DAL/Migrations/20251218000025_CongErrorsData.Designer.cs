@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Turnero.DAL.Data;
@@ -11,9 +12,11 @@ using Turnero.DAL.Data;
 namespace Turnero.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251218000025_CongErrorsData")]
+    partial class CongErrorsData
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -291,7 +294,7 @@ namespace Turnero.Migrations
                     b.Property<bool>("Phenylalanine")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("ResultBiotinidase")
+                    b.Property<string>("ResultBiot")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("text")
                         .HasDefaultValue("");
@@ -301,22 +304,22 @@ namespace Turnero.Migrations
                         .HasColumnType("text")
                         .HasDefaultValue("");
 
-                    b.Property<string>("ResultGalactosemia")
+                    b.Property<string>("ResultFenil")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("text")
                         .HasDefaultValue("");
 
-                    b.Property<string>("ResultHypothyroidism")
+                    b.Property<string>("ResultGalac")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("");
+
+                    b.Property<string>("ResultHipot")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("text")
                         .HasDefaultValue("");
 
                     b.Property<string>("ResultOHP")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
-                        .HasDefaultValue("");
-
-                    b.Property<string>("ResultPhenylalanine")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("text")
                         .HasDefaultValue("");
@@ -333,21 +336,26 @@ namespace Turnero.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("Address")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("City")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Email")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<Guid>("PatientId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Phone")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("PostalCode")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -642,6 +650,7 @@ namespace Turnero.Migrations
                         .HasDefaultValue(false);
 
                     b.Property<string>("Other")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<bool>("Otitis")

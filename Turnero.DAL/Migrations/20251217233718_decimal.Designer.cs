@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Turnero.DAL.Data;
@@ -11,9 +12,11 @@ using Turnero.DAL.Data;
 namespace Turnero.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251217233718_decimal")]
+    partial class @decimal
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -263,69 +266,6 @@ namespace Turnero.Migrations
                     b.ToTable("Allergies");
                 });
 
-            modelBuilder.Entity("Turnero.DAL.Models.CongErrors", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("Biotinidase")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("CongHypothyroidism")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("FQP")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("Galactosemia")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("OHP")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Other")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
-                        .HasDefaultValue("");
-
-                    b.Property<bool>("Phenylalanine")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("ResultBiotinidase")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
-                        .HasDefaultValue("");
-
-                    b.Property<string>("ResultFQP")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
-                        .HasDefaultValue("");
-
-                    b.Property<string>("ResultGalactosemia")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
-                        .HasDefaultValue("");
-
-                    b.Property<string>("ResultHypothyroidism")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
-                        .HasDefaultValue("");
-
-                    b.Property<string>("ResultOHP")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
-                        .HasDefaultValue("");
-
-                    b.Property<string>("ResultPhenylalanine")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
-                        .HasDefaultValue("");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CongErrors");
-                });
-
             modelBuilder.Entity("Turnero.DAL.Models.ContactInfo", b =>
                 {
                     b.Property<Guid>("Id")
@@ -333,21 +273,26 @@ namespace Turnero.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("Address")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("City")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Email")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<Guid>("PatientId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Phone")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("PostalCode")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -642,6 +587,7 @@ namespace Turnero.Migrations
                         .HasDefaultValue(false);
 
                     b.Property<string>("Other")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<bool>("Otitis")
@@ -891,17 +837,6 @@ namespace Turnero.Migrations
                     b.Navigation("Patient");
                 });
 
-            modelBuilder.Entity("Turnero.DAL.Models.CongErrors", b =>
-                {
-                    b.HasOne("Turnero.DAL.Models.Patient", "Patient")
-                        .WithOne("CongErrors")
-                        .HasForeignKey("Turnero.DAL.Models.CongErrors", "Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Patient");
-                });
-
             modelBuilder.Entity("Turnero.DAL.Models.ContactInfo", b =>
                 {
                     b.HasOne("Turnero.DAL.Models.Patient", "Patient")
@@ -1031,8 +966,6 @@ namespace Turnero.Migrations
             modelBuilder.Entity("Turnero.DAL.Models.Patient", b =>
                 {
                     b.Navigation("Allergies");
-
-                    b.Navigation("CongErrors");
 
                     b.Navigation("ContactInfo");
 

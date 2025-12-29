@@ -8,17 +8,23 @@ on:
 
 jobs:
   deploy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' && github.ref == 'refs/heads/master' }}
+    # Solo correr cuando el workflow .NET Core terminó con éxito
+    # y la rama que lo disparó fue master
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'master'
+
     runs-on: ubuntu-latest
 
-    steps: 
+    steps:
       - name: Checkout code
         uses: actions/checkout@master
-      
+
       - name: Setup .NET
         uses: actions/setup-dotnet@master
         with:
           dotnet-version: 10.0.x
+
       - name: Build and publish
         run: |
           dotnet publish -c Release --nologo -r linux-x64 --self-contained -o ./TurneroApp
@@ -27,7 +33,7 @@ jobs:
         uses: webfactory/ssh-agent@master
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-      
+
       - name: Create ZIP
         uses: montudor/action-zip@master
         with:
@@ -41,9 +47,8 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           port: ${{ secrets.PORT }}
           script: |
-            # Detener servicio
             service turnero stop
-    
+
       - name: copy file via ssh
         uses: appleboy/scp-action@master
         with:
@@ -53,7 +58,7 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           source: TurneroApp.zip
           target: ${{ secrets.SRV_PATH }}
-          
+
       - name: Restart Server
         uses: appleboy/ssh-action@master
         with:
@@ -61,8 +66,7 @@ jobs:
           username: ${{ secrets.USER_NAME }}
           port: ${{ secrets.PORT }}
           password: ${{ secrets.SSH_PASSWORD }}
-          script: |            
-            # Reiniciar servicio
+          script: |
             unzip -o ${{ secrets.SRV_PATH }}/TurneroApp.zip
             rm ${{ secrets.SRV_PATH }}/TurneroApp.zip
             cp ${{ secrets.SRV_PATH }}/appsettings.json.bak ${{ secrets.SRV_PATH }}/TurneroApp/appsettings.json
