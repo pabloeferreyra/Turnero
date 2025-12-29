@@ -2,16 +2,16 @@
 
 public class ContactInfo : BaseEntity
 {
-    [Display(Name = "Teléfono"), Required]
+    [Display(Name = "Teléfono")]
     public string? Phone { get; set; }
 
-    [Display(Name = "Email"), EmailAddress]
+    [Display(Name = "Email")]
     public string? Email { get; set; }
 
-    [Display(Name = "Dirección"), Required]
+    [Display(Name = "Dirección")]
     public string? Address { get; set; }
 
-    [Display(Name = "Ciudad"), Required]
+    [Display(Name = "Ciudad")]
     public string? City { get; set; }
 
     [Display(Name = "Código Postal")]
