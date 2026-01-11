@@ -54,7 +54,8 @@ public class PatientsController(IInsertPatientService insertPatient,
             ViewBag.ErrorMessage = $"Patient with Id = {id} cannot be found";
             return NotFound();
         }
-        ViewBag.Age = DateTime.Today.Year - patient.BirthDate.Year;
+        var age = CalcularEdad(patient.BirthDate);
+        ViewBag.Age = age;
         return View("Details", patient);
     }
 
@@ -153,6 +154,41 @@ public class PatientsController(IInsertPatientService insertPatient,
             data = [.. data.Take(pageSize).ToList()];
         }
         return data;
+    }
+
+    private static string CalcularEdad(DateTime fechaNacimiento, DateTime? fechaReferencia = null)
+    {
+        var hoy = fechaReferencia?.Date ?? DateTime.Today;
+
+        if (fechaNacimiento.Date > hoy)
+            throw new ArgumentException("La fecha de nacimiento no puede ser futura.");
+
+        // AÑOS
+        int años = hoy.Year - fechaNacimiento.Year;
+        if (fechaNacimiento.AddYears(años) > hoy)
+            años--;
+
+        if (años >= 1)
+            return $"{años} año{(años > 1 ? "s" : "")}";
+
+        // MESES
+        int meses = (hoy.Year - fechaNacimiento.Year) * 12 + hoy.Month - fechaNacimiento.Month;
+        if (fechaNacimiento.AddMonths(meses) > hoy)
+            meses--;
+
+        if (meses >= 1)
+            return $"{meses} mes{(meses > 1 ? "es" : "")}";
+
+        // DÍAS / SEMANAS
+        int dias = (hoy - fechaNacimiento.Date).Days;
+
+        if (dias >= 7)
+        {
+            int semanas = dias / 7;
+            return $"{semanas} semana{(semanas > 1 ? "s" : "")}";
+        }
+
+        return $"{dias} día{(dias != 1 ? "s" : "")}";
     }
 
     #endregion
