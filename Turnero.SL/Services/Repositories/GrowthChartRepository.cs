@@ -18,6 +18,7 @@ public class GrowthChartRepository(ApplicationDbContext context, IMemoryCache ca
 
     public async Task Insert(GrowthChart growthChart)
     {
+        growthChart.Id = Guid.NewGuid();
         await CreateAsync(growthChart);
     }
     public async Task Edit(GrowthChart growthChart)
