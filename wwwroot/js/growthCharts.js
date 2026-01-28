@@ -27,7 +27,7 @@
 
 		const pid = resolvePatientId();
 		if (!pid) {
-			tbody.innerHTML = '<tr><td colspan="5" class="text-center">No hay gráficos de crecimiento para mostrar.</td></tr>';
+			tbody.innerHTML = '<tr><td colspan="9" class="text-center">No hay gráficos de crecimiento para mostrar.</td></tr>';
 			document.querySelector('#growthCharts-pagination').innerHTML = '';
 			document.querySelector('#pageInfoGrowthCharts').textContent = '';
 			return;
@@ -56,7 +56,18 @@
 		});
 
 		const response = await res.json();
-		currentData = response?.data || response?.Data || [];
+
+		currentData = (response?.data || response?.Data || []);
+
+		currentData.sort((a, b) => {
+			const ua = timeUnitOrder(a.time);
+			const ub = timeUnitOrder(b.time);
+
+			if (ua !== ub) return ua - ub;
+
+			return (parseFloat(a.age) || 0) - (parseFloat(b.age) || 0);
+		});
+
 		st.recordsTotal =
 			response?.recordsTotal ||
 			response?.recordsFiltered ||
@@ -68,7 +79,7 @@
 		AppUtils.Sort.attachHeaderSorting("#growthCharts", key, loadData);
 		AppUtils.Pagination.renderWithState("#growthCharts-pagination", key, loadData);
 		renderPageInfo();
-	} 
+	}
 
 	function renderTable() {
 		const tbody = document.getElementById('growthCharts-body');
@@ -279,4 +290,20 @@
 
 		document.getElementById('Bmi').value = bmi.toFixed(2);
 	}
+
+	function timeUnitOrder(unit) {
+		switch (unit) {
+			case 'Dias':
+			case 'Días':
+				return 1;
+			case 'Meses':
+				return 2;
+			case 'Años':
+				return 3;
+			default:
+				return 99;
+		}
+	}
+
+
 })();
