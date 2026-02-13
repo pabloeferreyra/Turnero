@@ -29,7 +29,7 @@ Here're some of the project's best features:
 *   Razor
 *   PostgreSQL
 *   SignalR
-*   JQuery
+*   Javascript
 *   Bootstrap
 
 <h2>🛡️ License:</h2>
