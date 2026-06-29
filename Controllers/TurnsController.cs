@@ -199,6 +199,7 @@ public class TurnsController(UserManager<IdentityUser> userManager,
         try
         {
             turn.Reason = string.IsNullOrWhiteSpace(turn.Reason) ? string.Empty : turn.Reason.TrimEnd('\"');
+            turn.Date = turn.Date ?? DateTime.Today.ToString("dd-MM-yyyy");
             var t = turn.Adapt<Turn>();
             await insertTurns.CreateTurnAsync(t);
             var medic = await getMedics.GetMedicById(turn.MedicId);
