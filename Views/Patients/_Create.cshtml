@@ -14,7 +14,7 @@
         <div class="form-group col-md-4 col-sm-12">
             <label asp-for="Dni" class="control-label">Dni</label>
             <input asp-for="Dni" class="form-control" id="Dni"
-                   maxlength="8" inputmode="numeric" pattern="\d*" />
+                   maxlength="8" inputmode="numeric" pattern="^[0-9]{1,8}$" oninput="this.value=this.value.replace(/\D/g,'').slice(0,8)" />
             <span asp-validation-for="Dni" class="text-danger"></span>
         </div>
 
