@@ -29,6 +29,12 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+      - name: Trust deployment host
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -p "${{ secrets.PORT }}" "${{ secrets.SERVER }}" >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
       - name: Deploy to production
         shell: pwsh
         run: |
@@ -39,7 +45,4 @@ jobs:
             -RemotePath "${{ secrets.SRV_PATH }}" `
             -FirebaseCredentialsFile "${{ secrets.FIREBASE_PATH }}" `
             -SshPort ${{ secrets.PORT }} `
-            -SyncEnv `
-            -BackupEnv `
-            -BackupEnvRetention 20 `
             -UseTls
