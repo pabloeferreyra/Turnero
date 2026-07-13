@@ -32,6 +32,7 @@ jobs:
       - name: Trust deployment host
         run: |
           mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
           ssh-keyscan -p "${{ secrets.PORT }}" "${{ secrets.SERVER }}" >> ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
 
