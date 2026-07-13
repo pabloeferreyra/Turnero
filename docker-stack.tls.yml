@@ -1,0 +1,56 @@
+version: "3.9"
+
+services:
+  turnero-app:
+    image: ${TURNERO_IMAGE:-turnero-app:prod}
+    env_file:
+      - .env
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: https://+:443;http://+:8080
+      ConnectionStrings__PostgresConnection: ${ConnectionStrings__PostgresConnection}
+      Authentication__ValidIssuer: ${Authentication__ValidIssuer}
+      Authentication__Audience: ${Authentication__Audience}
+      Authentication__TokenUri: ${Authentication__TokenUri}
+      Authentication__TokenCode: ${Authentication__TokenCode}
+      Authentication__TokenReset: ${Authentication__TokenReset}
+      Kestrel__Endpoints__Https__Url: https://0.0.0.0:443
+      Kestrel__Endpoints__Https__Certificate__Path: /etc/letsencrypt/live/${LETSENCRYPT_DOMAIN}/fullchain.pem
+      Kestrel__Endpoints__Https__Certificate__KeyPath: /etc/letsencrypt/live/${LETSENCRYPT_DOMAIN}/privkey.pem
+      Firebase__CredentialsPath: /run/secrets/firebase.json
+      GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/firebase.json
+    ports:
+      - target: 443
+        published: ${APP_HTTPS_PORT:-443}
+        protocol: tcp
+        mode: host
+    volumes:
+      - ${REMOTE_DEPLOY_PATH:-/root/turneroTst}/.env:/app/.env:ro
+      - ${FIREBASE_CREDENTIALS_FILE:-/root/.microsoft/usersecrets/aspnet-Turnero-1D8EA02B-D124-439A-B5F8-DE2044EFFABA/firebase.json}:/run/secrets/firebase.json:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    healthcheck:
+      test: ["CMD-SHELL", "curl -k -s -o /dev/null -w '%{http_code}' https://localhost:443/ | grep -E '^(2|3|4)' >/dev/null"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        order: stop-first
+        delay: 10s
+        failure_action: rollback
+        monitor: 30s
+      rollback_config:
+        parallelism: 1
+        order: stop-first
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 768M
+        reservations:
+          cpus: "0.05"
+          memory: 256M

@@ -1,0 +1,20 @@
+version: "3.9"
+
+services:
+  turnero-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: turnero-app
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      Firebase__CredentialsPath: /run/secrets/firebase.json
+      GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/firebase.json
+    ports:
+      - "8080:8080"
+    volumes:
+      - ${FIREBASE_CREDENTIALS_FILE:-./secrets/firebase.json}:/run/secrets/firebase.json:ro

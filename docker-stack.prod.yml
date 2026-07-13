@@ -1,0 +1,52 @@
+version: "3.9"
+
+services:
+  turnero-app:
+    image: ${TURNERO_IMAGE:-turnero-app:prod}
+    env_file:
+      - .env
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__PostgresConnection: ${ConnectionStrings__PostgresConnection}
+      Authentication__ValidIssuer: ${Authentication__ValidIssuer}
+      Authentication__Audience: ${Authentication__Audience}
+      Authentication__TokenUri: ${Authentication__TokenUri}
+      Authentication__TokenCode: ${Authentication__TokenCode}
+      Authentication__TokenReset: ${Authentication__TokenReset}
+      Firebase__CredentialsPath: /run/secrets/firebase.json
+      GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/firebase.json
+    ports:
+      - target: 8080
+        published: ${APP_PUBLISHED_PORT:-8080}
+        protocol: tcp
+        mode: ingress
+    volumes:
+      - ${REMOTE_DEPLOY_PATH:-/root/turneroTst}/.env:/app/.env:ro
+      - ${FIREBASE_CREDENTIALS_FILE:-/root/.microsoft/usersecrets/aspnet-Turnero-1D8EA02B-D124-439A-B5F8-DE2044EFFABA/firebase.json}:/run/secrets/firebase.json:ro
+    healthcheck:
+      test: ["CMD-SHELL", "code=$$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/); [ \"$$code\" -ge 200 ] && [ \"$$code\" -lt 500 ]"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        order: start-first
+        delay: 10s
+        failure_action: rollback
+        monitor: 30s
+      rollback_config:
+        parallelism: 1
+        order: stop-first
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 768M
+        reservations:
+          cpus: "0.05"
+          memory: 256M

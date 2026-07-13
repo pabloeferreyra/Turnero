@@ -258,6 +258,10 @@ ServiceFabricBackup/
 *- Backup*.rdl
 
 # Microsoft Fakes
+## Local environment files
+.env
+.env.*
+!.env.example
 FakesAssemblies/
 
 # GhostDoc plugin setting file

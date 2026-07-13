@@ -3,21 +3,95 @@ using Turnero.SL.Services.CongErrorServices;
 var builder = WebApplication.CreateBuilder(args);
 
 MapsterConfig.RegisterMappings();
-#region Path Configuration
-string firebasePath = GetFirebasePath(builder.Configuration["secretsFolder"]);
-
-static string GetFirebasePath(string secretsFolder)
-{
-    return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-        ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                      "Microsoft", "UserSecrets", secretsFolder, "firebase.json")
-        : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                      ".microsoft", "usersecrets", secretsFolder, "firebase.json");
-}
-#endregion
-
 #region Configuration
-builder.Configuration.AddUserSecrets<Program>();
+AddDotEnvFile(builder.Configuration, ResolveDotEnvPath(builder.Environment));
+builder.Configuration.AddEnvironmentVariables();
+
+if (builder.Environment.IsDevelopment())
+{
+    builder.Configuration.AddUserSecrets<Program>(optional: true);
+}
+
+string? firebaseCredentialsPath = GetFirebaseCredentialsPath(builder.Configuration);
+
+static string? GetFirebaseCredentialsPath(IConfiguration configuration)
+{
+    var configuredPath = configuration["Firebase:CredentialsPath"];
+
+    if (!string.IsNullOrWhiteSpace(configuredPath))
+    {
+        return Path.GetFullPath(configuredPath);
+    }
+
+    var googleCredentialsPath = Environment.GetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS");
+    return string.IsNullOrWhiteSpace(googleCredentialsPath)
+        ? null
+        : Path.GetFullPath(googleCredentialsPath);
+}
+
+static void AddDotEnvFile(IConfigurationBuilder configurationBuilder, string filePath)
+{
+    if (!File.Exists(filePath))
+    {
+        return;
+    }
+
+    var values = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+
+    foreach (var rawLine in File.ReadAllLines(filePath))
+    {
+        var line = rawLine.Trim();
+
+        if (string.IsNullOrWhiteSpace(line) || line.StartsWith('#'))
+        {
+            continue;
+        }
+
+        var separatorIndex = line.IndexOf('=');
+        if (separatorIndex <= 0)
+        {
+            continue;
+        }
+
+        var key = line[..separatorIndex].Trim();
+        var value = line[(separatorIndex + 1)..].Trim();
+
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            continue;
+        }
+
+        values[key.Replace("__", ":")] = value;
+    }
+
+    configurationBuilder.AddInMemoryCollection(values!);
+}
+
+static string ResolveDotEnvPath(IHostEnvironment environment)
+{
+    var configuredPath = Environment.GetEnvironmentVariable("TURNERO_DOTENV_PATH");
+    if (!string.IsNullOrWhiteSpace(configuredPath) && File.Exists(configuredPath))
+    {
+        return configuredPath;
+    }
+
+    var candidatePaths = new[]
+    {
+        Path.Combine(environment.ContentRootPath, ".env"),
+        Path.Combine(AppContext.BaseDirectory, ".env"),
+        Path.Combine(Directory.GetCurrentDirectory(), ".env")
+    };
+
+    foreach (var candidatePath in candidatePaths)
+    {
+        if (File.Exists(candidatePath))
+        {
+            return candidatePath;
+        }
+    }
+
+    return candidatePaths[0];
+}
 #endregion
 
 #region validations
@@ -40,7 +114,10 @@ if (builder.Environment.IsDevelopment())
 #endregion
 
 #region Database Configuration
-AppSettings.ConnectionString = builder.Configuration.GetConnectionString("LocalConnection");
+AppSettings.ConnectionString = builder.Configuration.GetConnectionString("PostgresConnection")
+    ?? builder.Configuration["ConnectionStrings:PostgresConnection"]
+    ?? throw new InvalidOperationException("Missing configuration for ConnectionStrings:PostgresConnection. Mount .env into /app/.env or set ConnectionStrings__PostgresConnection in the container environment.");
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(AppSettings.ConnectionString));
 
@@ -114,11 +191,11 @@ builder.Services.AddRazorPages();
 #endregion
 
 #region Firebase Configuration
-if (File.Exists(firebasePath))
+if (!string.IsNullOrWhiteSpace(firebaseCredentialsPath) && File.Exists(firebaseCredentialsPath))
 {
     FirebaseApp.Create(new AppOptions
     {
-        Credential = GoogleCredential.FromFile(firebasePath)
+        Credential = GoogleCredential.FromFile(firebaseCredentialsPath)
     });
 }
 #endregion
