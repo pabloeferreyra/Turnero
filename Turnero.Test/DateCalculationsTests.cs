@@ -3,7 +3,7 @@ using Xunit;
 
 namespace Turnero.Test;
 
-public class DateCalculationsTests
+public class DateCalculationsTests_v2
 {
     [Fact]
     public void CalcularEdad_ShouldReturnYears()
