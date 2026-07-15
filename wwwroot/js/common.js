@@ -1,9 +1,126 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 'use strict';
 
 window.AppUtils = window.AppUtils || {};
 AppUtils.Pagination = AppUtils.Pagination || {};
 AppUtils.Date = AppUtils.Date || {};
+
+AppUtils.escapeHtml = function (s) {
+    return s ? String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;") : '';
+};
+
+AppUtils.resolvePatientId = function () {
+    return document.querySelector('#patientId')?.value
+        || document.querySelector('#PatientId')?.value
+        || '';
+};
+
+AppUtils.TabLoader = {
+    /**
+     * Initializes a patient-tab page with pagination, tab-click loading, and initial data load.
+     * Replaces the ~30-line DOMContentLoaded boilerplate repeated across 5 JS files.
+     *
+     * @param {Object} opts
+     * @param {string} opts.tabSelector - CSS selector for the tab element (e.g. '#allergiesTab')
+     * @param {string} opts.tableSelector - CSS selector for the table element (e.g. '#allergies')
+     * @param {Object} opts.paginationOpts - Options passed to AppUtils.Pagination.init (key, defaultPageSize, etc.)
+     * @param {Function} opts.loadData - The loadData function to call
+     */
+    init({ tabSelector, tableSelector, paginationOpts, loadData }) {
+        AppUtils.Pagination.init(paginationOpts.key, {
+            defaultPageSize: paginationOpts.defaultPageSize || 25,
+            defaultOrder: paginationOpts.defaultOrder || { column: 0, dir: 'asc' },
+            pageSizeSelector: paginationOpts.pageSizeSelector,
+            onChange: loadData
+        });
+
+        const tab = document.querySelector(tabSelector);
+        if (tab) {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('#myTabs .nav-link')
+                    .forEach(x => x.classList.remove('active'));
+                tab.classList.add('active');
+
+                const url = tab.dataset.url;
+                if (!url) return;
+
+                const container = document.querySelector('#tabContent');
+                if (!document.querySelector(tableSelector)) {
+                    fetch(url)
+                        .then(r => r.text())
+                        .then(html => {
+                            container.innerHTML = html;
+                            loadData();
+                        });
+                } else {
+                    loadData();
+                }
+            });
+        }
+
+        loadData();
+    }
+};
+
+AppUtils.ConfirmDelete = {
+    /**
+     * Sets up inline delete confirmation for a table.
+     * Replaces the ~30-line delete-confirm pattern repeated across 4 JS files.
+     *
+     * @param {Object} opts
+     * @param {string} opts.deleteBtnSelector - CSS selector for the delete button (e.g. '.btn-deleteal')
+     * @param {string} opts.confirmBtnSelector - CSS selector for confirm button (e.g. '.btn-confirm-deleteal')
+     * @param {string} opts.cancelBtnSelector - CSS selector for cancel button (e.g. '.btn-cancel-deleteal')
+     * @param {string} opts.deleteUrlPrefix - URL prefix for DELETE (e.g. '/Allergies/Delete/')
+     * @param {string} opts.successMessage - Toast message on success
+     * @param {string} opts.errorMessage - Toast message on error
+     * @param {Function} opts.loadData - Function to reload data after delete/cancel
+     */
+    init({ deleteBtnSelector, confirmBtnSelector, cancelBtnSelector, deleteUrlPrefix, successMessage, errorMessage, loadData }) {
+        document.addEventListener('click', (ev) => {
+            const target = ev.target;
+
+            if (target.matches(deleteBtnSelector)) {
+                const id = target.dataset.id;
+                const cell = target.closest('td');
+
+                target.classList.add('btn-fade-out');
+                setTimeout(() => {
+                    cell.innerHTML = `
+                        <button data-id="${id}" class="btn btn-danger btn-sm me-1 ${confirmBtnSelector.replace('.', '')}">Si</button>
+                        <button class="btn btn-secondary btn-sm ${cancelBtnSelector.replace('.', '')}">No</button>
+                    `;
+                }, 200);
+                return;
+            }
+
+            if (target.matches(cancelBtnSelector)) {
+                loadData();
+                return;
+            }
+
+            if (target.matches(confirmBtnSelector)) {
+                const id = target.dataset.id;
+
+                fetch(`${deleteUrlPrefix}${id}`, { method: 'DELETE' })
+                    .then(r => {
+                        if (!r.ok) {
+                            AppUtils.showToast('error', errorMessage);
+                        } else {
+                            AppUtils.showToast('success', successMessage);
+                        }
+                        loadData();
+                    });
+                return;
+            }
+        });
+    }
+};
 
 AppUtils.todayString = function () {
     const d = new Date();

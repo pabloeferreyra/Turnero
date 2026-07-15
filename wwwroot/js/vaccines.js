@@ -1,24 +1,12 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 (function () {
     'use strict';
 
     const key = "vaccines";
     let currentData = [];
 
-    function resolvePatientId() {
-        return document.querySelector('#patientId')?.value
-            || document.querySelector('#PatientId')?.value
-            || '';
-    }
-
-    function escapeHtml(s) {
-        return s ? String(s)
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;") : '';
-    }
+    const resolvePatientId = AppUtils.resolvePatientId;
+    const escapeHtml = AppUtils.escapeHtml;
 
     async function loadData() {
 
@@ -110,49 +98,15 @@
         el.textContent = `Mostrando ${start} - ${end} de ${st.recordsTotal} vacunas`;
     }
 
-    document.addEventListener('click', (ev) => {
-        const target = ev.target;
-
-        if (target.matches('.btn-vaccine-detail')) {
-            const id = target.dataset.id;
-            if (id) VaccineDetail(id);
-            return;
-        }
-
-        if (target.matches('.btn-deleteva')) {
-            const id = target.dataset.id;
-            const cell = target.closest('td');
-
-            target.classList.add('btn-fade-out');
-            setTimeout(() => {
-                cell.innerHTML = `
-                    <button data-id="${id}" class="btn btn-danger btn-sm me-1 btn-confirm-deleteva">Si</button>
-                    <button class="btn btn-secondary btn-sm btn-cancel-deleteva">No</button>
-                `;
-            }, 200);
-
-            return;
-        }
-
-        if (target.matches('.btn-cancel-deleteva')) {
-            loadData();
-            return;
-        }
-
-        if (target.matches('.btn-confirm-deleteva')) {
-            const id = target.dataset.id;
-
-            fetch(`/Vaccines/Delete/${id}`, { method: "DELETE" })
-                .then(r => {
-                    if (!r.ok)
-                        AppUtils.showToast("error", "Error eliminando vacuna");
-
-                    loadData();
-                    AppUtils.showToast("success", "vacuna eliminada");
-                });
-
-            return;
-        }
+    // DELETE INLINE (using shared AppUtils.ConfirmDelete)
+    AppUtils.ConfirmDelete.init({
+        deleteBtnSelector: '.btn-deleteva',
+        confirmBtnSelector: '.btn-confirm-deleteva',
+        cancelBtnSelector: '.btn-cancel-deleteva',
+        deleteUrlPrefix: '/Vaccines/Delete/',
+        successMessage: 'vacuna eliminada',
+        errorMessage: 'Error eliminando vacuna',
+        loadData
     });
 
     // ------------------------------
@@ -252,43 +206,12 @@
 
     // Inicialización global
     document.addEventListener("DOMContentLoaded", () => {
-
-        AppUtils.Pagination.init(key, {
-            defaultPageSize: 25,
-            defaultOrder: { column: 0, dir: 'asc' },
-            pageSizeSelector: '#pageSizeVaccines',
-            onChange: loadData
+        AppUtils.TabLoader.init({
+            tabSelector: '#vaccinesTab',
+            tableSelector: '#vaccines',
+            paginationOpts: { key, defaultPageSize: 25, defaultOrder: { column: 0, dir: 'asc' }, pageSizeSelector: '#pageSizeVaccines' },
+            loadData
         });
-
-        const tab = document.querySelector('#vaccinesTab');
-
-        if (tab) {
-            tab.addEventListener('click', () => {
-
-                document.querySelectorAll('#myTabs .nav-link')
-                    .forEach(x => x.classList.remove('active'));
-
-                tab.classList.add('active');
-
-                const url = tab.dataset.url;
-                if (!url) return;
-
-                const container = document.querySelector('#tabContent');
-
-                if (!document.querySelector('#vaccines')) {
-                    fetch(url)
-                        .then(r => r.text())
-                        .then(html => {
-                            container.innerHTML = html;
-                            loadData();
-                        });
-                } else {
-                    loadData();
-                }
-            });
-        }
-
-        loadData();
     });
 
 })();

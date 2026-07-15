@@ -1,6 +1,6 @@
 ﻿namespace Turnero.Controllers;
 
-public class VademecumController : Controller
+public class VademecumController : TurneroBaseController
 {
     public IActionResult Index()
     {

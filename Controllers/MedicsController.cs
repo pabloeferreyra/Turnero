@@ -4,7 +4,7 @@
 public class MedicsController(UserManager<IdentityUser> userManager,
                         IGetMedicsServices getMedicsServices,
                         IInsertMedicServices insertMedicServices,
-                        IUpdateMedicServices updateMedicServices) : Controller
+                        IUpdateMedicServices updateMedicServices) : TurneroBaseController
 {
 
     public async Task<IActionResult> Index()
@@ -71,8 +71,7 @@ public class MedicsController(UserManager<IdentityUser> userManager,
 
         if (!MedicExists(medic.Id))
         {
-            ViewBag.ErrorMessage = $"Medic with Id = {medic.Id} cannot be found";
-            return View("NotFound");
+            return NotFoundError("Medic", medic.Id.ToString());
         }
         else if (ModelState.IsValid)
         {
@@ -89,15 +88,13 @@ public class MedicsController(UserManager<IdentityUser> userManager,
     {
         if (id == null)
         {
-            ViewBag.ErrorMessage = $"Medic with Id = {id} cannot be found";
-            return View("NotFound");
+            return NotFoundError("Medic", id?.ToString() ?? "null");
         }
 
         var medic = await getMedicsServices.GetMedicById((Guid)id);
         if (medic == null)
         {
-            ViewBag.ErrorMessage = $"Medic with Id = {id} cannot be found";
-            return View("NotFound");
+            return NotFoundError("Medic", id.ToString());
         }
 
         return RedirectToAction(nameof(Index));

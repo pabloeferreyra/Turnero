@@ -5,20 +5,8 @@
 	const key = "growthCharts";
 	let currentData = [];
 
-	function resolvePatientId() {
-		return document.querySelector('#patientId')?.value
-			|| document.querySelector('#PatientId')?.value
-			|| '';
-	}
-
-	function escapeHtml(s) {
-		return s ? String(s)
-			.replace(/&/g, "&amp;")
-			.replace(/</g, "&lt;")
-			.replace(/>/g, "&gt;")
-			.replace(/"/g, "&quot;")
-			.replace(/'/g, "&#039;") : '';
-	}
+	const resolvePatientId = AppUtils.resolvePatientId;
+	const escapeHtml = AppUtils.escapeHtml;
 
 	async function loadData() {
 
@@ -136,44 +124,12 @@
 	}
 
 	document.addEventListener("DOMContentLoaded", () => {
-		console.log('It Works!');
-		AppUtils.Pagination.init(key, {
-			defaultPageSize: 25,
-			defaultOrder: { column: 0, dir: 'asc' },
-			pageSizeSelector: '#pageSizeGrowthCharts',
-			onChange: loadData
+		AppUtils.TabLoader.init({
+			tabSelector: '#growthChartsTab',
+			tableSelector: '#growthCharts',
+			paginationOpts: { key, defaultPageSize: 25, defaultOrder: { column: 0, dir: 'asc' }, pageSizeSelector: '#pageSizeGrowthCharts' },
+			loadData
 		});
-
-		const tab = document.querySelector('#growthChartsTab');
-
-		if (tab) {
-			tab.addEventListener('click', () => {
-				
-				document.querySelectorAll('#myTabs .nav-link')
-					.forEach(x => x.classList.remove('active'));
-
-				tab.classList.add('active');
-
-				const url = tab.dataset.url;
-				if (!url) return;
-
-				const container = document.querySelector('#tabContent');
-
-				if (!document.querySelector('#growthCharts')) {
-					fetch(url)
-						.then(r => r.text())
-						.then(html => {
-							container.innerHTML = html;
-							loadData();
-						});
-				} else {
-					loadData();
-				}
-			});
-		}
-
-		loadData();
-
 	})
 
 	document.addEventListener("modal:updated", () => {

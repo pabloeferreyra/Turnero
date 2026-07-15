@@ -4,7 +4,7 @@
 public class PatientsController(IInsertPatientService insertPatient,
     IGetPatientService getPatient,
     IGetParentsDataService getParents,
-    IUpdatePatientService updatePatient) : Controller
+    IUpdatePatientService updatePatient) : TurneroBaseController
 {
     public async Task<IActionResult> Index()
     {
@@ -15,28 +15,23 @@ public class PatientsController(IInsertPatientService insertPatient,
     [HttpPost]
     public async Task<IActionResult> InitializePatients()
     {
-        _ = SetTable(out string draw, out int pageSize, out int skip, out List<PatientDTO> data, out int recordsTotal);
-        data = SetPage(pageSize, skip, data);
-        var json = new
-        {
-            draw,
-            recordsFiltered = recordsTotal,
-            recordsTotal,
-            data
-        };
-        return await Task.FromResult<IActionResult>(Ok(json));
+        var (draw, pageSize, skip) = DataTablesHelper.GetDataTableParams(Request);
+        var search = Request.Form["Columns[1][search][value]"].FirstOrDefault();
+        var patients = await getPatient.SearchPatients(search);
+        var data = patients.ToList();
+
+        data = DataTablesHelper.ApplySorting(data, Request);
+        var recordsTotal = data.Count;
+        data = DataTablesHelper.ApplyPaging(data, pageSize, skip);
+
+        return Ok(new { draw, recordsFiltered = recordsTotal, recordsTotal, data });
     }
 
     
     [HttpGet]
     public IActionResult Create()
     {
-        ViewBag.Bloodtype = Enum.GetValues<BloodType>()
-            .Select(a => new SelectListItem
-            {
-                Value = ((int)a).ToString(),
-                Text = a.GetDisplayName()
-            }).ToList();
+        ViewBag.Bloodtype = EnumToSelectList<BloodType>(e => e.GetDisplayName());
         return PartialView("_Create");
     }
 
@@ -51,10 +46,9 @@ public class PatientsController(IInsertPatientService insertPatient,
         ViewBag.ParentsData = parents;
         if (patient == null)
         {
-            ViewBag.ErrorMessage = $"Patient with Id = {id} cannot be found";
-            return NotFound();
+            return NotFoundError("Patient", id.ToString());
         }
-        var age = CalcularEdad(patient.BirthDate);
+        var age = DateCalculations.CalcularEdad(patient.BirthDate);
         ViewBag.Age = age;
         return View("Details", patient);
     }
@@ -85,15 +79,9 @@ public class PatientsController(IInsertPatientService insertPatient,
         var patient = await getPatient.GetPatientById(id.Value);
         if (patient == null)
         {
-            ViewBag.ErrorMessage = $"Patient with Id = {id} cannot be found";
-            return NotFound();
+            return NotFoundError("Patient", id.ToString());
         }
-        ViewBag.Bloodtype = Enum.GetValues<BloodType>()
-            .Select(a => new SelectListItem
-            {
-                Value = ((int)a).ToString(),
-                Text = a.GetDisplayName()
-            }).ToList();
+        ViewBag.Bloodtype = EnumToSelectList<BloodType>(e => e.GetDisplayName());
         return PartialView("_Edit", patient);
     }
 
@@ -114,82 +102,9 @@ public class PatientsController(IInsertPatientService insertPatient,
         {
             return Conflict();
         }
-    }
+    }                              
 
-    #region Private Methods
-    private IQueryable<PatientDTO> SetTable(out string draw, out int pageSize, out int skip, out List<PatientDTO> data, out int recordsTotal)
-    {
-        draw = Request.Form["draw"].FirstOrDefault();
-        var start = Request.Form["start"].FirstOrDefault();
-        var length = Request.Form["length"].FirstOrDefault();
-        var search = Request.Form["Columns[1][search][value]"].FirstOrDefault();
-        var patients = getPatient.SearchPatients(search).Result;
-        pageSize = length != null ? int.Parse(length) : 0;
-        skip = start != null ? int.Parse(start) : 0;
 
-        var sortColumn = Request.Form["columns[" + Request.Form["order[0][column]"].FirstOrDefault() + "][name]"].FirstOrDefault();
-        var sortColumnDirection = Request.Form["order[0][dir]"].FirstOrDefault();
 
-        if (!(string.IsNullOrEmpty(sortColumn) || string.IsNullOrEmpty(sortColumnDirection)))
-        {
-            data = [.. patients.OrderBy(sortColumn + " " + sortColumnDirection)];
-        }
-        else
-        {
-            data = [.. patients];
-        }
 
-        recordsTotal = data.Count;
-        return patients;
-    }
-
-    private static List<PatientDTO> SetPage(int pageSize, int skip, List<PatientDTO> data)
-    {
-        if (skip != 0)
-        {
-            data = [.. data.Skip(skip).Take(pageSize).ToList()];
-        }
-        else if (pageSize != -1)
-        {
-            data = [.. data.Take(pageSize).ToList()];
-        }
-        return data;
-    }
-
-    private static string CalcularEdad(DateTime fechaNacimiento, DateTime? fechaReferencia = null)
-    {
-        var hoy = fechaReferencia?.Date ?? DateTime.Today;
-
-        if (fechaNacimiento.Date > hoy)
-            throw new ArgumentException("La fecha de nacimiento no puede ser futura.");
-
-        // AÑOS
-        int años = hoy.Year - fechaNacimiento.Year;
-        if (fechaNacimiento.AddYears(años) > hoy)
-            años--;
-
-        if (años >= 1)
-            return $"{años} año{(años > 1 ? "s" : "")}";
-
-        // MESES
-        int meses = (hoy.Year - fechaNacimiento.Year) * 12 + hoy.Month - fechaNacimiento.Month;
-        if (fechaNacimiento.AddMonths(meses) > hoy)
-            meses--;
-
-        if (meses >= 1)
-            return $"{meses} mes{(meses > 1 ? "es" : "")}";
-
-        // DÍAS / SEMANAS
-        int dias = (hoy - fechaNacimiento.Date).Days;
-
-        if (dias >= 7)
-        {
-            int semanas = dias / 7;
-            return $"{semanas} semana{(semanas > 1 ? "s" : "")}";
-        }
-
-        return $"{dias} día{(dias != 1 ? "s" : "")}";
-    }
-
-    #endregion
 }

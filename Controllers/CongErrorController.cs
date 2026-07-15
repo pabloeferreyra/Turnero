@@ -4,7 +4,7 @@ namespace Turnero.Controllers;
 
 public class CongErrorController(IGetCongErrorService get, 
     IUpdateCongErrorService update, 
-    ILogger<CongErrorController> logger) : Controller
+    ILogger<CongErrorController> logger) : TurneroBaseController
 {
     public async Task<IActionResult> Index(Guid? id)
     {
@@ -34,10 +34,7 @@ public class CongErrorController(IGetCongErrorService get,
 
         if (data == null)
             return NotFound();
-        var token = HttpContext.RequestServices.GetRequiredService<IAntiforgery>()
-            .GetAndStoreTokens(HttpContext)
-            .RequestToken;
-        ViewData["RequestVerificationToken"] = token;
+        SetAntiforgeryToken();
         return PartialView("_Create", data);
     }
 

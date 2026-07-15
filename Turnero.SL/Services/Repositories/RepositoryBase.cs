@@ -43,11 +43,6 @@ public abstract class RepositoryBase<T>(ApplicationDbContext context, IMemoryCac
         _context.Set<T>().Update(entity);
         await _context.SaveChangesAsync();
     }
-    public void DeleteAsync(T entity)
-    {
-        _context.Set<T>().Remove(entity);
-        _context.SaveChanges();
-    }
 
     public async Task<List<TResult>> GetCachedData<TResult>(string cacheKey, Func<Task<List<TResult>>> getDataFunc)
     {
@@ -70,7 +65,7 @@ public abstract class RepositoryBase<T>(ApplicationDbContext context, IMemoryCac
             var parameterName = $"@p{i}";
             var sqlParameter = new SqlParameter(parameterName, parameters[i]);
             sqlParameters.Add(sqlParameter);
-            sqlParametersString.Append(parameters[i]);
+            sqlParametersString.Append(parameterName);
 
             if (i != parameters.Length - 1)
             {
@@ -80,7 +75,7 @@ public abstract class RepositoryBase<T>(ApplicationDbContext context, IMemoryCac
 
         var sql = $"select * from {procedureName}({sqlParametersString})";
 
-        return [.. _context.Set<T>().FromSqlRaw(sql)];
+        return [.. _context.Set<T>().FromSqlRaw(sql, sqlParameters.ToArray())];
     }
 
     public IQueryable<T> CallStoredProcedureDTO(string connectionString, string procedureName)

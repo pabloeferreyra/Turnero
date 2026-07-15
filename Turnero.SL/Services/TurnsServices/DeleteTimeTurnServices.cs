@@ -1,17 +1,18 @@
 ﻿namespace Turnero.SL.Services.TurnsServices;
 
-public class DeleteTimeTurnServices(ITimeTurnRepository timeTurnRepository) : IDeleteTimeTurnServices
+public class DeleteTimeTurnServices(LoggerService logger, ITimeTurnRepository timeTurnRepository) : IDeleteTimeTurnServices
 {
+    private readonly LoggerService _logger = logger;
+
     public void Delete(TimeTurn timeTurn)
     {
         try
         {
             timeTurnRepository.DeleteTT(timeTurn);
-            //_logger.Info($"Tiempo {timeTurn.Id} eliminado correctamente");
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            //_logger.Error(ex.Message, ex);
+            _logger.Log(ex.Message);
         }
     }
 }

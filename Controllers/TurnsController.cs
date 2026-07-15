@@ -8,24 +8,14 @@ public class TurnsController(UserManager<IdentityUser> userManager,
                        IGetMedicsServices getMedics,
                        IGetTimeTurnsServices getTimeTurns,
                        IHubContext<TurnsTableHub> hubContext,
-                       IMemoryCache cache) : Controller
+                       IMemoryCache cache) : TurneroBaseController
 {
 
     [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
     public async Task<IActionResult> Index()
     {
         ViewBag.MedicId = await CheckMedic();
-        List<MedicDto> medics = null;
-
-        medics = cache.Get<List<MedicDto>>("medics");
-        if (medics == null)
-        {
-            Task medicsTask = Task.Run(() =>
-            {
-                medics = getMedics.GetCachedMedics().Result;
-            });
-            await medicsTask;
-        }
+        var medics = await GetCachedMedicsAsync();
         ViewBag.Medics = new SelectList(medics, "Id", "Name");
 
         return View(nameof(Index));
@@ -35,90 +25,38 @@ public class TurnsController(UserManager<IdentityUser> userManager,
     [HttpPost]
     public async Task<IActionResult> InitializeTurns()
     {
-
         string isMedic = await CheckMedic();
+        var (draw, pageSize, skip) = DataTablesHelper.GetDataTableParams(Request);
 
-        _ = SetTable(isMedic, out string draw, out int pageSize, out int skip, out List<TurnDTO> data, out int recordsTotal);
+        var medic = isMedic ?? Request.Form["Columns[5][search][value]"].FirstOrDefault();
+        var dateTurnStr = Request.Form["Columns[6][search][value]"].FirstOrDefault();
+        DateOnly dateTurn = DateOnly.TryParse(dateTurnStr, out var dt) ? dt : DateOnly.FromDateTime(DateTime.Today);
 
-        data = SetPage(pageSize, skip, data);
+        List<TurnDTO> data;
+        if (!string.IsNullOrEmpty(medic))
+        {
+            data = [.. getTurnDTO.GetTurnsDtoByDateAndId(dateTurn, Guid.Parse(medic))];
+        }
+        else
+        {
+            data = [.. getTurnDTO.GetTurnsDtoByDateAndId(dateTurn, null)];
+        }
+
+        data = DataTablesHelper.ApplySorting(data, Request);
+        var recordsTotal = data.Count;
+        data = DataTablesHelper.ApplyPaging(data, pageSize, skip);
 
         foreach (var t in data)
         {
             t.IsMedic = isMedic != null;
         }
 
-        var json = new { draw, recordsFiltered = recordsTotal, recordsTotal, data };
-
-        return await Task.FromResult<IActionResult>(Ok(json));
+        return Ok(new { draw, recordsFiltered = recordsTotal, recordsTotal, data });
     }
 
-    private IQueryable<TurnDTO> SetTable(string isMedic, out string draw, out int pageSize, out int skip, out List<TurnDTO> data, out int recordsTotal)
-    {
-        draw = Request.Form["draw"].FirstOrDefault();
-        var start = Request.Form["start"].FirstOrDefault();
-        var length = Request.Form["length"].FirstOrDefault();
-        var searchValue = Request.Form["search[value]"].FirstOrDefault();
-        pageSize = length == null || int.Parse(length) == 0 ? -1 : int.Parse(length);
-        skip = start != null ? int.Parse(start) : 0;
-        var medic = isMedic ?? Request.Form["Columns[5][search][value]"].FirstOrDefault();
 
-        var dateTurnStr = Request.Form["Columns[6][search][value]"].FirstOrDefault();
-        _ = DateOnly.MinValue;
-        DateOnly dateTurn;
-        if (!string.IsNullOrEmpty(dateTurnStr) && DateOnly.TryParse(dateTurnStr, out var dt))
-        {
-            dateTurn = dt;
-        }
-        else
-        {
-            dateTurn = DateOnly.Parse(DateTime.Today.ToShortDateString());
-        }
 
-        var sortColumn = Request.Form["columns[" + Request.Form["order[0][column]"].FirstOrDefault() + "][name]"].FirstOrDefault();
-        var sortColumnDirection = Request.Form["order[0][dir]"].FirstOrDefault();
 
-        IQueryable<TurnDTO> turns;
-        if ((dateTurn != DateOnly.MinValue) && !string.IsNullOrEmpty(medic))
-        {
-            turns = getTurnDTO.GetTurnsDtoByDateAndId(dateTurn, Guid.Parse(medic));
-        }
-        else if((dateTurn != DateOnly.MinValue) && string.IsNullOrEmpty(medic))
-        {
-            turns = getTurnDTO.GetTurnsDtoByDateAndId(dateTurn, null);
-        }
-        else
-        {
-            turns = getTurnDTO.GetTurnsDto();
-        }
-        if (!(string.IsNullOrEmpty(sortColumn) && string.IsNullOrEmpty(sortColumnDirection)))
-        {
-            turns = turns.OrderBy(sortColumn + " " + sortColumnDirection);
-        }
-
-        data = [.. turns];
-        recordsTotal = data.Count;
-        return turns;
-    }
-
-    private static List<TurnDTO> SetPage(int pageSize, int skip, List<TurnDTO> data)
-    {
-        if (skip != 0)
-        {
-            data = [.. data.Skip(skip).Take(pageSize)];
-        }
-        else if (pageSize != -1)
-        {
-            data = [.. data.Take(pageSize)];
-        }
-        return data;
-    }
-
-    private async Task<string> CheckMedic()
-    {
-        var user = this.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-        var isMedic = await getMedics.GetMedicByUserId(user);
-        return isMedic?.Id.ToString();
-    }
 
     public async Task<List<Turn>> TurnListAsync(DateTime? dateTurn, Guid? medicId)
     {
@@ -161,29 +99,8 @@ public class TurnsController(UserManager<IdentityUser> userManager,
     [HttpGet]
     public async Task<IActionResult> Create()
     {
-        List<MedicDto> medics = null;
-        List<TimeTurn> time = null;
-
-        medics = cache.Get<List<MedicDto>>("medics");
-        time = cache.Get<List<TimeTurn>>("timeTurns");
-        if (medics == null)
-        {
-            Task medicsTask = Task.Run(() =>
-            {
-                medics = getMedics.GetCachedMedics().Result;
-            });
-            await medicsTask;
-        }
-        if (time.Count == 0)
-        {
-
-            Task timeTask = Task.Run(() =>
-            {
-                time = getTimeTurns.GetCachedTimes().Result;
-            });
-
-            await timeTask;
-        }
+        var medics = await GetCachedMedicsAsync();
+        var time = await GetCachedTimeTurnsAsync();
         ViewBag.Medics = new SelectList(medics, "Id", "Name");
         ViewBag.Time = new SelectList(time, "Id", "Time");
 
@@ -228,19 +145,16 @@ public class TurnsController(UserManager<IdentityUser> userManager,
         }
         else
         {
-            ViewBag.ErrorMessage = $"Turn with no id cannot be found";
-            return View("NotFound");
+            return NotFoundError("Turn", "null");
         }
         if (turn == null)
         {
-            ViewBag.ErrorMessage = $"Turn with Id = {id} cannot be found";
-            return View("NotFound");
+            return NotFoundError("Turn", id.ToString());
         }
 
         if (!getTurns.Exists(turn.Id))
         {
-            ViewBag.ErrorMessage = $"Turn with Id = {id} cannot be found";
-            return View("NotFound");
+            return NotFoundError("Turn", id.ToString());
         }
 
         if (ModelState.IsValid)
@@ -265,30 +179,11 @@ public class TurnsController(UserManager<IdentityUser> userManager,
         var turn = await getTurns.GetTurnDTO((Guid)id);
         if (turn == null)
         {
-            ViewBag.ErrorMessage = $"Turn with Id = {id} cannot be found";
-            return null;
+            return NotFoundError("Turn", id.ToString());
         }
 
-        List<MedicDto> medics = null;
-        List<TimeTurn> time = null;
-        medics = cache.Get<List<MedicDto>>("medics");
-        time = cache.Get<List<TimeTurn>>("timeTurns");
-        if (medics == null)
-        {
-            Task medicsTask = Task.Run(() =>
-            {
-                medics = getMedics.GetCachedMedics().Result;
-            });
-            await medicsTask;
-        }
-        if (time == null)
-        {
-            Task timeTask = Task.Run(() =>
-            {
-                time = getTimeTurns.GetCachedTimes().Result;
-            });
-            await timeTask;
-        }
+        var medics = await GetCachedMedicsAsync();
+        var time = await GetCachedTimeTurnsAsync();
 
         ViewBag.Medics = new SelectList(medics, "Id", "Name", turn.MedicId);
         ViewBag.TimeEdit = new SelectList(time, "Id", "Time", turn.TimeId);
@@ -302,8 +197,7 @@ public class TurnsController(UserManager<IdentityUser> userManager,
     {
         if (!getTurns.Exists(turn.Id))
         {
-            ViewBag.ErrorMessage = $"Turn with Id = {turn.Id} cannot be found";
-            return NotFound();
+            return NotFoundError("Turn", turn.Id.ToString());
         }
         if (ModelState.IsValid)
         {
@@ -328,19 +222,26 @@ public class TurnsController(UserManager<IdentityUser> userManager,
     }
 
     [Authorize(Roles = RolesConstants.Admin + ", " + RolesConstants.Ingreso)]
+    private async Task<List<TurnDTO>> GetFilteredTurns()
+    {
+        string isMedic = await CheckMedic();
+        var medic = isMedic ?? Request.Form["Columns[5][search][value]"].FirstOrDefault();
+        var dateTurnStr = Request.Form["Columns[6][search][value]"].FirstOrDefault();
+        DateOnly dateTurn = DateOnly.TryParse(dateTurnStr, out var dt) ? dt : DateOnly.FromDateTime(DateTime.Today);
+        return !string.IsNullOrEmpty(medic)
+            ? [.. getTurnDTO.GetTurnsDtoByDateAndId(dateTurn, Guid.Parse(medic))]
+            : [.. getTurnDTO.GetTurnsDtoByDateAndId(dateTurn, null)];
+    }
+
     [HttpPost]
     public bool CheckTurn(Guid medicId, DateTime date, Guid timeTurn)
     {
         return getTurns.CheckTurn(medicId, date, timeTurn);
-    }
-
-    [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
+    }    [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
     [HttpPost]
     public async Task<IActionResult> ExportExcel()
     {
-        string isMedic = await CheckMedic();
-
-        _ = SetTable(isMedic, out _, out _, out _, out List<TurnDTO> data, out _);
+        var data = await GetFilteredTurns();
 
         using var wb = new ClosedXML.Excel.XLWorkbook();
         var ws = wb.AddWorksheet("Turnos");
@@ -377,13 +278,10 @@ public class TurnsController(UserManager<IdentityUser> userManager,
         return File(bytes,
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             "turnos.xlsx");
-    }
-
-    [HttpPost]
+    }    [HttpPost]
     public async Task<IActionResult> ExportPdf()
     {
-        string isMedic = await CheckMedic();
-        _ = SetTable(isMedic, out _, out _, out _, out List<TurnDTO> data, out _);
+        var data = await GetFilteredTurns();
 
         var registres = data.OrderBy(t => TimeSpan.Parse(t.Time));
 

@@ -53,5 +53,6 @@ global using Turnero.SL.Services.VaccinesServices;
 global using Turnero.SL.Services.VisitServices;
 global using Turnero.SL.Services.GrowthChartServices;
 global using Turnero.Utilities.Utilities;
+global using Turnero.Helpers;
 global using QuestPDF.Fluent;
 global using System.Globalization;

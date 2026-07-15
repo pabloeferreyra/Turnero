@@ -1,4 +1,4 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 (function () {
     'use strict';
 
@@ -6,22 +6,10 @@
     let currentData = [];
 
     // -----------------------------------------------------
-    // UTILIDADES
+    // UTILIDADES (using shared AppUtils)
     // -----------------------------------------------------
-    function resolvePatientId() {
-        return document.querySelector('#patientId')?.value
-            || document.querySelector('#PatientId')?.value
-            || '';
-    }
-
-    function escapeHtml(s) {
-        return s ? String(s)
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;") : '';
-    }
+    const resolvePatientId = AppUtils.resolvePatientId;
+    const escapeHtml = AppUtils.escapeHtml;
 
     // -----------------------------------------------------
     // CARGA DE TABLA
@@ -148,54 +136,17 @@
         el.textContent = `Mostrando ${start} - ${end} de ${st.recordsTotal} alergias`;
     }
 
-   
-
     // -----------------------------------------------------
-    // DELETE INLINE
+    // DELETE INLINE (using shared AppUtils.ConfirmDelete)
     // -----------------------------------------------------
-    document.addEventListener('click', (ev) => {
-        const target = ev.target;
-
-        if (target.matches('.btn-allergy-detail')) {
-            const id = target.dataset.id;
-            if (id) AllergyDetail(id);
-            return;
-        }
-
-        if (target.matches('.btn-deleteal')) {
-            const id = target.dataset.id;
-            const cell = target.closest('td');
-
-            target.classList.add('btn-fade-out');
-            setTimeout(() => {
-                cell.innerHTML = `
-                    <button data-id="${id}" class="btn btn-danger btn-sm me-1 btn-confirm-deleteal">Si</button>
-                    <button class="btn btn-secondary btn-sm btn-cancel-deleteal">No</button>
-                `;
-            }, 200);
-
-            return;
-        }
-
-        if (target.matches('.btn-cancel-deleteal')) {
-            loadData();
-            return;
-        }
-
-        if (target.matches('.btn-confirm-deleteal')) {
-            const id = target.dataset.id;
-
-            fetch(`/Allergies/Delete/${id}`, { method: "DELETE" })
-                .then(r => {
-                    if (!r.ok)
-                        AppUtils.showToast("error", "Error eliminando alergia");
-
-                    loadData();
-                    AppUtils.showToast("success", "Alergia eliminada");
-                });
-
-            return;
-        }
+    AppUtils.ConfirmDelete.init({
+        deleteBtnSelector: '.btn-deleteal',
+        confirmBtnSelector: '.btn-confirm-deleteal',
+        cancelBtnSelector: '.btn-cancel-deleteal',
+        deleteUrlPrefix: '/Allergies/Delete/',
+        successMessage: 'Alergia eliminada',
+        errorMessage: 'Error eliminando alergia',
+        loadData
     });
 
     // -----------------------------------------------------
@@ -307,43 +258,12 @@
     window.reloadAllergiesTable = loadData;
 
     document.addEventListener("DOMContentLoaded", () => {
-
-        AppUtils.Pagination.init(key, {
-            defaultPageSize: 25,
-            defaultOrder: { column: 0, dir: 'asc' },
-            pageSizeSelector: '#pageSizeAllergies',
-            onChange: loadData
+        AppUtils.TabLoader.init({
+            tabSelector: '#allergiesTab',
+            tableSelector: '#allergies',
+            paginationOpts: { key, defaultPageSize: 25, defaultOrder: { column: 0, dir: 'asc' }, pageSizeSelector: '#pageSizeAllergies' },
+            loadData
         });
-
-        const tab = document.querySelector('#allergiesTab');
-
-        if (tab) {
-            tab.addEventListener('click', () => {
-
-                document.querySelectorAll('#myTabs .nav-link')
-                    .forEach(x => x.classList.remove('active'));
-
-                tab.classList.add('active');
-
-                const url = tab.dataset.url;
-                if (!url) return;
-
-                const container = document.querySelector('#tabContent');
-
-                if (!document.querySelector('#allergies')) {
-                    fetch(url)
-                        .then(r => r.text())
-                        .then(html => {
-                            container.innerHTML = html;
-                            loadData();
-                        });
-                } else {
-                    loadData();
-                }
-            });
-        }
-
-        loadData();
     });
 
 })();

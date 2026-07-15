@@ -7,12 +7,11 @@ public class ParentsDataController(
     IUpdateParentsDataService updateParentsData,
     IDeleteParentsDataService deleteParentsData,
     IGetParentsDataService getParentsData,
-    ILogger<ParentsDataController> logger) : Controller
+    ILogger<ParentsDataController> logger) : TurneroBaseController
 {
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public async Task<IActionResult> Index(Guid? id)
     {
-        Console.WriteLine(DateTime.Now);
         if (id == null)
             return BadRequest("El ID del paciente es obligatorio.");
         var Data = await getParentsData.GetParentsData(id.Value);
@@ -27,22 +26,9 @@ public class ParentsDataController(
         var data = await getParentsData.GetParentsData(id.Value);
         if (data == null)
             return NotFound();
-        var token = HttpContext.RequestServices.GetRequiredService<IAntiforgery>()
-            .GetAndStoreTokens(HttpContext)
-            .RequestToken;
-        ViewData["RequestVerificationToken"] = token;
-        ViewBag.FatherBloodtype = Enum.GetValues<BloodType>()
-            .Select(a => new SelectListItem
-            {
-                Value = ((int)a).ToString(),
-                Text = a.GetDisplayName()
-            }).ToList();
-        ViewBag.MotherBloodtype = Enum.GetValues<BloodType>()
-            .Select(a => new SelectListItem
-            {
-                Value = ((int)a).ToString(),
-                Text = a.GetDisplayName()
-            }).ToList();
+        SetAntiforgeryToken();
+        ViewBag.FatherBloodtype = EnumToSelectList<BloodType>(e => e.GetDisplayName());
+        ViewBag.MotherBloodtype = EnumToSelectList<BloodType>(e => e.GetDisplayName());
         return PartialView("_Edit", data);
     }
 

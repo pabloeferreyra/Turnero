@@ -57,6 +57,6 @@ public class InsertTimeTurnServicesTests
         await _insertTimeTurnServices.Create(timeTurn);
 
         // Assert
-        _loggerMock.Verify(logger => logger.Log(It.IsAny<string>()), Times.Never);
+        _loggerMock.Verify(logger => logger.Log(It.IsAny<string>()), Times.Once);
     }
 }

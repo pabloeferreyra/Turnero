@@ -5,34 +5,13 @@
                            IGetMedicsServices getMedics,
                            IGetTimeTurnsServices getTimeTurns,
                            IHubContext<TurnsTableHub> hubContext,
-                           IMemoryCache cache) : Controller
+                           IMemoryCache cache) : TurneroBaseController
     {
 
         public async Task<ActionResult> Index()
         {
-            List<MedicDto> medics = null;
-            List<TimeTurn> time = null;
-
-            medics = cache.Get<List<MedicDto>>("medics");
-            time = cache.Get<List<TimeTurn>>("timeTurns");
-            if (medics == null)
-            {
-                Task medicsTask = Task.Run(() =>
-                {
-                    medics = getMedics.GetCachedMedics().Result;
-                });
-                await medicsTask;
-            }
-            if (time == null)
-            {
-
-                Task timeTask = Task.Run(() =>
-                {
-                    time = getTimeTurns.GetCachedTimes().Result;
-                });
-
-                await timeTask;
-            }
+            var medics = await GetCachedMedicsAsync();
+            var time = await GetCachedTimeTurnsAsync();
             ViewBag.Medics = new SelectList(medics, "Id", "Name");
             ViewBag.Time = new SelectList(time, "Id", "Time");
             return View();
@@ -45,7 +24,9 @@
             try
             {
                 turn.Date = DateTime.Today.ToString("dd/MM/yyyy");
-                turn.TimeId = Guid.Parse("78496444-276d-4389-8b2f-f668c5350e3f");
+                var timeTurns = await GetCachedTimeTurnsAsync();
+                if (timeTurns.Count == 0) return BadRequest();
+                turn.TimeId = timeTurns[0].Id;
                 turn.Reason = "Turno espontáneo";
                 var t = turn.Adapt<Turn>();
                 await insertTurns.CreateTurnAsync(t);

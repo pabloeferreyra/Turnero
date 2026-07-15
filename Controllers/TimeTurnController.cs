@@ -3,7 +3,7 @@
 [Authorize(Roles = RolesConstants.Admin)]
 public class TimeTurnController(IGetTimeTurnsServices getTimeTurns,
                           IInsertTimeTurnServices insertTimeTurn,
-                          IDeleteTimeTurnServices deleteTimeTurn) : Controller
+                          IDeleteTimeTurnServices deleteTimeTurn) : TurneroBaseController
 {
     public async Task<IActionResult> Index()
     {

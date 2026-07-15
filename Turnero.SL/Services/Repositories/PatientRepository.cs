@@ -38,7 +38,7 @@ public class PatientRepository(ApplicationDbContext context, IMemoryCache cache)
     }
     public void DeletePatient(Patient patient)
     {
-        DeleteAsync(patient);
+        Delete(patient);
     }
     public async Task UpdatePatient(Patient patient)
     {

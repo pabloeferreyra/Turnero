@@ -2,7 +2,7 @@
 
 public class PerinatalBackgroundController(IGetPerinatalBackgroundService get,
     IUpdatePerinatalBackgroundService update,
-    ILogger<PerinatalBackgroundController> logger) : Controller
+    ILogger<PerinatalBackgroundController> logger) : TurneroBaseController
 {
     public async Task<IActionResult> Index(Guid? id)
     {
@@ -20,10 +20,7 @@ public class PerinatalBackgroundController(IGetPerinatalBackgroundService get,
         var data = await get.Get(id.Value);
         if (data == null)
             return NotFound();
-        var token = HttpContext.RequestServices.GetRequiredService<IAntiforgery>()
-            .GetAndStoreTokens(HttpContext)
-            .RequestToken;
-        ViewData["RequestVerificationToken"] = token;
+        SetAntiforgeryToken();
         return PartialView("_Edit", data);
     }
 

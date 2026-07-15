@@ -3,7 +3,7 @@
 [Authorize(Roles = RolesConstants.Admin)]
 public class AdministrationController(RoleManager<IdentityRole> roleManager,
                                 UserManager<IdentityUser> userManager,
-                                ILogger<AdministrationController> logger) : Controller
+                                ILogger<AdministrationController> logger) : TurneroBaseController
 {
 
     public ILogger<AdministrationController> Logger { get; } = logger;
@@ -12,11 +12,7 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
     public async Task<IActionResult> ManageUserClaims(string userId)
     {
         var user = await userManager.FindByIdAsync(userId);
-        if (user == null)
-        {
-            ViewBag.ErrorMessage = $"User with Id = {userId} cannot be found";
-            return View("NotFound");
-        }
+        if (user == null) return NotFoundError("User", userId);
 
         var existingUserClaims = await userManager.GetClaimsAsync(user);
         var model = new UserClaimsViewModel
@@ -43,11 +39,7 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
     public async Task<IActionResult> ManageUserClaims(UserClaimsViewModel model)
     {
         var user = await userManager.FindByIdAsync(model.UserId);
-        if (user == null)
-        {
-            ViewBag.ErrorMessage = $"User with Id = {model.UserId} cannot be found";
-            return View("NotFound");
-        }
+        if (user == null) return NotFoundError("User", model.UserId);
 
         var claims = await userManager.GetClaimsAsync(user);
         var result = await userManager.RemoveClaimsAsync(user, claims);
@@ -78,11 +70,7 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
     public async Task<IActionResult> EditUser(string id)
     {
         var user = await userManager.FindByIdAsync(id);
-        if (user == null)
-        {
-            ViewBag.ErrorMessage = $"User with Id = {id} cannot be found";
-            return View("NotFound");
-        }
+        if (user == null) return NotFoundError("User", id);
 
         var userClaims = await userManager.GetClaimsAsync(user);
         var userRoles = await userManager.GetRolesAsync(user);
@@ -103,37 +91,31 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
     public async Task<IActionResult> EditUser(EditUserViewModel model)
     {
         var user = await userManager.FindByIdAsync(model.Id);
-        if (user == null)
+        if (user == null) return NotFoundError("User", model.Id);
+
+        try
         {
-            ViewBag.ErrorMessage = $"User with Id = {model.Id} cannot be found";
-            return View("NotFound");
+            user.Email = model.Email;
+            user.UserName = model.UserName;
+
+            var result = await userManager.UpdateAsync(user);
+
+            if (result.Succeeded)
+            {
+                return RedirectToAction(nameof(ListUsers));
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError("", error.Description);
+            }
+
+            return View(model);
         }
-        else
+        catch (DbUpdateException ex)
         {
-            try
-            {
-                user.Email = model.Email;
-                user.UserName = model.UserName;
-
-                var result = await userManager.UpdateAsync(user);
-
-                if (result.Succeeded)
-                {
-                    return RedirectToAction(nameof(ListUsers));
-                }
-
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError("", error.Description);
-                }
-
-                return View(model);
-            }
-            catch (DbUpdateException ex)
-            {
-                Logger.LogError("Error updating user: {Exception}", ex);
-                return View("Error");
-            }
+            Logger.LogError("Error updating user: {Exception}", ex);
+            return View("Error");
         }
     }
 
@@ -142,35 +124,28 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
     {
         var user = await userManager.FindByIdAsync(id);
 
-        if (user == null)
-        {
-            ViewBag.ErrorMessage = $"User with Id = {id} cannot be found";
+        if (user == null) return NotFoundError("User", id);
 
-            return View("NotFound");
+        try
+        {
+            var result = await userManager.DeleteAsync(user);
+
+            if (result.Succeeded)
+            {
+                return RedirectToAction(nameof(ListUsers));
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError("", error.Description);
+            }
+
+            return View("ListUsers");
         }
-        else
+        catch (DbUpdateException ex)
         {
-            try
-            {
-                var result = await userManager.DeleteAsync(user);
-
-                if (result.Succeeded)
-                {
-                    return RedirectToAction(nameof(ListUsers));
-                }
-
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError("", error.Description);
-                }
-
-                return View("ListUsers");
-            }
-            catch (DbUpdateException ex)
-            {
-                Logger.LogError("Error deleting user: {Exception}", ex);
-                return View("Error");
-            }
+            Logger.LogError("Error deleting user: {Exception}", ex);
+            return View("Error");
         }
     }
 
@@ -179,39 +154,32 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
     {
         var role = await roleManager.FindByIdAsync(id);
 
-        if (role == null)
-        {
-            ViewBag.ErrorMessage = $"Role with Id = {id} cannot be found";
+        if (role == null) return NotFoundError("Role", id);
 
-            return View("NotFound");
+        try
+        {
+            var result = await roleManager.DeleteAsync(role);
+
+            if (result.Succeeded)
+            {
+                return RedirectToAction(nameof(ListRoles));
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError("", error.Description);
+            }
+
+            return View(nameof(ListRoles));
         }
-        else
+        catch (DbUpdateException ex)
         {
-            try
-            {
-                var result = await roleManager.DeleteAsync(role);
-
-                if (result.Succeeded)
-                {
-                    return RedirectToAction(nameof(ListRoles));
-                }
-
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError("", error.Description);
-                }
-
-                return View(nameof(ListRoles));
-            }
-            catch (DbUpdateException ex)
-            {
-                Logger.LogError("Error deleting role: {Exception}", ex);
-                ViewBag.ErrorTitle = $"{role.Name} role is in use";
-                ViewBag.ErrorMessage = $"{role.Name} role cannot be deleted as there are users " +
-                    $"in this role. If you want to delete this role, please remove the users from" +
-                    $"the role and then try to delete";
-                return View("Error");
-            }
+            Logger.LogError("Error deleting role: {Exception}", ex);
+            ViewBag.ErrorTitle = $"{role.Name} role is in use";
+            ViewBag.ErrorMessage = $"{role.Name} role cannot be deleted as there are users " +
+                $"in this role. If you want to delete this role, please remove the users from" +
+                $"the role and then try to delete";
+            return View("Error");
         }
     }
 
@@ -231,11 +199,7 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
     {
         var role = await roleManager.FindByIdAsync(id);
 
-        if (role == null)
-        {
-            ViewBag.ErrorMessage = $"Role with Id = {id} cannot be found";
-            return View("NotFound");
-        }
+        if (role == null) return NotFoundError("Role", id);
 
         var model = new EditRoleViewModel
         {
@@ -259,35 +223,28 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
     {
         var role = await roleManager.FindByIdAsync(model.Id);
 
-        if (role == null)
+        if (role == null) return NotFoundError("Role", model.Id);
+
+        try
         {
-            ViewBag.ErrorMessage = $"Role with Id = {model.Id} cannot be found";
-            return View("NotFound");
+            role.Name = model.RoleName;
+            var result = await roleManager.UpdateAsync(role);
+
+            if (result.Succeeded)
+            {
+                return RedirectToAction(nameof(ListRoles));
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError("", error.Description);
+            }
+            return View(model);
         }
-        else
+        catch (DbUpdateException ex)
         {
-            try
-            {
-                role.Name = model.RoleName;
-                var result = await roleManager.UpdateAsync(role);
-
-                if (result.Succeeded)
-                {
-                    return RedirectToAction(nameof(ListRoles));
-                }
-
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError("", error.Description);
-                }
-                return View(model);
-
-            }
-            catch (DbUpdateException ex)
-            {
-                Logger.LogError("Error editing role: {Exception}", ex);
-                return View("Error");
-            }
+            Logger.LogError("Error editing role: {Exception}", ex);
+            return View("Error");
         }
     }
 
@@ -304,11 +261,7 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
         ViewBag.roleId = roleId;
 
         var role = await roleManager.FindByIdAsync(roleId);
-        if (role == null)
-        {
-            ViewBag.ErrorMessage = $"Role with Id = {roleId} cannot be found";
-            return View("NotFound");
-        }
+        if (role == null) return NotFoundError("Role", roleId);
 
         var model = new List<UserRoleViewModel>();
 
@@ -337,11 +290,8 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
     public async Task<IActionResult> EditUsersInRole(List<UserRoleViewModel> model, string roleId)
     {
         var role = await roleManager.FindByIdAsync(roleId);
-        if (role == null)
-        {
-            ViewBag.ErrorMessage = $"Role with Id = {roleId} cannot be found";
-            return View("NotFound");
-        }
+        if (role == null) return NotFoundError("Role", roleId);
+
         foreach (var userRole in model)
         {
             var user = await userManager.FindByIdAsync(userRole.UserId);

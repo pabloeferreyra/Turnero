@@ -4,7 +4,7 @@ public class AllergiesController(IInsertAllergiesServices insertAllergies,
     IUpdateAllergiesServices updateAllergies,
     IDeleteAllergiesServices deleteAllergies,
     IGetAllergiesServices getAllergies,
-    ILogger<AllergiesController> logger) : Controller
+    ILogger<AllergiesController> logger) : TurneroBaseController
 {
 
     [HttpGet]
@@ -24,28 +24,10 @@ public class AllergiesController(IInsertAllergiesServices insertAllergies,
             return BadRequest("Patient ID is required.");
         ViewData["PatientId"] = id.ToString();
         var model = new Allergies { PatientId = id.Value };
-        var token = HttpContext.RequestServices.GetRequiredService<IAntiforgery>()
-            .GetAndStoreTokens(HttpContext)
-            .RequestToken;
-        ViewData["RequestVerificationToken"] = token;
-        ViewBag.Occurrency = Enum.GetValues<Occurrency>()
-            .Select(a => new SelectListItem
-            {
-                Value = ((int)a).ToString(),
-                Text = a.ToString()
-            }).ToList();
-        ViewBag.Severity = Enum.GetValues<Severity>()
-            .Select(a => new SelectListItem
-            {
-                Value = ((int)a).ToString(),
-                Text = a.ToString()
-            }).ToList();
-        ViewBag.Type = Enum.GetValues<AllergyType>()
-            .Select(a => new SelectListItem
-            {
-                Value = ((int)a).ToString(),
-                Text = a.ToString()
-            }).ToList();
+        SetAntiforgeryToken();
+        ViewBag.Occurrency = EnumToSelectList<Occurrency>();
+        ViewBag.Severity = EnumToSelectList<Severity>();
+        ViewBag.Type = EnumToSelectList<AllergyType>();
         return PartialView("_Create", model);
     }
 
@@ -81,24 +63,14 @@ public class AllergiesController(IInsertAllergiesServices insertAllergies,
     [HttpPost]
     public async Task<IActionResult> InitializeAllergies(Guid? patientId)
     {
-        logger.LogInformation("Initializing allergies for patient {PatientId}", patientId);
-        if (patientId == Guid.Empty)
-        {
-            return BadRequest("Patient ID is required.");
-        }
+        logger.LogInformation("InitializeAllergies called. Request path: {Path}. Query patientId: {QueryPatientId}", Request.Path, patientId?.ToString() ?? "null");
         try
         {
-            var (draw, pageSize, skip, data, recordsTotal) = await SetTableAsync(patientId);
-            data = SetPage(pageSize, skip, data);
-            var json = new
-            {
-                draw,
-                recordsFiltered = recordsTotal,
-                recordsTotal,
-                data
-            };
-            logger.LogInformation("InitializeAllergies returning Ok with {Count} items (patientId: {PatientId})", data?.Count ?? 0, patientId?.ToString() ?? "null");
-            return Ok(json);
+            var result = await DataTablesHelper.InitializePatientDataTablesAsync(
+                Request, patientId,
+                async pid => (await getAllergies.GetAllergies(pid))?.ToList() ?? [],
+                logger);
+            return Ok(result);
         }
         catch (Exception ex)
         {
@@ -115,31 +87,12 @@ public class AllergiesController(IInsertAllergiesServices insertAllergies,
         var allergy = await getAllergies.Get(id);
         if (allergy == null)
         {
-            ViewBag.ErrorMesage = $"Allergy with Id = {id} cannot be found";
-            return NotFound();
+            return NotFoundError("Allergy", id.ToString());
         }
-        var token = HttpContext.RequestServices.GetRequiredService<IAntiforgery>()
-            .GetAndStoreTokens(HttpContext)
-            .RequestToken;
-        ViewData["RequestVerificationToken"] = token;
-        ViewBag.Occurrency = Enum.GetValues<Occurrency>()
-            .Select(a => new SelectListItem
-            {
-                Value = ((int)a).ToString(),
-                Text = a.ToString()
-            }).ToList();
-        ViewBag.Severity = Enum.GetValues<Severity>()
-            .Select(a => new SelectListItem
-            {
-                Value = ((int)a).ToString(),
-                Text = a.ToString()
-            }).ToList();
-        ViewBag.Type = Enum.GetValues<AllergyType>()
-            .Select(a => new SelectListItem
-            {
-                Value = ((int)a).ToString(),
-                Text = a.ToString()
-            }).ToList();
+        SetAntiforgeryToken();
+        ViewBag.Occurrency = EnumToSelectList<Occurrency>();
+        ViewBag.Severity = EnumToSelectList<Severity>();
+        ViewBag.Type = EnumToSelectList<AllergyType>();
         return PartialView("_Create", allergy);
     }
 
@@ -172,146 +125,5 @@ public class AllergiesController(IInsertAllergiesServices insertAllergies,
         return Ok();
     }
 
-    #region private
-    private async Task<(string draw, int pageSize, int skip, List<Allergies> data, int recordsTotal)> SetTableAsync(Guid? patientIdFromQuery = null)
-    {
-        var draw = Request.Form["draw"].FirstOrDefault() ?? "1";
-        var start = Request.Form["start"].FirstOrDefault();
-        var length = Request.Form["length"].FirstOrDefault();
 
-        string? searchCandidate = null;
-
-        if (patientIdFromQuery.HasValue)
-        {
-            searchCandidate = patientIdFromQuery.Value.ToString();
-            logger.LogDebug("SetTableAsync: using patientId from querystring: {PatientId}", searchCandidate);
-        }
-        else
-        {
-            if (Request.HasFormContentType)
-            {
-                var form = Request.Form;
-
-                if (form.TryGetValue("patientId", out var val) || form.TryGetValue("patientid", out val))
-                {
-                    searchCandidate = val.FirstOrDefault();
-                }
-
-                if (string.IsNullOrWhiteSpace(searchCandidate))
-                {
-                    var searchKey = form.Keys.FirstOrDefault(k => k.EndsWith("[search][value]", StringComparison.OrdinalIgnoreCase));
-                    if (searchKey != null)
-                        searchCandidate = form[searchKey].FirstOrDefault();
-                }
-
-                if (string.IsNullOrWhiteSpace(searchCandidate))
-                {
-                    foreach (var key in form.Keys)
-                    {
-                        var candidate = form[key].FirstOrDefault();
-                        if (!string.IsNullOrWhiteSpace(candidate) && Guid.TryParse(candidate, out _))
-                        {
-                            searchCandidate = candidate;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (string.IsNullOrWhiteSpace(searchCandidate) && Request.Query.TryGetValue("patientId", out var qv))
-            {
-                searchCandidate = qv.FirstOrDefault();
-            }
-
-            if (string.IsNullOrWhiteSpace(searchCandidate)
-                && HttpMethods.IsPost(Request.Method)
-                && !string.IsNullOrWhiteSpace(Request.ContentType)
-                && Request.ContentType.Contains("application/json", StringComparison.OrdinalIgnoreCase))
-            {
-                try
-                {
-                    Request.EnableBuffering();
-                    using var reader = new StreamReader(Request.Body, leaveOpen: true);
-                    var body = await reader.ReadToEndAsync();
-                    Request.Body.Position = 0;
-
-                    if (!string.IsNullOrWhiteSpace(body))
-                    {
-                        var dict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, System.Text.Json.JsonElement>>(body);
-                        if (dict != null)
-                        {
-                            if (dict.TryGetValue("patientId", out var je) && je.ValueKind == System.Text.Json.JsonValueKind.String)
-                            {
-                                searchCandidate = je.GetString();
-                            }
-                            else
-                            {
-                                var kv = dict.FirstOrDefault(k => k.Key.Equals("patientId", StringComparison.OrdinalIgnoreCase)
-                                                                  || k.Key.Contains("patient", StringComparison.OrdinalIgnoreCase));
-                                if (!string.IsNullOrEmpty(kv.Key))
-                                    searchCandidate = kv.Value.ToString();
-                            }
-                        }
-                    }
-                }
-                catch
-                {
-                }
-            }
-        }
-
-        searchCandidate ??= string.Empty;
-
-        IQueryable<Allergies> allergiesQueryable = Enumerable.Empty<Allergies>().AsQueryable();
-        if (Guid.TryParse(searchCandidate, out var patientGuid))
-        {
-            var result = await getAllergies.GetAllergies(patientGuid);
-            allergiesQueryable = result ?? Enumerable.Empty<Allergies>().AsQueryable();
-        }
-
-        var list = allergiesQueryable.ToList();
-
-        var orderColumnIndex = Request.Form["order[0][column]"].FirstOrDefault();
-        var sortColumn = !string.IsNullOrEmpty(orderColumnIndex)
-            ? Request.Form[$"columns[{orderColumnIndex}][name]"].FirstOrDefault()
-            : null;
-        var sortDir = Request.Form["order[0][dir]"].FirstOrDefault();
-
-        if (!string.IsNullOrEmpty(sortColumn))
-        {
-            try
-            {
-                if (string.Equals(sortDir, "asc", StringComparison.OrdinalIgnoreCase))
-                    list = [.. list.OrderBy(v => GetPropValue(v, sortColumn))];
-                else
-                    list = [.. list.OrderByDescending(v => GetPropValue(v, sortColumn))];
-            }
-            catch
-            {
-            }
-        }
-
-        int pageSize = length != null ? int.Parse(length) : 0;
-        int skip = start != null ? int.Parse(start) : 0;
-        int recordsTotal = list.Count;
-
-        return (draw, pageSize, skip, list, recordsTotal);
-    }
-
-    private static List<Allergies> SetPage(int pageSize, int skip, List<Allergies> data)
-    {
-        if (data == null) return [];
-        if (pageSize == -1) return data;
-        if (skip != 0 && pageSize > 0) return [.. data.Skip(skip).Take(pageSize)];
-        if (pageSize > 0) return [.. data.Take(pageSize)];
-        return data;
-    }
-
-    private static object? GetPropValue(object? obj, string propName)
-    {
-        if (obj == null || string.IsNullOrWhiteSpace(propName)) return null;
-        var prop = obj.GetType().GetProperty(propName);
-        return prop?.GetValue(obj);
-    }
-    #endregion
 }

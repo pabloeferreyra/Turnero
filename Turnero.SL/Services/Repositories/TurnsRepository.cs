@@ -76,7 +76,7 @@ public class TurnsRepository(ApplicationDbContext context, IMemoryCache cache) :
 
     public void DeleteTurn(Turn turn)
     {
-        DeleteAsync(turn);
+        Delete(turn);
     }
 
     public void UpdateTurn(Turn turn)

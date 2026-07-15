@@ -3,7 +3,7 @@
 [Authorize(Roles = RolesConstants.Medico)]
 public class PersonalBackgroundController(IGetPersonalBackgroundService get,
     IUpdatePersonalBackgroundService update,
-    ILogger<PersonalBackgroundController> logger) : Controller
+    ILogger<PersonalBackgroundController> logger) : TurneroBaseController
 {
     public async Task<IActionResult> Index(Guid? id)
     {
@@ -38,10 +38,7 @@ public class PersonalBackgroundController(IGetPersonalBackgroundService get,
     {
         if (id == null)
             return BadRequest("El ID del paciente es obligatorio.");
-        var token = HttpContext.RequestServices.GetRequiredService<IAntiforgery>()
-            .GetAndStoreTokens(HttpContext)
-            .RequestToken;
-        ViewData["RequestVerificationToken"] = token;
+        SetAntiforgeryToken();
         var data = await get.GetPersonalBackground(id.Value);
         return PartialView("_Edit", data);
     }

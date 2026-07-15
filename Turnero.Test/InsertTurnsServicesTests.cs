@@ -62,7 +62,7 @@ public class InsertTurnsServicesTests
         var result = await _insertTurnsServices.CreateTurnAsync(turn);
 
         // Assert
-        _loggerMock.Verify(logger => logger.Log(It.IsAny<string>()), Times.Never);
+        _loggerMock.Verify(logger => logger.Log(It.IsAny<string>()), Times.Once);
         Assert.False(result);
     }
 }

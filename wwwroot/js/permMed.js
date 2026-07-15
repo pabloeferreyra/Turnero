@@ -5,20 +5,8 @@
 	const key = 'permMed';
 	let currentData = [];
 
-    function resolvePatientId() {
-        return document.querySelector('#patientId')?.value
-            || document.querySelector('#PatientId')?.value
-            || '';
-    }
-
-    function escapeHtml(s) {
-        return s ? String(s)
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;") : '';
-    }
+    const resolvePatientId = AppUtils.resolvePatientId;
+    const escapeHtml = AppUtils.escapeHtml;
 
     async function loadData() {
         const tbody = document.getElementById('permMed-body');
@@ -104,41 +92,15 @@
         el.textContent = `Mostrando ${startRecord} - ${end} de ${st.recordsTotal} medicamentos.`;
     }
 
-    document.addEventListener('click', (ev) => {
-        const target = ev.target;
-        if (target.matches('.btn-deletepm')) {
-            const id = target.dataset.id;
-            const cell = target.closest('td');
-
-            target.classList.add('btn-fade-out');
-            setTimeout(() => {
-                cell.innerHTML = `
-                    <button data-id="${id}" class="btn btn-danger btn-sm me-1 btn-confirm-deletepm">Si</button>
-                    <button class="btn btn-secondary btn-sm btn-cancel-deletepm">No</button>
-                `;
-            }, 200);
-
-            return;
-        }
-        if (target.matches('.btn-cancel-deletepm')) {
-            loadData();
-            return;
-        }
-
-        if (target.matches('.btn-confirm-deletepm')) {
-            const id = target.dataset.id;
-
-            fetch(`/PermMed/Delete/${id}`, { method: 'DELETE' })
-                .then(r => {
-                    if (!r.ok)
-                        AppUtils.showToast("error", "Error al eliminar el medicamento.");
-
-                    loadData();
-                    AppUtils.showToast("success", "Medicamento eliminado correctamente.");
-                });
-
-            return;
-        }
+    // DELETE INLINE (using shared AppUtils.ConfirmDelete)
+    AppUtils.ConfirmDelete.init({
+        deleteBtnSelector: '.btn-deletepm',
+        confirmBtnSelector: '.btn-confirm-deletepm',
+        cancelBtnSelector: '.btn-cancel-deletepm',
+        deleteUrlPrefix: '/PermMed/Delete/',
+        successMessage: 'Medicamento eliminado correctamente.',
+        errorMessage: 'Error al eliminar el medicamento.',
+        loadData
     });
 
     // Cuando el modal termina de inyectarse en el DOM
@@ -176,42 +138,12 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-
-        AppUtils.Pagination.init(key, {
-            defaultPageSize: 25,
-            defaultOrder: { column: 0, dir: 'asc' },
-            PageSizeSelector: '#pageSizePermMed',
-            onchange: loadData
+        AppUtils.TabLoader.init({
+            tabSelector: '#permMedTab',
+            tableSelector: '#permMed',
+            paginationOpts: { key, defaultPageSize: 25, defaultOrder: { column: 0, dir: 'asc' }, pageSizeSelector: '#pageSizePermMed' },
+            loadData
         });
-
-        const tab = document.querySelector('#permMedTab');
-
-        if (tab) {
-            tab.addEventListener('click', () => {
-                document.querySelectorAll('#myTabs .nav-link')
-                    .forEach(t => t.classList.remove('active'));
-
-                tab.classList.add('active');
-
-                const url = tab.dataset.url;
-                if (!url) return;
-
-                const container = document.querySelector('#tabContent');
-
-                if (!document.querySelector('#permMed')) {
-                    fetch(url)
-                        .then(r => r.text())
-                        .then(html => {
-                            container.innerHTML = html;
-                            loadData();
-                        });
-                } else {
-                    loadData();
-                }
-            });
-        }
-
-		loadData();
     });
 
 })();

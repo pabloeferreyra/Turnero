@@ -61,13 +61,13 @@
         {
             ViewData["roles"] = _roleManager.Roles.ToList();
             ReturnUrl = returnUrl;
-            ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+            ExternalLogins = [.. (await _signInManager.GetExternalAuthenticationSchemesAsync())];
         }
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
             var role = _roleManager.FindByIdAsync(Input.Name).Result;
-            ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+            ExternalLogins = [.. (await _signInManager.GetExternalAuthenticationSchemesAsync())];
             if (ModelState.IsValid)
             {
                 var user = await _firebaseService.RegisterAdminAsync(new UserFirebaseDTO { Email = $"{Input.UserName}@consultorios.com", Name = Input.UserName, Password = Input.Password, Role = role.Name });

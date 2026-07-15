@@ -201,11 +201,7 @@
         }).join("");
     }
 
-    function escapeHtml(s) {
-        const div = document.createElement("div");
-        div.textContent = s ?? "";
-        return div.innerHTML;
-    }
+    const escapeHtml = AppUtils.escapeHtml;
 
     // =======================================================
     // =============== INIT CREATE ===========================

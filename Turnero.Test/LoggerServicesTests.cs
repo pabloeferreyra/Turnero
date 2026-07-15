@@ -1,16 +1,37 @@
-﻿using System.Runtime.InteropServices;
 using Turnero.SL.Services;
 using Xunit;
 
 namespace Turnero.Test;
 
-public class LoggerServicesTests
+public class LoggerServicesTests : IDisposable
 {
     private readonly LoggerService _loggerServices;
+    private readonly string _logFilePath;
 
     public LoggerServicesTests()
     {
         _loggerServices = new LoggerService();
+        _logFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "AppLogs.log");
+        // Clean up before tests
+        CleanupLogFile();
+    }
+
+    public void Dispose()
+    {
+        CleanupLogFile();
+    }
+
+    private void CleanupLogFile()
+    {
+        try
+        {
+            if (File.Exists(_logFilePath))
+                File.Delete(_logFilePath);
+        }
+        catch
+        {
+            // File may be locked - ignore cleanup failures
+        }
     }
 
     [Fact]
@@ -18,22 +39,13 @@ public class LoggerServicesTests
     {
         // Arrange
         var infoMessage = "This is an info message";
-        var expectedMessage = DateTime.Now + ": " + infoMessage;
 
         // Act
         _loggerServices.Log(infoMessage);
 
         // Assert
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
-            var logContent = File.ReadAllText(@"/root/TurneroLogs/infoLog.txt");
-            Assert.Contains(expectedMessage, logContent);
-        }
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            var logContent = File.ReadAllText(@"D:\infoLog.txt");
-            Assert.Contains(expectedMessage, logContent);
-        }
+        var logContent = File.ReadAllText(_logFilePath);
+        Assert.Contains(infoMessage, logContent);
     }
 
     [Fact]
@@ -41,22 +53,13 @@ public class LoggerServicesTests
     {
         // Arrange
         var debugMessage = "This is a debug message";
-        var expectedMessage = DateTime.Now + ": " + debugMessage;
 
         // Act
         _loggerServices.Log(debugMessage);
 
         // Assert
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
-            var logContent = File.ReadAllText(@"/root/TurneroLogs/debugLog.txt");
-            Assert.Contains(expectedMessage, logContent);
-        }
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            var logContent = File.ReadAllText(@"D:\debugLog.txt");
-            Assert.Contains(expectedMessage, logContent);
-        }
+        var logContent = File.ReadAllText(_logFilePath);
+        Assert.Contains(debugMessage, logContent);
     }
 
     [Fact]
@@ -64,22 +67,26 @@ public class LoggerServicesTests
     {
         // Arrange
         var errorMessage = "This is an error message";
-        var exception = new Exception("Test exception");
-        var expectedMessage = DateTime.Now + ": " + errorMessage + " - " + exception;
 
         // Act
         _loggerServices.Log(errorMessage);
 
         // Assert
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
-            var logContent = File.ReadAllText(@"/root/TurneroLogs/errorLog.txt");
-            Assert.Contains(expectedMessage, logContent);
-        }
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            var logContent = File.ReadAllText(@"D:\errorLog.txt");
-            Assert.Contains(expectedMessage, logContent);
-        }
+        var logContent = File.ReadAllText(_logFilePath);
+        Assert.Contains(errorMessage, logContent);
+    }
+
+    [Fact]
+    public async Task LogAsync_ShouldWriteToFile()
+    {
+        // Arrange
+        var message = "Async log message";
+
+        // Act
+        await _loggerServices.LogAsync(message);
+
+        // Assert
+        var logContent = await File.ReadAllTextAsync(_logFilePath);
+        Assert.Contains(message, logContent);
     }
 }

@@ -6,13 +6,9 @@
     let currentData = [];
 
     // -------------------------------------------
-    // UTILITIES
+    // UTILITIES (using shared AppUtils)
     // -------------------------------------------
-    function resolvePatientId() {
-        return document.querySelector('#patientId')?.value
-            || document.querySelector('#PatientId')?.value
-            || '';
-    }
+    const resolvePatientId = AppUtils.resolvePatientId;
 
     function parseLocalDate(raw) {
         if (!raw) return "";
@@ -170,39 +166,12 @@
     window.reloadVisitsTable = loadData;
 
     document.addEventListener("DOMContentLoaded", () => {
-
-        AppUtils.Pagination.init(key, {
-            defaultPageSize: 25,
-            defaultOrder: { column: 0, dir: 'asc' },
-            pageSizeSelector: "#pageSize",
-            onChange: loadData
+        AppUtils.TabLoader.init({
+            tabSelector: '#visitsTab',
+            tableSelector: '#visits',
+            paginationOpts: { key, defaultPageSize: 25, defaultOrder: { column: 0, dir: 'asc' }, pageSizeSelector: '#pageSize' },
+            loadData
         });
-
-        const tab = document.querySelector('#visitsTab');
-
-        if (tab) {
-            tab.addEventListener('click', () => {
-
-                document.querySelectorAll('#myTabs .nav-link')
-                    .forEach(x => x.classList.remove('active'));
-
-                tab.classList.add('active');
-
-                const url = tab.dataset.url;
-                if (!url) return;
-
-                const container = document.querySelector('#tabContent');
-
-                if (!document.querySelector('#visits')) {
-                    fetch(url)
-                        .then(r => r.text())
-                        .then(html => {
-                            container.innerHTML = html;
-                            loadData();
-                        });
-                } else loadData();
-            });
-        }
 
         document.addEventListener("modal:updated", (ev) => {
             if (ev.detail.modalId !== "GlobalModal") return;

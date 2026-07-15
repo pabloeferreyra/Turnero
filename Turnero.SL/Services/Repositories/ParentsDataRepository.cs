@@ -7,11 +7,6 @@ public class ParentsDataRepository(ApplicationDbContext context, IMemoryCache ca
     {
         return await FindByCondition(pd => pd.Id == id).Include(p => p.Patient).SingleOrDefaultAsync();
     }
-    public async Task Insert(ParentsData data)
-    {
-        ArgumentNullException.ThrowIfNull(data);
-        await CreateAsync(data);
-    }
     public async Task Update(ParentsData data)
     {
         var entity = await FindByCondition(pd => pd.Id == data.Id).Include(p => p.Patient).SingleOrDefaultAsync();
@@ -28,7 +23,6 @@ public class ParentsDataRepository(ApplicationDbContext context, IMemoryCache ca
 public interface IParentsDataRepository
 {
     Task<ParentsData?> Get(Guid id);
-    Task Insert(ParentsData data);
     Task Update(ParentsData data);
     void Delete(ParentsData data);
 }

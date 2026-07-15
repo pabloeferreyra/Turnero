@@ -39,7 +39,7 @@ public class MedicRepository(ApplicationDbContext context, IMemoryCache cache) :
 
     public void DeleteMedic(Medic medic)
     {
-        DeleteAsync(medic);
+        Delete(medic);
     }
 
     public async Task UpdateMedic(Medic medic)

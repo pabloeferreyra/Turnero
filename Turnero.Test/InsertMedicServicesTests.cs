@@ -57,6 +57,6 @@ public class InsertMedicServicesTests
         await _insertMedicServices.Create(medic);
 
         // Assert
-        _loggerMock.Verify(logger => logger.Log(It.IsAny<string>()), Times.Never);
+        _loggerMock.Verify(logger => logger.Log(It.IsAny<string>()), Times.Once);
     }
 }

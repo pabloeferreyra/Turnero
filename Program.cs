@@ -176,14 +176,9 @@ builder.Services.AddControllersWithViews(options =>
     var policy = new AuthorizationPolicyBuilder()
         .RequireAuthenticatedUser()
         .Build();
-    options.Filters.Add(new AuthorizeFilter(policy));
-
-}).AddJsonOptions(options =>
+    options.Filters.Add(new AuthorizeFilter(policy));}).AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
-})
-.AddJsonOptions(options =>
-{
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
@@ -238,15 +233,12 @@ builder.Services.AddScoped<IDeleteAllergiesServices, DeleteAllergiesServices>();
 
 //ParentsDataServices
 builder.Services.AddScoped<IGetParentsDataService, GetParentsDataService>();
-builder.Services.AddScoped<IInsertParentsDataService, InsertParentsDataService>();
 builder.Services.AddScoped<IUpdateParentsDataService, UpdateParentsDataService>();
 builder.Services.AddScoped<IDeleteParentsDataService, DeleteParentsDataService>();
 
 //PersonalBackgroundServices
 builder.Services.AddScoped<IGetPersonalBackgroundService, GetPersonalBackgroundService>();
-builder.Services.AddScoped<IInsertPersonalBackgroundService, InsertPersonalBackgroundService>();
 builder.Services.AddScoped<IUpdatePersonalBackgroundService, UpdatePersonalBackgroundService>();
-builder.Services.AddScoped<IDeletePersonalBackgroundService, DeletePersonalBackgroundService>();
 
 //PerinatalBackgroundServices
 builder.Services.AddScoped<IGetPerinatalBackgroundService, GetPerinatalBackgroundService>();
@@ -272,8 +264,6 @@ builder.Services.AddScoped<IDeleteGrowthChartService, DeleteGrowthChartService>(
 //CongErrors Services
 builder.Services.AddScoped<IGetCongErrorService, GetCongErrorService>();
 builder.Services.AddScoped<IUpdateCongErrorService, UpdateCongErrorService>();
-builder.Services.AddScoped<IInsertCongErrorService, InsertCongErrorService>();
-builder.Services.AddScoped<IDeleteCongErrorService, DeleteCongErrorService>();
 #endregion
 
 #region Dependency Injection - Repositories
