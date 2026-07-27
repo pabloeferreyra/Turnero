@@ -3,9 +3,7 @@
     [AllowAnonymous]
     public class TurnsPublicController(IInsertTurnsServices insertTurns,
                            IGetMedicsServices getMedics,
-                           IGetTimeTurnsServices getTimeTurns,
-                           IHubContext<TurnsTableHub> hubContext,
-                           IMemoryCache cache) : TurneroBaseController
+                           IHubContext<TurnsTableHub> hubContext) : TurneroBaseController
     {
 
         public async Task<ActionResult> Index()

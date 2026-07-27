@@ -7,13 +7,13 @@ public class ParentsDataRepository(ApplicationDbContext context, IMemoryCache ca
     {
         return await FindByCondition(pd => pd.Id == id).Include(p => p.Patient).SingleOrDefaultAsync();
     }
-    public async Task Update(ParentsData data)
+    public new async Task Update(ParentsData data)
     {
-        var entity = await FindByCondition(pd => pd.Id == data.Id).Include(p => p.Patient).SingleOrDefaultAsync();
-        ArgumentNullException.ThrowIfNull(entity);
+        if (!await FindByCondition(pd => pd.Id == data.Id).AnyAsync())
+            throw new ArgumentNullException(nameof(data));
         await UpdateAsync(data);
     }
-    public void Delete(ParentsData data)
+    public new void Delete(ParentsData data)
     {
         ArgumentNullException.ThrowIfNull(data);
         Delete(data);

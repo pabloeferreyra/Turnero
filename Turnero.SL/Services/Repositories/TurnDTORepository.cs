@@ -2,6 +2,18 @@
 {
     public class TurnDTORepository(ApplicationDbContext context, IMemoryCache cache) : RepositoryBase<TurnDTO>(context, cache), ITurnDTORepository
     {
+        /// <summary>
+        /// TurnDTO no es una entidad mapeada en ApplicationDbContext.
+        /// Este repositorio solo debe usar CallStoredProcedureDTO (que no pasa por EF Core).
+        /// Los métodos heredados de RepositoryBase (FindAll, FindByCondition, etc.)
+        /// lanzarán una excepción si se invocan porque TurnDTO no está registrado como DbSet.
+        /// </summary>
+        public new IQueryable<TurnDTO> FindAll()
+            => throw new NotSupportedException("TurnDTO no es una entidad del contexto. Use CallStoredProcedureDTO en su lugar.");
+
+        public new IQueryable<TurnDTO> FindByCondition(Expression<Func<TurnDTO, bool>> expression)
+            => throw new NotSupportedException("TurnDTO no es una entidad del contexto. Use CallStoredProcedureDTO en su lugar.");
+
         public IQueryable<TurnDTO> GetListDto(string connectionString)
         {
             var turnDto = CallStoredProcedureDTO(connectionString, "select * from getallturns()");

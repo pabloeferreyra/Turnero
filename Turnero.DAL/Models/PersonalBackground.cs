@@ -36,5 +36,5 @@ public class PersonalBackground : PatientFKEntity
     public bool Digestive { get; set; }
     [Display(Name = "Otros - Especificar")]
     public string? Other { get; set; }
-    public Patient Patient { get; set; }
+    public Patient? Patient { get; set; }
 }

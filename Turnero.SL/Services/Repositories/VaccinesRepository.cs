@@ -15,7 +15,7 @@ public class VaccinesRepository(ApplicationDbContext context, IMemoryCache cache
             .ToListAsync();
     }
 
-    public async Task Update(Vaccines vaccines)
+    public new async Task Update(Vaccines vaccines)
     {
         await UpdateAsync(vaccines);
     }

@@ -6,9 +6,7 @@ public class TurnsController(UserManager<IdentityUser> userManager,
                        IGetTurnDTOServices getTurnDTO,
                        IUpdateTurnsServices updateTurns,
                        IGetMedicsServices getMedics,
-                       IGetTimeTurnsServices getTimeTurns,
-                       IHubContext<TurnsTableHub> hubContext,
-                       IMemoryCache cache) : TurneroBaseController
+                       IHubContext<TurnsTableHub> hubContext) : TurneroBaseController
 {
 
     [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]

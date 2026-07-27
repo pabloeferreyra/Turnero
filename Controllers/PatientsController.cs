@@ -6,9 +6,8 @@ public class PatientsController(IInsertPatientService insertPatient,
     IGetParentsDataService getParents,
     IUpdatePatientService updatePatient) : TurneroBaseController
 {
-    public async Task<IActionResult> Index()
+    public IActionResult Index()
     {
-        List<PatientDTO> patients = await getPatient.GetPatients();
         return View(nameof(Index));
     }
 

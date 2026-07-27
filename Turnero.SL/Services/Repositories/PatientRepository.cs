@@ -4,14 +4,12 @@ public class PatientRepository(ApplicationDbContext context, IMemoryCache cache)
 {
     public async Task<List<PatientDTO>> GetList()
     {
-        var patients = await FindAll().Include(p => p.ContactInfo).ToListAsync();
-        return patients.Adapt<List<PatientDTO>>();
+        return await FindAll().ProjectToType<PatientDTO>().ToListAsync();
     }
 
     public IQueryable<PatientDTO> GetAll()
     {
-        var patients = FindAll().ToList();
-        return patients.Adapt<List<PatientDTO>>().AsQueryable();
+        return FindAll().ProjectToType<PatientDTO>();
     }
     public async Task<Patient> GetById(Guid id)
     {
@@ -44,11 +42,12 @@ public class PatientRepository(ApplicationDbContext context, IMemoryCache cache)
     {
         await UpdateAsync(patient);
     }
-    public async Task<IQueryable<PatientDTO>> SearchByNameOrDni(string search)
+    public Task<IQueryable<PatientDTO>> SearchByNameOrDni(string search)
     {
         if (search == null)
-            return GetAll();
-        return FindByCondition(p => (p.Name != null && p.Name.Contains(search)) || p.Dni.Contains(search)).ToList().Adapt<List<PatientDTO>>().AsQueryable();
+            return Task.FromResult(GetAll());
+        return Task.FromResult(FindByCondition(p => (p.Name != null && p.Name.Contains(search)) || p.Dni.Contains(search))
+            .ProjectToType<PatientDTO>());
     }
 }
 

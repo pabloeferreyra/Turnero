@@ -1,9 +1,6 @@
 ﻿namespace Turnero.Controllers;
 
-public class HomeController(IGetTurnsServices getTurns,
-                      IGetMedicsServices getMedics,
-                      IGetTimeTurnsServices getTimeTurns,
-                      IMemoryCache cache) : TurneroBaseController
+public class HomeController(IGetTurnsServices getTurns) : TurneroBaseController
 {
     public async Task<IActionResult> Index()
     {

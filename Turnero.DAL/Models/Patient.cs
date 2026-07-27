@@ -33,7 +33,7 @@ public class PatientDTO : BaseEntity
 {
     [Display(Name = "Nombre")]
     public string? Name { get; set; }
-    public int? Dni { get; set; }
+    public string? Dni { get; set; }
     [Display(Name = "Fecha de Nacimiento")]
     public string? BirthDate { get; set; }
     [Display(Name = "Obra Social")]

@@ -4,8 +4,7 @@ public class MedicRepository(ApplicationDbContext context, IMemoryCache cache) :
 {
     public async Task<List<MedicDto>> GetListDto()
     {
-        var medics = await FindAll().ToListAsync();
-        return medics.Adapt<List<MedicDto>>();
+        return await FindAll().ProjectToType<MedicDto>().ToListAsync();
     }
 
     public async Task<List<Medic>> GetList()

@@ -7,10 +7,10 @@ public class CongErrorsRepository(ApplicationDbContext context, IMemoryCache cac
     {
         return await FindByCondition(ce => ce.Id == id).Include(p => p.Patient).SingleOrDefaultAsync();
     }
-    public async Task Update(CongErrors data)
+    public new async Task Update(CongErrors data)
     {
-        var entity = await FindByCondition(ce => ce.Id == data.Id).Include(p => p.Patient).SingleOrDefaultAsync();
-        ArgumentNullException.ThrowIfNull(entity);
+        if (!await FindByCondition(ce => ce.Id == data.Id).AnyAsync())
+            throw new ArgumentNullException(nameof(data));
         await UpdateAsync(data);
     }
 }

@@ -20,5 +20,5 @@ public class ParentsData : PatientFKEntity
     public string? MotherWork { get; set; }
     [Display(Name = "Cantidad de hermanos")]
     public int BrothersCount { get; set; }
-    public Patient Patient { get; set; }
+    public Patient? Patient { get; set; }
 }

@@ -6,10 +6,10 @@ public class PerinatalBackgroundRepositroy(ApplicationDbContext context, IMemory
     {
         return await FindByCondition(pb => pb.Id == id).FirstOrDefaultAsync();
     }
-    public async Task Update(PerinatalBackground data)
+    public new async Task Update(PerinatalBackground data)
     {
-        var entity = await FindByCondition(pb => pb.Id == data.Id).FirstOrDefaultAsync();
-        ArgumentNullException.ThrowIfNull(entity);
+        if (!await FindByCondition(pb => pb.Id == data.Id).AnyAsync())
+            throw new ArgumentNullException(nameof(data));
         await UpdateAsync(data);
     }
 }

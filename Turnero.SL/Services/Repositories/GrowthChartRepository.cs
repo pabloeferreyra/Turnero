@@ -27,8 +27,11 @@ public class GrowthChartRepository(ApplicationDbContext context, IMemoryCache ca
     }
     public async Task Remove(Guid id)
     {
-        var growthChart = await FindByCondition(g => g.Id == id).FirstOrDefaultAsync();
-        Delete(growthChart);
+        if (!await FindByCondition(g => g.Id == id).AnyAsync())
+            return;
+        var stub = new GrowthChart { Id = id };
+        _context.Set<GrowthChart>().Remove(stub);
+        await _context.SaveChangesAsync();
     }
 }
 public interface IGrowthChartRepository

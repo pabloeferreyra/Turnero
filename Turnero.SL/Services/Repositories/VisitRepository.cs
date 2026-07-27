@@ -10,19 +10,11 @@ public class VisitRepository(ApplicationDbContext context, IMemoryCache cache) :
             .SingleOrDefaultAsync();
     }
 
-    public async Task<IQueryable<VisitDTO>> SearchVisits(Guid patientId)
+    public Task<IQueryable<VisitDTO>> SearchVisits(Guid patientId)
     {
         if (patientId == Guid.Empty)
-            return FindAll()
-                .Include(v => v.Patient).Include(v => v.Medic)
-                .Adapt<List<VisitDTO>>()
-                .AsQueryable();
-        return FindByCondition(v => v.PatientId == patientId)
-            .Include(v => v.Patient)
-            .Include(v => v.Medic)
-            .ToList()
-            .Adapt<List<VisitDTO>>()
-            .AsQueryable();
+            return Task.FromResult(FindAll().ProjectToType<VisitDTO>());
+        return Task.FromResult(FindByCondition(v => v.PatientId == patientId).ProjectToType<VisitDTO>());
     }
 
     public async Task CreateVisit(Visit visit)

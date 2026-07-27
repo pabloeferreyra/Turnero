@@ -3,7 +3,7 @@
 namespace Turnero.Areas.Identity.Pages.Account
 {
     [AllowAnonymous]
-    public class ForgotPasswordModel(UserManager<IdentityUser> userManager, IEmailSender emailSender, IFirebaseService firebaseService) : PageModel
+    public class ForgotPasswordModel(UserManager<IdentityUser> userManager, IFirebaseService firebaseService) : PageModel
     {
         [BindProperty]
         public InputModel Input { get; set; }

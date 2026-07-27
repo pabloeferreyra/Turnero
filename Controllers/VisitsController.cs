@@ -3,8 +3,7 @@
 [Authorize(Roles = RolesConstants.Medico)]
 public class VisitsController(IGetVisitService getVisit,
     IInsertVisitService insertVisit,
-    ILogger<VisitsController> logger,
-    IGetMedicsServices getMedics) : TurneroBaseController
+    ILogger<VisitsController> logger) : TurneroBaseController
 {
     [HttpGet]
     public async Task<IActionResult> Details(Guid? id)

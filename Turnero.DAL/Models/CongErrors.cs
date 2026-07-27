@@ -24,7 +24,7 @@ public class CongErrors : PatientFKEntity
     [DisplayName("17O Hidroxiprogesterona Neo")]
     public bool OHP { get; set; }
     public string? ResultOHP { get; set; }
-    public Patient Patient { get; set; }
+    public Patient? Patient { get; set; }
 }
 
 public class CongErrorsResults

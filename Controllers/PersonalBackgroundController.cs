@@ -18,7 +18,6 @@ public class PersonalBackgroundController(IGetPersonalBackgroundService get,
     {
         try
         {
-            ModelState.Remove("Patient");
             if (!ModelState.IsValid)
             {
                 return BadRequest();

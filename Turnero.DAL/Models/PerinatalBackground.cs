@@ -28,5 +28,5 @@ public class PerinatalBackground : PatientFKEntity
     public string? Pathologies { get; set; }
     [DisplayName("Errores Congénitos")]
     public string? CongErrors { get; set; }
-    public Patient Patient { get; set; }
+    public Patient? Patient { get; set; }
 }

@@ -14,8 +14,11 @@ public class PermMedRepository(ApplicationDbContext context, IMemoryCache cache)
     }
     public async Task Remove(Guid id)
     {
-        var permMed = await FindByCondition(p => p.Id == id).FirstOrDefaultAsync();
-        Delete(permMed);
+        if (!await FindByCondition(p => p.Id == id).AnyAsync())
+            return;
+        var stub = new PermMed { Id = id };
+        _context.Set<PermMed>().Remove(stub);
+        await _context.SaveChangesAsync();
     }
 }
 

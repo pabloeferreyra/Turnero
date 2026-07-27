@@ -29,7 +29,6 @@ public class PerinatalBackgroundController(IGetPerinatalBackgroundService get,
     {
         try
         {
-            ModelState.Remove("Patient");
             if (!ModelState.IsValid)
             {
                 return BadRequest();

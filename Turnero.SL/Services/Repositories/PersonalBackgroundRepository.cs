@@ -7,10 +7,10 @@ public class PersonalBackgroundRepository(ApplicationDbContext context, IMemoryC
         return await FindByCondition(pb => pb.Id == id).FirstOrDefaultAsync();
     }
 
-    public async Task Update(PersonalBackground data)
+    public new async Task Update(PersonalBackground data)
     {
-        var entity = await FindByCondition(pb => pb.Id == data.Id).FirstOrDefaultAsync();
-        ArgumentNullException.ThrowIfNull(entity);
+        if (!await FindByCondition(pb => pb.Id == data.Id).AnyAsync())
+            throw new ArgumentNullException(nameof(data));
         await UpdateAsync(data);
     }
 }
