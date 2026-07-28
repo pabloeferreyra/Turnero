@@ -29,7 +29,6 @@ global using System.ComponentModel.DataAnnotations;
 global using System.IO;
 global using System.IO.Compression;
 global using System.Linq;
-global using System.Linq.Dynamic.Core;
 global using System.Runtime.InteropServices;
 global using System.Security.Claims;
 global using System.Text.Json.Serialization;

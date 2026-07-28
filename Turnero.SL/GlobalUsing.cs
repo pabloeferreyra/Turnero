@@ -1,7 +1,6 @@
 ﻿global using FirebaseAdmin.Auth;
 global using Mapster;
 global using Microsoft.AspNetCore.Identity;
-global using Microsoft.Data.SqlClient;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.Extensions.Caching.Memory;
 global using Microsoft.Extensions.Configuration;

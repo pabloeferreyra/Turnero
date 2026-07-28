@@ -6,20 +6,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="Migrations\20200807230301_InitialCreate.cs" />
-    <Compile Remove="Migrations\20200807230301_InitialCreate.Designer.cs" />
-    <Compile Remove="Migrations\20200807231943_changename.cs" />
-    <Compile Remove="Migrations\20200807231943_changename.Designer.cs" />
-    <Compile Remove="Migrations\20200807232956_TurnEdit.cs" />
-    <Compile Remove="Migrations\20200807232956_TurnEdit.Designer.cs" />
-    <Compile Remove="Migrations\20200820003534_OsYMotivo.cs" />
-    <Compile Remove="Migrations\20200820003534_OsYMotivo.Designer.cs" />
-    <Compile Remove="Migrations\20230703133944_PostgreSql.cs" />
-    <Compile Remove="Migrations\20230703133944_PostgreSql.Designer.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
+<ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.10">

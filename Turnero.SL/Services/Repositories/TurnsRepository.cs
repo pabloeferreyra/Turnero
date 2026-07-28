@@ -1,4 +1,3 @@
-﻿using System.Globalization;
 
 namespace Turnero.SL.Services.Repositories;
 
@@ -29,29 +28,17 @@ public class TurnsRepository(ApplicationDbContext context, IMemoryCache cache) :
     public List<Turn> GetList(DateTime? date, Guid? id)
     {
         object[] param;
-        var formattedDate = new StringBuilder();
-        if (date != null)
-        {
-            var dat = $"'{date.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}'";
-            formattedDate.Append(dat);
-        }
-        else
-        {
-            var dat = $"'{DateTime.Today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}'";
-            formattedDate.Append(dat);
-        }
+        var dateValue = date ?? DateTime.Today;
+
         if (id != null)
         {
             param = new object[2];
-            param[0] = formattedDate.ToString();
+            param[0] = dateValue;
             param[1] = id.Value;
         }
         else
         {
-            param =
-            [
-                formattedDate.ToString()
-            ];
+            param = [dateValue];
         }
 
         return CallStoredProcedure("GetTurns", param);

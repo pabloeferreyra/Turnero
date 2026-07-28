@@ -57,13 +57,13 @@ public abstract class RepositoryBase<T>(ApplicationDbContext context, IMemoryCac
 
     public List<T> CallStoredProcedure(string procedureName, params object[] parameters)
     {
-        var sqlParameters = new List<SqlParameter>();
+        var sqlParameters = new List<NpgsqlParameter>();
         var sqlParametersString = new StringBuilder();
 
         for (int i = 0; i < parameters.Length; i++)
         {
             var parameterName = $"@p{i}";
-            var sqlParameter = new SqlParameter(parameterName, parameters[i]);
+            var sqlParameter = new NpgsqlParameter(parameterName, parameters[i]);
             sqlParameters.Add(sqlParameter);
             sqlParametersString.Append(parameterName);
 
