@@ -50,7 +50,7 @@ services:
         protocol: tcp
         mode: host
     volumes:
-      - ${REMOTE_DEPLOY_PATH:-/root/turneroTst}/.env:/app/.env:ro
+      - ${REMOTE_DEPLOY_PATH:-/root/turneroApp}/.env:/app/.env:ro
       - ${FIREBASE_CREDENTIALS_FILE:-/root/.microsoft/usersecrets/aspnet-Turnero-1D8EA02B-D124-439A-B5F8-DE2044EFFABA/firebase.json}:/run/secrets/firebase.json:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
     healthcheck:
