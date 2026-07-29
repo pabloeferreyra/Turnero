@@ -34,6 +34,7 @@ public class PerinatalBackgroundController(IGetPerinatalBackgroundService get,
                 return BadRequest();
             }
             await update.Update(data);
+            await InvalidateCacheAsync($"perinatalBackground:{data.Id}");
             return await Index(data.Id);
         }
         catch (Exception ex)

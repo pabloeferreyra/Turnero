@@ -1,4 +1,5 @@
-﻿using Moq;
+﻿using Microsoft.Extensions.Caching.Memory;
+using Moq;
 using Turnero.DAL.Models;
 using Turnero.SL.Services;
 using Turnero.SL.Services.Repositories;
@@ -11,13 +12,25 @@ public class GetTurnsServicesTests
 {
     private readonly Mock<LoggerService> _loggerMock;
     private readonly Mock<ITurnRepository> _turnRepositoryMock;
+    private readonly Mock<RedisCacheService> _redisCacheMock;
+    private readonly IMemoryCache _memoryCache;
     private readonly GetTurnsServices _getTurnsServices;
 
     public GetTurnsServicesTests()
     {
         _loggerMock = new Mock<LoggerService>();
         _turnRepositoryMock = new Mock<ITurnRepository>();
-        _getTurnsServices = new GetTurnsServices(_loggerMock.Object, _turnRepositoryMock.Object);
+
+        // Create a real RedisConnectionService with short timeouts (Redis not needed in tests)
+        var redisConnection = new RedisConnectionService("localhost:6379,connectTimeout=100,syncTimeout=100");
+        _redisCacheMock = new Mock<RedisCacheService>(redisConnection, _loggerMock.Object);
+        _redisCacheMock.Setup(r => r.Get<List<Turn>>(It.IsAny<string>()))
+            .Returns((List<Turn>?)null);
+        _redisCacheMock.Setup(r => r.Set(It.IsAny<string>(), It.IsAny<List<Turn>>(), It.IsAny<TimeSpan?>()))
+            .Callback(() => { });
+
+        _memoryCache = new MemoryCache(new MemoryCacheOptions());
+        _getTurnsServices = new GetTurnsServices(_loggerMock.Object, _turnRepositoryMock.Object, _redisCacheMock.Object, _memoryCache);
     }
 
     [Fact]

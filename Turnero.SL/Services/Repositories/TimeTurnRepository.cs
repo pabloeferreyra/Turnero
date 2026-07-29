@@ -1,6 +1,6 @@
 ﻿namespace Turnero.SL.Services.Repositories;
 
-public class TimeTurnRepository(ApplicationDbContext context, IMemoryCache cache) : RepositoryBase<TimeTurn>(context, cache), ITimeTurnRepository
+public class TimeTurnRepository(ApplicationDbContext context, IMemoryCache cache, RedisCacheService redisCache) : RepositoryBase<TimeTurn>(context, cache, redisCache), ITimeTurnRepository
 {
     public async Task<List<TimeTurn>> GetList()
     {

@@ -4,10 +4,16 @@ public class GetPermMedService(IPermMedRepository permMedRepository) : IGetPermM
 {
     public async Task<List<PermMed>> Get(Guid patientId)
     {
-        return await permMedRepository.GetByPatientId(patientId);
+        return await permMedRepository.GetCachedByPatientId(patientId);
+    }
+
+    public async Task<PermMed?> GetById(Guid id)
+    {
+        return await permMedRepository.GetById(id);
     }
 }
 public interface IGetPermMedService
 {
     Task<List<PermMed>> Get(Guid patientId);
+    Task<PermMed?> GetById(Guid id);
 }

@@ -3,6 +3,8 @@
 [Authorize(Roles = RolesConstants.Admin)]
 public class AdministrationController(RoleManager<IdentityRole> roleManager,
                                 UserManager<IdentityUser> userManager,
+                                RedisCacheService redisCache,
+                                IMemoryCache memoryCache,
                                 ILogger<AdministrationController> logger) : TurneroBaseController
 {
 
@@ -253,6 +255,50 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
     {
         await roleManager.CreateAsync(role);
         return RedirectToAction(nameof(ListRoles));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> CacheStats()
+    {
+        try
+        {
+            var entries = await redisCache.GetAllKeysAsync();
+            ViewBag.IsConnected = redisCache.IsConnected;
+            ViewBag.TotalEntries = entries.Count;
+            ViewBag.TotalHits = entries.Sum(e => e.Hits);
+            ViewBag.TotalMisses = entries.Sum(e => e.Misses);
+            return View(entries);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error fetching cache stats");
+            TempData["CacheError"] = $"Error al obtener estadísticas de cache: {ex.Message}";
+            return View(new List<CacheEntryInfo>());
+        }
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> ClearCache(string key)
+    {
+        if (string.IsNullOrEmpty(key))
+        {
+            return BadRequest("Key is required.");
+        }
+        try
+        {
+            // Clear from both Redis and local memory cache
+            await redisCache.RemoveAsync(key);
+            memoryCache.Remove(key);
+            // Publish invalidation so other instances clear their local cache
+            await redisCache.PublishAsync("cache:invalidate", key);
+            TempData["CacheMessage"] = $"Cache key '{key}' eliminado correctamente.";
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error clearing cache key {Key}", key);
+            TempData["CacheError"] = $"Error al eliminar key '{key}': {ex.Message}";
+        }
+        return RedirectToAction(nameof(CacheStats));
     }
 
     [HttpGet]

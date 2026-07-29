@@ -65,7 +65,7 @@ public class VaccinesServicesTests
         // Arrange
         var patientId = Guid.NewGuid();
         var vaccines = new List<Vaccines> { new() { Id = Guid.NewGuid(), PatientId = patientId, Description = "Polio" } };
-        _vaccinesRepositoryMock.Setup(repo => repo.GetByPatientId(patientId)).ReturnsAsync(vaccines);
+        _vaccinesRepositoryMock.Setup(repo => repo.GetCachedByPatientId(patientId)).ReturnsAsync(vaccines);
         var service = new GetVaccinesServices(_loggerMock.Object, _vaccinesRepositoryMock.Object);
 
         // Act
@@ -79,7 +79,7 @@ public class VaccinesServicesTests
     [Fact]
     public async Task GetByPatientId_ShouldThrowOnException()
     {
-        _vaccinesRepositoryMock.Setup(repo => repo.GetByPatientId(It.IsAny<Guid>()))
+        _vaccinesRepositoryMock.Setup(repo => repo.GetCachedByPatientId(It.IsAny<Guid>()))
             .ThrowsAsync(new Exception("DB error"));
         var service = new GetVaccinesServices(_loggerMock.Object, _vaccinesRepositoryMock.Object);
 

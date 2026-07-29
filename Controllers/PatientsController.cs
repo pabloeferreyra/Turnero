@@ -62,6 +62,7 @@ public class PatientsController(IInsertPatientService insertPatient,
                 return BadRequest();
             }
             await insertPatient.InsertPatient(patient);
+            await InvalidateCacheAsync("patients");
             return Ok();
         }
         catch (Exception)
@@ -95,15 +96,28 @@ public class PatientsController(IInsertPatientService insertPatient,
                 return BadRequest();
             }
             await updatePatient.UpdatePatient(patient);
+            await InvalidateCacheAsync("patients");
             return Ok();
         }
         catch (Exception)
         {
             return Conflict();
         }
-    }                              
+    }
 
-
-
-
+    [HttpDelete, ActionName("Delete")]
+    [Authorize(Roles = RolesConstants.Admin + ", " + RolesConstants.Medico)]
+    public async Task<StatusCodeResult> DeletePatient(Guid id)
+    {
+        try
+        {
+            await updatePatient.DeletePatient(id);
+            await InvalidateCacheAsync("patients");
+            return Ok();
+        }
+        catch (Exception)
+        {
+            return Conflict();
+        }
+    }
 }

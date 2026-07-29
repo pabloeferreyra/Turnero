@@ -38,6 +38,7 @@ public class ParentsDataController(
         try
         {
             await updateParentsData.UpdateParentsData(data);
+            await InvalidateCacheAsync($"parentsData:{data.Id}");
             var Data = await getParentsData.GetParentsData(data.Id);
             return PartialView("_Details", Data);
         }
@@ -49,7 +50,7 @@ public class ParentsDataController(
     }
 
     [HttpDelete]
-    public IActionResult Delete([FromBody] ParentsData data)
+    public async Task<IActionResult> Delete([FromBody] ParentsData data)
     {
         try
         {
@@ -58,6 +59,7 @@ public class ParentsDataController(
                 return BadRequest();
             }
             deleteParentsData.DeleteParentsData(data);
+            await InvalidateCacheAsync($"parentsData:{data.Id}");
             return Ok();
         }
         catch (Exception ex)

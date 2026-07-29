@@ -195,7 +195,7 @@ if (!string.IsNullOrWhiteSpace(firebaseCredentialsPath) && File.Exists(firebaseC
 }
 #endregion
 
-builder.Services.AddScoped<LoggerService>();
+builder.Services.AddSingleton<LoggerService>();
 
 #region Dependency Injection - Services
 // Turn Services
@@ -313,8 +313,32 @@ builder.Services.AddWindowsService();
 #region Caching
 builder.Services.AddMemoryCache(options =>
 {
-    options.ExpirationScanFrequency = TimeSpan.FromDays(7);
+    options.ExpirationScanFrequency = TimeSpan.FromMinutes(10);
 });
+
+// Redis distributed cache
+var redisConnectionString = builder.Configuration["Redis:ConnectionString"]
+    ?? builder.Configuration["ConnectionStrings:Redis"]
+    ?? "localhost:6379";
+
+builder.Services.AddSingleton(sp =>
+{
+    try
+    {
+        return new RedisConnectionService(redisConnectionString);
+    }
+    catch (Exception ex)
+    {
+        var logger = sp.GetRequiredService<ILogger<Program>>();
+        logger.LogWarning(ex, "Redis connection failed. Cache will fall back to IMemoryCache only.");
+        throw; // Re-throw - AbortOnConnectFail=false in RedisConnectionService handles graceful degradation
+    }
+});
+
+builder.Services.AddScoped<RedisCacheService>();
+
+// Cross-instance cache invalidation via Redis Pub/Sub
+builder.Services.AddHostedService<CacheInvalidationHostedService>();
 #endregion
 
 #region Response Compression
@@ -344,9 +368,19 @@ using (var scope = app.Services.CreateScope())
 {
     var timeTurnsRepository = scope.ServiceProvider.GetRequiredService<ITimeTurnRepository>();
     var medicsRepository = scope.ServiceProvider.GetRequiredService<IMedicRepository>();
+    var patientsRepository = scope.ServiceProvider.GetRequiredService<IPatientRepository>();
 
-    await timeTurnsRepository.GetCachedTimes();
-    await medicsRepository.GetCachedMedics();
+    try
+    {
+        await timeTurnsRepository.GetCachedTimes();
+        await medicsRepository.GetCachedMedics();
+        await patientsRepository.GetCachedPatients();
+        app.Logger.LogInformation("Cache initialized: medics, timeTurns, and patients loaded.");
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogWarning(ex, "Cache initialization warning (Redis may be unavailable). App will continue with DB fallback.");
+    }
 }
 #endregion
 
@@ -369,13 +403,6 @@ else
     app.UseStatusCodePagesWithReExecute("/Error/{0}");
     app.UseHsts();
 }
-
-// Custom cache control middleware
-app.Use(async (context, next) =>
-{
-    context.Response.Headers.CacheControl = "public, max-age=300";
-    await next();
-});
 
 app.UseResponseCompression();
 app.UseHttpsRedirection();

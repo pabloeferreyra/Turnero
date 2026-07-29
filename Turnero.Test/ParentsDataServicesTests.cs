@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Caching.Memory;
 using Moq;
 using Turnero.DAL.Models;
 using Turnero.SL.Services;
@@ -11,11 +12,20 @@ public class ParentsDataServicesTests
 {
     private readonly Mock<LoggerService> _loggerMock;
     private readonly Mock<IParentsDataRepository> _repositoryMock;
+    private readonly Mock<RedisCacheService> _redisCacheMock;
+    private readonly IMemoryCache _memoryCache;
 
     public ParentsDataServicesTests()
     {
         _loggerMock = new Mock<LoggerService>();
         _repositoryMock = new Mock<IParentsDataRepository>();
+        var redisConnection = new RedisConnectionService("localhost:6379,connectTimeout=100,syncTimeout=100");
+        _redisCacheMock = new Mock<RedisCacheService>(redisConnection, _loggerMock.Object);
+        _redisCacheMock.Setup(r => r.GetAsync<ParentsData>(It.IsAny<string>()))
+            .ReturnsAsync((ParentsData?)null);
+        _redisCacheMock.Setup(r => r.SetAsync(It.IsAny<string>(), It.IsAny<ParentsData>(), It.IsAny<TimeSpan?>()))
+            .Returns(Task.CompletedTask);
+        _memoryCache = new MemoryCache(new MemoryCacheOptions());
     }
 
     #region GetParentsDataService
@@ -27,7 +37,7 @@ public class ParentsDataServicesTests
         var id = Guid.NewGuid();
         var entity = new ParentsData { Id = id };
         _repositoryMock.Setup(repo => repo.Get(id)).ReturnsAsync(entity);
-        var service = new GetParentsDataService(_repositoryMock.Object);
+        var service = new GetParentsDataService(_repositoryMock.Object, _redisCacheMock.Object, _memoryCache);
 
         // Act
         var result = await service.GetParentsData(id);
@@ -41,7 +51,7 @@ public class ParentsDataServicesTests
     public async Task GetParentsData_ShouldReturnNullWhenNotFound()
     {
         _repositoryMock.Setup(repo => repo.Get(It.IsAny<Guid>())).ReturnsAsync((ParentsData?)null);
-        var service = new GetParentsDataService(_repositoryMock.Object);
+        var service = new GetParentsDataService(_repositoryMock.Object, _redisCacheMock.Object, _memoryCache);
 
         var result = await service.GetParentsData(Guid.NewGuid());
 

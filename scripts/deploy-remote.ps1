@@ -293,6 +293,15 @@ if [ -z "`${ConnectionStrings__PostgresConnection:-}" ]; then
     exit 1
 fi
 
+# ── Redis validation ──
+if [ -z "`${Redis__ConnectionString:-}" ]; then
+    echo "Warning: Redis__ConnectionString not found in .env. Defaulting to 'redis:6379' for Swarm." >&2
+    export Redis__ConnectionString="redis:6379"
+else
+    echo "   Redis__ConnectionString=`${Redis__ConnectionString}"
+fi
+# ──────────────────────
+
 if [ '$stackFileName' = 'docker-stack.tls.yml' ]; then
     tls_domain=`$(printf '%s' "`${LETSENCRYPT_DOMAIN:-}" | tr -d '\r' | sed -e 's/^"//' -e 's/"`$//' -e 's/^[[:space:]]*//' -e 's/[[:space:]]*`$//')
 

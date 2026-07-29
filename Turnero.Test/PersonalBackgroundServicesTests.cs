@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Caching.Memory;
 using Moq;
 using Turnero.DAL.Models;
 using Turnero.SL.Services;
@@ -11,11 +12,20 @@ public class PersonalBackgroundServicesTests
 {
     private readonly Mock<LoggerService> _loggerMock;
     private readonly Mock<IPersonalBackgroundRepository> _repositoryMock;
+    private readonly Mock<RedisCacheService> _redisCacheMock;
+    private readonly IMemoryCache _memoryCache;
 
     public PersonalBackgroundServicesTests()
     {
         _loggerMock = new Mock<LoggerService>();
         _repositoryMock = new Mock<IPersonalBackgroundRepository>();
+        var redisConnection = new RedisConnectionService("localhost:6379,connectTimeout=100,syncTimeout=100");
+        _redisCacheMock = new Mock<RedisCacheService>(redisConnection, _loggerMock.Object);
+        _redisCacheMock.Setup(r => r.GetAsync<PersonalBackground>(It.IsAny<string>()))
+            .ReturnsAsync((PersonalBackground?)null);
+        _redisCacheMock.Setup(r => r.SetAsync(It.IsAny<string>(), It.IsAny<PersonalBackground>(), It.IsAny<TimeSpan?>()))
+            .Returns(Task.CompletedTask);
+        _memoryCache = new MemoryCache(new MemoryCacheOptions());
     }
 
     #region GetPersonalBackgroundService
@@ -27,7 +37,7 @@ public class PersonalBackgroundServicesTests
         var id = Guid.NewGuid();
         var entity = new PersonalBackground { Id = id };
         _repositoryMock.Setup(repo => repo.Get(id)).ReturnsAsync(entity);
-        var service = new GetPersonalBackgroundService(_loggerMock.Object, _repositoryMock.Object);
+        var service = new GetPersonalBackgroundService(_loggerMock.Object, _repositoryMock.Object, _redisCacheMock.Object, _memoryCache);
 
         // Act
         var result = await service.GetPersonalBackground(id);
@@ -41,7 +51,7 @@ public class PersonalBackgroundServicesTests
     public async Task GetPersonalBackground_ShouldThrowWhenNotFound()
     {
         _repositoryMock.Setup(repo => repo.Get(It.IsAny<Guid>())).ReturnsAsync((PersonalBackground?)null);
-        var service = new GetPersonalBackgroundService(_loggerMock.Object, _repositoryMock.Object);
+        var service = new GetPersonalBackgroundService(_loggerMock.Object, _repositoryMock.Object, _redisCacheMock.Object, _memoryCache);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => service.GetPersonalBackground(Guid.NewGuid()));
     }
@@ -51,7 +61,7 @@ public class PersonalBackgroundServicesTests
     {
         _repositoryMock.Setup(repo => repo.Get(It.IsAny<Guid>()))
             .ThrowsAsync(new Exception("DB error"));
-        var service = new GetPersonalBackgroundService(_loggerMock.Object, _repositoryMock.Object);
+        var service = new GetPersonalBackgroundService(_loggerMock.Object, _repositoryMock.Object, _redisCacheMock.Object, _memoryCache);
 
         await Assert.ThrowsAsync<Exception>(() => service.GetPersonalBackground(Guid.NewGuid()));
         _loggerMock.Verify(l => l.Log(It.IsAny<string>()), Times.Once);

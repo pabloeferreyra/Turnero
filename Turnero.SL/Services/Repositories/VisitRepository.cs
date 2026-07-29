@@ -1,6 +1,6 @@
 namespace Turnero.SL.Services.Repositories;
 
-public class VisitRepository(ApplicationDbContext context, IMemoryCache cache) : RepositoryBase<Visit>(context, cache), IVisitRepository
+public class VisitRepository(ApplicationDbContext context, IMemoryCache cache, RedisCacheService redisCache) : RepositoryBase<Visit>(context, cache, redisCache), IVisitRepository
 {
     public async Task<Visit?> Get(Guid? id)
     {

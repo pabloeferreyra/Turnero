@@ -56,6 +56,7 @@ public class PermMedController(IGetPermMedService get,
         try
         {
             await insert.Create(permMed);
+            await InvalidateCacheAsync($"permMed:{permMed.PatientId}");
             logger.LogInformation("Permanent medication created successfully for patient {PatientId}", permMed.PatientId);
             return Ok();
         }
@@ -73,7 +74,12 @@ public class PermMedController(IGetPermMedService get,
             return BadRequest();
         try
         {
+            var permMed = await get.GetById(id.Value);
             await delete.Delete(id.Value);
+            if (permMed != null)
+            {
+                await InvalidateCacheAsync($"permMed:{permMed.PatientId}");
+            }
             logger.LogInformation("Permanent medication with ID {PermMedId} deleted successfully", id);
             return Ok();
         }

@@ -1,6 +1,6 @@
 ﻿namespace Turnero.SL.Services.Repositories;
 
-public class PermMedRepository(ApplicationDbContext context, IMemoryCache cache) : RepositoryBase<PermMed>(context, cache), IPermMedRepository
+public class PermMedRepository(ApplicationDbContext context, IMemoryCache cache, RedisCacheService redisCache) : RepositoryBase<PermMed>(context, cache, redisCache), IPermMedRepository
 {
     public async Task<List<PermMed>> GetByPatientId(Guid patientId)
     {
@@ -8,6 +8,17 @@ public class PermMedRepository(ApplicationDbContext context, IMemoryCache cache)
             .Include(p => p.Patient)
             .ToListAsync();
     }
+
+    public async Task<List<PermMed>> GetCachedByPatientId(Guid patientId)
+    {
+        return await GetCachedData($"permMed:{patientId}", () => GetByPatientId(patientId));
+    }
+
+    public async Task<PermMed?> GetById(Guid id)
+    {
+        return await FindByCondition(p => p.Id == id).FirstOrDefaultAsync();
+    }
+
     public async Task Insert(PermMed permMed)
     {
         Create(permMed);
@@ -25,6 +36,8 @@ public class PermMedRepository(ApplicationDbContext context, IMemoryCache cache)
 public interface IPermMedRepository
 {
     Task<List<PermMed>> GetByPatientId(Guid patientId);
+    Task<List<PermMed>> GetCachedByPatientId(Guid patientId);
+    Task<PermMed?> GetById(Guid id);
     Task Insert(PermMed permMed);
     Task Remove(Guid id);
 }

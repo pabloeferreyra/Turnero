@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Turnero - Estructura del Proyecto</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --primary: #0d6efd;
+      --secondary: #6c757d;
+      --success: #198754;
+      --warning: #ffc107;
+      --danger: #dc3545;
+      --info: #0dcaf0;
+      --dark: #212529;
+    }
+    body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #f8f9fc; }
+    .sidebar { position: sticky; top: 0; height: 100vh; overflow-y: auto; background: var(--dark); }
+    .sidebar .nav-link { color: rgba(255,255,255,.7); border-left: 3px solid transparent; padding: .5rem 1rem; font-size: .9rem; }
+    .sidebar .nav-link:hover, .sidebar .nav-link.active { color: #fff; background: rgba(255,255,255,.1); border-left-color: var(--primary); }
+    .sidebar .nav-link i { width: 20px; text-align: center; margin-right: 8px; }
+    .sidebar h6 { color: rgba(255,255,255,.4); font-size: .75rem; text-transform: uppercase; letter-spacing: 1px; padding: 1rem 1rem .5rem; margin: 0; }
+    .content { padding: 2rem; max-width: 1200px; }
+    h2 { font-weight: 700; margin-top: 2rem; margin-bottom: 1.5rem; padding-bottom: .5rem; border-bottom: 2px solid var(--primary); }
+    h2:first-of-type { margin-top: 0; }
+    h3 { font-weight: 600; font-size: 1.2rem; margin-top: 1.5rem; }
+    .badge-tech { font-size: .75rem; font-weight: 500; padding: .25em .6em; }
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .entity-card { border: none; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.06); transition: transform .15s, box-shadow .15s; }
+    .entity-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,.1); }
+    .entity-card .card-header { border-radius: 12px 12px 0 0 !important; font-weight: 600; padding: .6rem 1rem; }
+    .prop-list { list-style: none; padding: 0; margin: 0; font-size: .85rem; }
+    .prop-list li { padding: .25rem 0; border-bottom: 1px solid #f0f0f0; }
+    .prop-list li:last-child { border-bottom: none; }
+    .prop-key { font-family: 'Cascadia Code', 'Fira Code', monospace; color: var(--primary); }
+    .diagram { background: #fff; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,.06); margin-bottom: 2rem; overflow-x: auto; }
+    .diagram pre { margin: 0; font-size: .85rem; line-height: 1.5; }
+    .layer-box { border-left: 4px solid var(--primary); padding: .75rem 1rem; margin-bottom: .75rem; background: #fff; border-radius: 0 8px 8px 0; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
+    .layer-box h5 { margin: 0 0 .25rem; font-weight: 600; font-size: 1rem; }
+    .layer-box p { margin: 0; font-size: .85rem; color: var(--secondary); }
+    .color-dal { border-left-color: #e83e8c; }
+    .color-sl { border-left-color: #0d6efd; }
+    .color-util { border-left-color: #fd7e14; }
+    .color-web { border-left-color: #198754; }
+    .color-test { border-left-color: #6f42c1; }
+    .table-sm-cache { font-size: .85rem; }
+    .table-sm-cache th { font-weight: 600; background: #f8f9fc; }
+    .key-cell { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: .8rem; }
+    .footer-note { text-align: center; padding: 2rem 0; color: var(--secondary); font-size: .85rem; }
+    .accordion-button:not(.collapsed) { background: #e7f1ff; color: var(--primary); font-weight: 600; }
+    .accordion-button:focus { box-shadow: none; border-color: rgba(13,110,253,.25); }
+    .mermaid-wrapper { background: #fff; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,.06); margin-bottom: 2rem; overflow-x: auto; text-align: center; }
+    .mermaid-wrapper svg { max-width: 100%; height: auto; }
+    @media (max-width: 768px) { .sidebar { display: none; } .content { padding: 1rem; } }
+  </style>
+</head>
+<body>
+  <div class="d-flex">
+    <!-- Sidebar -->
+    <nav class="sidebar d-none d-md-block" style="width: 260px; min-width: 260px;">
+      <div class="p-3 text-white" style="border-bottom: 1px solid rgba(255,255,255,.1);">
+        <h5 class="mb-0"><i class="bi bi-hospital"></i> Turnero</h5>
+        <small class="text-white-50">v3.0.1 &middot; .NET 10</small>
+      </div>
+      <div class="py-2">
+        <h6>Proyecto</h6>
+        <a href="#intro" class="nav-link"><i class="bi bi-info-circle"></i> Introducción</a>
+        <a href="#arquitectura" class="nav-link"><i class="bi bi-layers"></i> Arquitectura</a>
+        <a href="#flujo" class="nav-link"><i class="bi bi-diagram-3"></i> Flujo de Datos</a>
+        <a href="#database" class="nav-link"><i class="bi bi-database"></i> Base de Datos</a>
+        <a href="#er-diagram" class="nav-link" style="padding-left: 2.5rem; font-size: .8rem;"><i class="bi bi-diagram-3"></i> Diagrama ER</a>
+        <a href="#caching" class="nav-link"><i class="bi bi-database-gear"></i> Caching</a>
+        <h6>Código</h6>
+        <a href="#controllers" class="nav-link"><i class="bi bi-controller"></i> Controladores</a>
+        <a href="#services" class="nav-link"><i class="bi bi-gear"></i> Servicios</a>
+        <a href="#repositories" class="nav-link"><i class="bi bi-server"></i> Repositorios</a>
+        <a href="#frontend" class="nav-link"><i class="bi bi-window-stack"></i> Frontend</a>
+        <a href="#tests" class="nav-link"><i class="bi bi-check-circle"></i> Tests</a>
+        <h6>Operaciones</h6>
+        <a href="#deployment" class="nav-link"><i class="bi bi-rocket-takeoff"></i> Deploy</a>
+        <a href="#deploy-diagram" class="nav-link" style="padding-left: 2.5rem; font-size: .8rem;"><i class="bi bi-diagram-3"></i> Infraestructura</a>
+        <a href="#auth" class="nav-link"><i class="bi bi-shield-lock"></i> Auth</a>
+      </div>
+    </nav>
+
+    <!-- Content -->
+    <main class="content flex-grow-1">
+
+      <!-- INTRO -->
+      <section id="intro">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="bg-primary text-white rounded-3 p-3" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+            <i class="bi bi-hospital fs-2"></i>
+          </div>
+          <div>
+            <h1 class="mb-0 fw-bold">Turnero</h1>
+            <p class="text-muted mb-0">Sistema de Gestión de Turnos Médicos</p>
+          </div>
+        </div>
+        <div class="row g-3 mb-4">
+          <div class="col-md-3 col-6">
+            <div class="border rounded-3 p-3 text-center bg-white shadow-sm">
+              <div class="fs-3 fw-bold text-primary">.NET 10</div>
+              <small class="text-muted">Framework</small>
+            </div>
+          </div>
+          <div class="col-md-3 col-6">
+            <div class="border rounded-3 p-3 text-center bg-white shadow-sm">
+              <div class="fs-3 fw-bold text-success">221</div>
+              <small class="text-muted">Tests Unitarios</small>
+            </div>
+          </div>
+          <div class="col-md-3 col-6">
+            <div class="border rounded-3 p-3 text-center bg-white shadow-sm">
+              <div class="fs-3 fw-bold text-info">13</div>
+              <small class="text-muted">Entidades</small>
+            </div>
+          </div>
+          <div class="col-md-3 col-6">
+            <div class="border rounded-3 p-3 text-center bg-white shadow-sm">
+              <div class="fs-3 fw-bold text-warning">3</div>
+              <small class="text-muted">Capas</small>
+            </div>
+          </div>
+        </div>
+        <p class="text-muted">Aplicación web MVC para gestión de consultorios médicos. Manejo de pacientes, turnos, historias clínicas, vacunas, alergias, crecimiento, y más. Autenticación híbrida Firebase + ASP.NET Identity.</p>
+      </section>
+
+      <!-- ARQUITECTURA -->
+      <section id="arquitectura">
+        <h2><i class="bi bi-layers me-2"></i>Arquitectura</h2>
+        <p>Clean Architecture de 3 capas. PostgreSQL como base de datos, Redis como caché distribuido de 2 niveles.</p>
+
+        <div class="diagram">
+          <pre style="text-align: center;">┌─────────────────────────────────────────────────────────┐
+│            🌐 Turnero (ASP.NET Core MVC Web App)        │
+│  Controllers · Views · SignalR Hubs · JS Frontend       │
+│  Excel/PDF Export · Bootstrap 5 · jQuery                │
+└──────────────────────┬──────────────────────────────────┘
+                       │
+┌──────────────────────▼──────────────────────────────────┐
+│          ⚙️ Turnero.SL (Service Layer)                  │
+│  Services (CRUD) · Repositories · Redis Cache           │
+│  Firebase Auth · Logger · Cache Invalidation Pub/Sub    │
+└──────────────────────┬──────────────────────────────────┘
+                       │
+┌──────────────────────▼──────────────────────────────────┐
+│          🗄️ Turnero.DAL (Data Access Layer)             │
+│  EF Core DbContext · Models (13 entidades)              │
+│  PostgreSQL (Npgsql) · Identity Framework               │
+└─────────────────────────────────────────────────────────┘</pre>
+        </div>
+
+        <h3>Capas del Proyecto</h3>
+        <div class="layer-box color-dal">
+          <h5><span class="badge bg-danger me-2">DAL</span> Turnero.DAL</h5>
+          <p>Data Access Layer — DbContext, 13 modelos de entidad, migraciones EF Core. PostgreSQL via Npgsql.</p>
+        </div>
+        <div class="layer-box color-util">
+          <h5><span class="badge bg-warning text-dark me-2">UTIL</span> Turnero.Utilities</h5>
+          <p>Utilidades compartidas — Configuración Mapster, cálculos de fechas, constantes de roles.</p>
+        </div>
+        <div class="layer-box color-sl">
+          <h5><span class="badge bg-primary me-2">SL</span> Turnero.SL</h5>
+          <p>Service Layer — Lógica de negocio, repositorios con caché Redis de 2 niveles, integración Firebase, logging.</p>
+        </div>
+        <div class="layer-box color-web">
+          <h5><span class="badge bg-success me-2">WEB</span> Turnero (Web App)</h5>
+          <p>Presentación — Controladores MVC, Vistas Razor, Hub SignalR, exportación Excel/PDF, frontend Bootstrap.</p>
+        </div>
+        <div class="layer-box color-test">
+          <h5><span class="badge bg-purple me-2" style="background:#6f42c1;">TEST</span> Turnero.Test</h5>
+          <p>221 tests unitarios con xUnit + Moq. Cubre servicios, repositorios, helpers.</p>
+        </div>
+      </section>
+
+      <!-- FLUJO DE DATOS (Mermaid) -->
+      <section id="flujo">
+        <h2><i class="bi bi-diagram-3 me-2"></i>Flujo de Datos</h2>
+        <p>Diagramas Mermaid que ilustran los flujos principales de la aplicación: creación de turnos, consultas con caché, y autenticación.</p>
+
+        <!-- Flow 1: Creación de Turno -->
+        <h3 class="mt-4 mb-3"><span class="badge bg-primary me-2">1</span> Creación de Turno (con Caché + SignalR)</h3>
+        <div class="mermaid-wrapper">
+          <div class="mermaid">
+            sequenceDiagram
+              participant Browser as 🌐 Navegador
+              participant Ctrl as 📋 TurnsController
+              participant Service as ⚙️ TurnServices
+              participant Cache as 🗄️ Redis Cache
+              participant DB as 🐘 PostgreSQL
+              participant Hub as 🔌 SignalR Hub
+
+              Browser->>Ctrl: POST /Turns/Create (form data)
+              Ctrl->>Service: InsertTurn(turnDto)
+              Service->>DB: INSERT INTO Turns
+              DB-->>Service: ✅ Turno creado
+              Service-->>Ctrl: return Ok()
+
+              Ctrl->>Cache: InvalidateCache("turns:{date}:all")
+              Cache-->>Ctrl: ✅ Cache invalidada
+
+              Ctrl->>Hub: SendAsync("UpdateTableDirected", medicName)
+              Hub-->>Browser: 📢 Notificación en tiempo real
+
+              Note over Browser: Otros médicos ven<br/>la tabla actualizada
+          </div>
+        </div>
+
+        <!-- Flow 2: Lectura con Caché Two-Tier -->
+        <h3 class="mt-4 mb-3"><span class="badge bg-success me-2">2</span> Lectura con Caché Two-Tier</h3>
+        <div class="mermaid-wrapper">
+          <div class="mermaid">
+            sequenceDiagram
+              participant App as 🏢 Instancia A
+              participant L1 as ⚡ L1: IMemoryCache
+              participant L2 as 🗄️ L2: Redis
+              participant DB as 🐘 PostgreSQL
+
+              Note over App: GET /Allergies/{patientId}
+
+              App->>L1: Get("allergies:{id}")
+              alt L1 hit!
+                L1-->>App: ✅ Datos desde memoria local
+              else L1 miss
+                App->>L2: GetAsync("allergies:{id}")
+                alt L2 hit!
+                  L2-->>App: ✅ Datos desde Redis
+                  App->>L1: Set("allergies:{id}", data)
+                else L2 miss
+                  App->>DB: SELECT * FROM Allergies WHERE PatientId = @id
+                  DB-->>App: ✅ Datos desde PostgreSQL
+                  App->>L1: Set("allergies:{id}", data)
+                  App->>L2: SetAsync("allergies:{id}", data)
+                end
+              end
+              App-->>App: Return data
+          </div>
+        </div>
+
+        <!-- Flow 3: Invalidación Cross-Instancia -->
+        <h3 class="mt-4 mb-3"><span class="badge bg-warning text-dark me-2">3</span> Invalidación Cross-Instancia via Pub/Sub</h3>
+        <div class="mermaid-wrapper">
+          <div class="mermaid">
+            sequenceDiagram
+              participant InstA as 🏢 Instancia A<br/>(crea turno)
+              participant Redis as 🗄️ Redis
+              participant Sub as 📡 Pub/Sub<br/>cache:invalidate
+              participant InstB as 🏢 Instancia B
+              participant L1B as ⚡ L1 B: IMemoryCache
+
+              InstA->>Redis: KeyDelete("medics")
+              InstA->>Sub: Publish("cache:invalidate", "medics")
+
+              Sub-->>InstB: 📩 Mensaje recibido
+
+              InstB->>L1B: Remove("medics")
+              L1B-->>InstB: ✅ Cache local B limpiado
+
+              Note over InstB: Próxima consulta<br/>recarga desde Redis o DB
+          </div>
+        </div>
+
+        <!-- Flow 4: Autenticación -->
+        <h3 class="mt-4 mb-3"><span class="badge bg-danger me-2">4</span> Autenticación Híbrida (Firebase + Identity)</h3>
+        <div class="mermaid-wrapper">
+          <div class="mermaid">
+            sequenceDiagram
+              participant User as 👤 Usuario
+              participant Browser as 🌐 Login.cshtml
+              participant Firebase as 🔥 Firebase Auth
+              participant App as 🏢 App Web
+              participant Identity as 🔐 ASP.NET Identity
+
+              User->>Browser: Ingresa credenciales
+              Browser->>Firebase: POST /signInWithPassword
+              Firebase-->>Browser: ✅ idToken + localId
+
+              Browser->>App: POST /api/auth/login {idToken}
+              App->>Firebase: VerifyIdTokenAsync(idToken)
+              Firebase-->>App: ✅ FirebaseToken (uid)
+
+              App->>Identity: FindByIdAsync(uid)
+              alt Usuario existe
+                Identity-->>App: ✅ IdentityUser
+              else No existe
+                App->>Identity: CreateAsync(user) + AddToRoleAsync
+                Identity-->>App: ✅ Nuevo usuario creado
+              end
+
+              App->>Browser: HttpOnly cookie + redirect
+              Browser-->>User: ✅ Sesión iniciada
+          </div>
+        </div>
+
+        <!-- Flow 5: Dashboard de Cache -->
+        <h3 class="mt-4 mb-3"><span class="badge bg-info me-2">5</span> Dashboard de Administración de Cache</h3>
+        <div class="mermaid-wrapper">
+          <div class="mermaid">
+            sequenceDiagram
+              participant Admin as 👤 Admin
+              participant Ctrl as 📋 AdministrationController
+              participant Redis as 🗄️ Redis
+              participant L1 as ⚡ IMemoryCache
+              participant Pub as 📡 Pub/Sub
+
+              Admin->>Ctrl: GET /Administration/CacheStats
+
+              Ctrl->>Redis: GetAllKeysAsync() (SCAN)
+              Redis-->>Ctrl: keys + TTL + type
+
+              Ctrl->>Redis: Stats (hits/misses)
+              Redis-->>Ctrl: ConcurrentDictionary
+
+              Ctrl-->>Admin: ✅ Dashboard con tarjetas + tabla
+
+              Note over Admin: Ve estado, hit rate,<br/>TTL de cada key
+
+              Admin->>Ctrl: POST ClearCache("medics")
+              Ctrl->>Redis: KeyDelete("medics")
+              Ctrl->>L1: Remove("medics")
+              Ctrl->>Pub: Publish("cache:invalidate", "medics")
+              Pub-->>Admin: ✅ Cache limpiado
+          </div>
+        </div>
+
+        <!-- Flow 6: Arquitectura General -->
+        <h3 class="mt-4 mb-3"><span class="badge bg-secondary me-2">6</span> Diagrama de Arquitectura General</h3>
+        <div class="mermaid-wrapper">
+          <div class="mermaid">
+            graph TB
+              subgraph Frontend ["🌐 Frontend (Navegador)"]
+                Views["Vistas Razor<br/>Bootstrap 5 + jQuery"]
+                JS["JS Modules<br/>signalR.js, turn.js,<br/>patients.js, ..."]
+                DT["DataTables<br/>Server-side"]
+              end
+
+              subgraph WebApp ["🏢 Turnero Web App (ASP.NET Core MVC)"]
+                direction TB
+                Ctrl["Controladores MVC<br/>18 Controllers"]
+                Hub["SignalR Hub<br/>TurnsTableHub"]
+                Auth["Auth<br/>Firebase + Identity<br/>+ JWT"]
+                Excel["Export<br/>Excel/PDF"]
+              end
+
+              subgraph Services ["⚙️ Service Layer (Turnero.SL)"]
+                direction TB
+                S_Turn["Turn Services<br/>Get/Insert/Update/Delete"]
+                S_Patient["Patient Services"]
+                S_Clinic["Clinical Services<br/>Allergies, Vaccines,<br/>GrowthChart, PermMed"]
+                S_History["History Services<br/>ParentsData, PersonalBg,<br/>PerinatalBg, CongErrors"]
+                S_Cross["Cross-Cutting<br/>Logger, Firebase, Cache"]
+              end
+
+              subgraph Cache ["🗄️ Redis Cache"]
+                L1["L1: IMemoryCache<br/>(local, ultra-fast)"]
+                L2["L2: Redis<br/>(distribuido, JSON)"]
+                PubSub["Pub/Sub<br/>cache:invalidate"]
+              end
+
+              subgraph DAL ["🗄️ Data Access (Turnero.DAL)"]
+                DB["🐘 PostgreSQL<br/>ApplicationDbContext"]
+                Models["13 Modelos<br/>Patient, Turn, Medic,<br/>TimeTurn, Visit, ..."]
+                Identity["Identity Framework<br/>Users + Roles"]
+              end
+
+              subgraph Utils ["🔧 Utilities"]
+                Mapster["Mapster Config<br/>Entity ↔ DTO"]
+                Roles["RolesConstants<br/>Admin/Medico/Ingreso"]
+                Dates["DateCalculations<br/>Edad, fechas"]
+              end
+
+              subgraph Tests ["🧪 Tests (221)"]
+                T_Service["Service Tests"]
+                T_Repo["Repository Tests"]
+                T_Helper["Helper Tests"]
+              end
+
+              %% Conexiones
+              Frontend -->|HTTP / SignalR| WebApp
+              WebApp -->|Inyección DI| Services
+              Services -->|Read/Write| Cache
+              Services -->|CRUD| DAL
+              WebApp -->|Dependencia| Utils
+              Tests -->|Prueba| Services
+              DAL -->|Npgsql| DB
+              L1 -.->|Fallback| L2
+              L2 -->|Persistencia| DB
+              PubSub -.->|Invalida| L1
+
+              %% Estilos
+              classDef frontend fill:#e3f2fd,stroke:#1565c0
+              classDef webapp fill:#e8f5e9,stroke:#2e7d32
+              classDef services fill:#fff3e0,stroke:#e65100
+              classDef cache fill:#f3e5f5,stroke:#6a1b9a
+              classDef dal fill:#fce4ec,stroke:#c62828
+              classDef utils fill:#e0f7fa,stroke:#00695c
+              classDef tests fill:#f5f5f5,stroke:#616161
+
+              class Frontend,Views,JS,DT frontend
+              class WebApp,Ctrl,Hub,Auth,Excel webapp
+              class Services,S_Turn,S_Patient,S_Clinic,S_History,S_Cross services
+              class Cache,L1,L2,PubSub cache
+              class DAL,DB,Models,Identity dal
+              class Utils,Mapster,Roles,Dates utils
+              class Tests,T_Service,T_Repo,T_Helper tests
+          </div>
+        </div>
+
+        <div class="row g-3 mt-2">
+          <div class="col-md-4">
+            <div class="card entity-card h-100 text-center p-3">
+              <i class="bi bi-arrow-right-circle fs-1 text-primary"></i>
+              <h6 class="mt-2">Creación de Turno con SignalR</h6>
+              <small class="text-muted">POST → Insert DB → Invalidate Cache → Notificar Médico vía WebSocket</small>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card entity-card h-100 text-center p-3">
+              <i class="bi bi-layers fs-1 text-success"></i>
+              <h6 class="mt-2">Two-Tier Cache Hit Flow</h6>
+              <small class="text-muted">L1: IMemoryCache → L2: Redis → DB. Cada nivel evita ir al siguiente.</small>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card entity-card h-100 text-center p-3">
+              <i class="bi bi-shuffle fs-1 text-warning"></i>
+              <h6 class="mt-2">Invalidación Cross-Instancia</h6>
+              <small class="text-muted">Pub/Sub Redis notifica a todas las réplicas para limpiar su L1 local.</small>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- BASE DE DATOS -->
+      <section id="database">
+        <h2><i class="bi bi-database me-2"></i>Base de Datos</h2>
+        <p><strong>PostgreSQL</strong> via Entity Framework Core + Npgsql. <code>ApplicationDbContext : IdentityDbContext</code></p>
+
+        <div class="accordion mb-4" id="accordionModels">
+          <!-- Patient -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#model-patient">
+                <span class="badge bg-primary me-2">P</span> Patient <small class="text-muted ms-2">(Entidad principal)</small>
+              </button>
+            </h2>
+            <div id="model-patient" class="accordion-collapse collapse" data-bs-parent="#accordionModels">
+              <div class="accordion-body">
+                <p class="small text-muted mb-2">Posee relaciones 1:1 con ParentsData, PersonalBackground, PerinatalBackground, CongErrors. Relaciones 1:N con Turn, Visit, Vaccines, Allergies, PermMed, GrowthChart.</p>
+                <ul class="prop-list">
+                  <li><span class="prop-key">Id</span> (Guid)</li>
+                  <li><span class="prop-key">Name</span> (string)</li>
+                  <li><span class="prop-key">Dni</span> (string, 6-10 chars)</li>
+                  <li><span class="prop-key">BirthDate</span> (date)</li>
+                  <li><span class="prop-key">SocialWork</span> (string?)</li>
+                  <li><span class="prop-key">AffiliateNumber</span> (string?)</li>
+                  <li><span class="prop-key">BloodType</span> (enum)</li>
+                  <li><span class="prop-key">ContactInfo</span> (1:1)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <!-- Turn -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#model-turn">
+                <span class="badge bg-info me-2">T</span> Turn <small class="text-muted ms-2">(Turno / Cita)</small>
+              </button>
+            </h2>
+            <div id="model-turn" class="accordion-collapse collapse" data-bs-parent="#accordionModels">
+              <div class="accordion-body">
+                <ul class="prop-list">
+                  <li><span class="prop-key">Id</span> (Guid) · <span class="prop-key">Name</span> (string) · <span class="prop-key">Dni</span> (long)</li>
+                  <li><span class="prop-key">MedicId</span> (FK → Medic) · <span class="prop-key">DateTurn</span> (date)</li>
+                  <li><span class="prop-key">TimeId</span> (FK → TimeTurn) · <span class="prop-key">SocialWork</span> (string?)</li>
+                  <li><span class="prop-key">Reason</span> (string?) · <span class="prop-key">Accessed</span> (bool)</li>
+                </ul>
+                <p class="small text-muted mt-2 mb-0">DTO: <code>TurnDTO</code> (flattened: Time string, MedicName string, Date string)</p>
+              </div>
+            </div>
+          </div>
+          <!-- Medic -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#model-medic">
+                <span class="badge bg-success me-2">M</span> Medic <small class="text-muted ms-2">(Médico)</small>
+              </button>
+            </h2>
+            <div id="model-medic" class="accordion-collapse collapse" data-bs-parent="#accordionModels">
+              <div class="accordion-body">
+                <ul class="prop-list">
+                  <li><span class="prop-key">Id</span> (Guid) · <span class="prop-key">Name</span> (string?) · <span class="prop-key">UserGuid</span> (string? → IdentityUser)</li>
+                </ul>
+                <p class="small text-muted mt-2 mb-0">DTO: <code>MedicDto</code> (Id, Name)</p>
+              </div>
+            </div>
+          </div>
+          <!-- TimeTurn -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#model-timeturn">
+                <span class="badge bg-secondary me-2">H</span> TimeTurn <small class="text-muted ms-2">(Horario)</small>
+              </button>
+            </h2>
+            <div id="model-timeturn" class="accordion-collapse collapse" data-bs-parent="#accordionModels">
+              <div class="accordion-body">
+                <ul class="prop-list">
+                  <li><span class="prop-key">Id</span> (Guid) · <span class="prop-key">Time</span> (string? — ej. "08:00")</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <!-- Visit -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#model-visit">
+                <span class="badge bg-warning text-dark me-2">V</span> Visit <small class="text-muted ms-2">(Consulta)</small>
+              </button>
+            </h2>
+            <div id="model-visit" class="accordion-collapse collapse" data-bs-parent="#accordionModels">
+              <div class="accordion-body">
+                <ul class="prop-list">
+                  <li><span class="prop-key">Id</span> (Guid) · <span class="prop-key">VisitDate</span> (date) · <span class="prop-key">Reason</span> (string?)</li>
+                  <li><span class="prop-key">Diagnosis</span> (string?) · <span class="prop-key">Treatment</span> (string?)</li>
+                  <li><span class="prop-key">EvolutionNotes</span> · <span class="prop-key">LabResults</span> · <span class="prop-key">OtherStudies</span> · <span class="prop-key">Observations</span></li>
+                  <li><span class="prop-key">PatientId</span> (FK) · <span class="prop-key">MedicId</span> (FK)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <!-- Allergies -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#model-allergies">
+                <span class="badge bg-danger me-2">A</span> Allergies <small class="text-muted ms-2">(Alergias)</small>
+              </button>
+            </h2>
+            <div id="model-allergies" class="accordion-collapse collapse" data-bs-parent="#accordionModels">
+              <div class="accordion-body">
+                <ul class="prop-list">
+                  <li><span class="prop-key">Id</span> (Guid) · <span class="prop-key">Name</span> (string) · <span class="prop-key">PatientId</span> (FK)</li>
+                  <li><span class="prop-key">Begin</span> (DateOnly) · <span class="prop-key">End</span> (DateOnly?)</li>
+                  <li><span class="prop-key">Severity</span> (enum) · <span class="prop-key">Type</span> (enum) · <span class="prop-key">Occurrency</span> (enum)</li>
+                  <li><span class="prop-key">Description</span> (string?) · <span class="prop-key">Comments</span> (string?)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <!-- Vaccines -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#model-vaccines">
+                <span class="badge bg-success me-2">V</span> Vaccines <small class="text-muted ms-2">(Vacunas)</small>
+              </button>
+            </h2>
+            <div id="model-vaccines" class="accordion-collapse collapse" data-bs-parent="#accordionModels">
+              <div class="accordion-body">
+                <ul class="prop-list">
+                  <li><span class="prop-key">Id</span> (Guid) · <span class="prop-key">Description</span> (string?)</li>
+                  <li><span class="prop-key">DateApplied</span> (DateOnly?) · <span class="prop-key">PatientId</span> (FK)</li>
+                </ul>
+                <p class="small text-muted mt-2 mb-0">DTO: <code>VaccinesDto</code> (agrega OtherDescription)</p>
+              </div>
+            </div>
+          </div>
+          <!-- GrowthChart -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#model-growth">
+                <span class="badge bg-primary me-2">G</span> GrowthChart <small class="text-muted ms-2">(Curva de Crecimiento)</small>
+              </button>
+            </h2>
+            <div id="model-growth" class="accordion-collapse collapse" data-bs-parent="#accordionModels">
+              <div class="accordion-body">
+                <ul class="prop-list">
+                  <li><span class="prop-key">Id</span> (Guid) · <span class="prop-key">Age</span> (decimal) · <span class="prop-key">Time</span> (string?)</li>
+                  <li><span class="prop-key">Weight</span> (decimal) · <span class="prop-key">WPerc</span> (string?)</li>
+                  <li><span class="prop-key">Height</span> (decimal) · <span class="prop-key">HPerc</span> (string?)</li>
+                  <li><span class="prop-key">HeadCircumference</span> (decimal) · <span class="prop-key">HCPerc</span> (string?)</li>
+                  <li><span class="prop-key">Bmi</span> (decimal) · <span class="prop-key">PatientId</span> (FK)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <!-- PermMed -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#model-permmed">
+                <span class="badge bg-warning text-dark me-2">P</span> PermMed <small class="text-muted ms-2">(Medicación Permanente)</small>
+              </button>
+            </h2>
+            <div id="model-permmed" class="accordion-collapse collapse" data-bs-parent="#accordionModels">
+              <div class="accordion-body">
+                <ul class="prop-list">
+                  <li><span class="prop-key">Id</span> (Guid) · <span class="prop-key">Description</span> (string?)</li>
+                  <li><span class="prop-key">PatientId</span> (FK)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <!-- ParentsData -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#model-parents">
+                <span class="badge bg-info me-2">D</span> ParentsData <small class="text-muted ms-2">(Datos Parentales — PK compartido)</small>
+              </button>
+            </h2>
+            <div id="model-parents" class="accordion-collapse collapse" data-bs-parent="#accordionModels">
+              <div class="accordion-body">
+                <ul class="prop-list">
+                  <li><span class="prop-key">Id</span> (Guid = PatientId) · <span class="prop-key">FatherName</span> (string?)</li>
+                  <li><span class="prop-key">FatherBirthDate</span> (DateOnly) · <span class="prop-key">FatherBloodType</span> (enum)</li>
+                  <li><span class="prop-key">FatherWork</span> (string?) · <span class="prop-key">MotherName</span> (string?)</li>
+                  <li><span class="prop-key">MotherBirthDate</span> (DateOnly) · <span class="prop-key">MotherBloodType</span> (enum)</li>
+                  <li><span class="prop-key">MotherWork</span> (string?) · <span class="prop-key">BrothersCount</span> (int)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <!-- PersonalBackground -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#model-personal">
+                <span class="badge bg-secondary me-2">A</span> PersonalBackground <small class="text-muted ms-2">(Antecedentes Personales — PK compartido)</small>
+              </button>
+            </h2>
+            <div id="model-personal" class="accordion-collapse collapse" data-bs-parent="#accordionModels">
+              <div class="accordion-body">
+                <p class="small text-muted mb-2">15+ campos bool indicando condiciones médicas (Asma, Diabetes, Cirugías, Alergias, etc.) + campo Other (string?)</p>
+              </div>
+            </div>
+          </div>
+          <!-- PerinatalBackground -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#model-perinatal">
+                <span class="badge bg-danger me-2">P</span> PerinatalBackground <small class="text-muted ms-2">(Antecedentes Perinatales — PK compartido)</small>
+              </button>
+            </h2>
+            <div id="model-perinatal" class="accordion-collapse collapse" data-bs-parent="#accordionModels">
+              <div class="accordion-body">
+                <ul class="prop-list">
+                  <li><span class="prop-key">Id</span> (Guid = PatientId) · <span class="prop-key">Feat</span> (int) · <span class="prop-key">Delivery</span> (int)</li>
+                  <li><span class="prop-key">Cesarean</span> (int) · <span class="prop-key">Abort</span> (int) · <span class="prop-key">Weight</span> (int)</li>
+                  <li><span class="prop-key">Height</span> (int) · <span class="prop-key">CefPer</span> (int) · <span class="prop-key">Apgar1</span> (int) · <span class="prop-key">Apgar5</span> (int)</li>
+                  <li><span class="prop-key">GestAge</span> (int) · <span class="prop-key">Pathologies</span> (string?) · <span class="prop-key">CongErrors</span> (string?)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <!-- CongErrors -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#model-cong">
+                <span class="badge bg-warning text-dark me-2">C</span> CongErrors <small class="text-muted ms-2">(Errores Congénitos — PK compartido)</small>
+              </button>
+            </h2>
+            <div id="model-cong" class="accordion-collapse collapse" data-bs-parent="#accordionModels">
+              <div class="accordion-body">
+                <ul class="prop-list">
+                  <li><span class="prop-key">Id</span> (Guid = PatientId)</li>
+                  <li>6 condiciones (bool + string result): CongHypothyroidism, Phenylalanine, FQP, Biotinidase, Galactosemia, OHP</li>
+                  <li><span class="prop-key">Other</span> (string?)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ER Diagram -->
+        <h3 class="mt-5 mb-3" id="er-diagram"><i class="bi bi-diagram-3 me-2"></i>Diagrama Entidad-Relación</h3>
+        <p>Relaciones entre las 13 entidades del modelo de datos. PK = Primary Key, FK = Foreign Key.</p>
+        <div class="mermaid-wrapper">
+          <div class="mermaid">
+            erDiagram
+              Patient ||--o{ Visit : "tiene"
+              Patient ||--o{ Allergies : "padece"
+              Patient ||--o{ Vaccines : "recibe"
+              Patient ||--o{ GrowthChart : "registra"
+              Patient ||--o{ PermMed : "toma"
+              Patient ||--|| ParentsData : "extiende"
+              Patient ||--|| PersonalBackground : "hereda"
+              Patient ||--|| PerinatalBackground : "hereda"
+              Patient ||--|| CongErrors : "presenta"
+              Patient ||--|| ContactInfo : "tiene"
+
+              Medic ||--o{ Turn : "atiende"
+              Medic ||--o{ Visit : "realiza"
+
+              TimeTurn ||--o{ Turn : "define"
+
+              IdentityUser |o--o| Medic : "asociado a"
+
+              Turn }o--|| Medic : "asignado a"
+              Turn }o--|| TimeTurn : "en horario"
+              Visit }o--|| Patient : "pertenece a"
+              Visit }o--|| Medic : "realizada por"
+
+              Patient {
+                guid Id PK
+                string Name
+                string Dni
+                date BirthDate
+                string SocialWork
+                string AffiliateNumber
+                enum BloodType
+              }
+
+              Medic {
+                guid Id PK
+                string Name
+                string UserGuid FK
+              }
+
+              TimeTurn {
+                guid Id PK
+                string Time
+              }
+
+              Turn {
+                guid Id PK
+                string Name
+                long Dni
+                guid MedicId FK
+                date DateTurn
+                guid TimeId FK
+                string SocialWork
+                string Reason
+                bool Accessed
+              }
+
+              Visit {
+                guid Id PK
+                date VisitDate
+                guid PatientId FK
+                guid MedicId FK
+                string Reason
+                string Diagnosis
+                string Treatment
+                string EvolutionNotes
+              }
+
+              Allergies {
+                guid Id PK
+                string Name
+                guid PatientId FK
+                dateOnly Begin
+                dateOnly End
+                enum Severity
+                enum Type
+                string Description
+              }
+
+              Vaccines {
+                guid Id PK
+                string Description
+                dateOnly DateApplied
+                guid PatientId FK
+              }
+
+              GrowthChart {
+                guid Id PK
+                decimal Age
+                decimal Weight
+                decimal Height
+                decimal HeadCircumference
+                decimal Bmi
+                guid PatientId FK
+              }
+
+              PermMed {
+                guid Id PK
+                string Description
+                guid PatientId FK
+              }
+
+              ParentsData {
+                guid Id PK,FK
+                string FatherName
+                dateOnly FatherBirthDate
+                enum FatherBloodType
+                string MotherName
+                dateOnly MotherBirthDate
+                enum MotherBloodType
+                int BrothersCount
+              }
+
+              PersonalBackground {
+                guid Id PK,FK
+                bool Asthma
+                bool Diabetes
+                bool Surgeries
+                string Other
+              }
+
+              PerinatalBackground {
+                guid Id PK,FK
+                int Feat
+                int Delivery
+                int Weight
+                int Height
+                int GestAge
+              }
+
+              CongErrors {
+                guid Id PK,FK
+                bool CongHypothyroidism
+                bool Phenylalanine
+                bool Galactosemia
+                string Other
+              }
+
+              ContactInfo {
+                guid Id PK
+                string Phone
+                string Email
+                string Address
+                string City
+                guid PatientId FK
+              }
+
+              IdentityUser {
+                string Id PK
+                string UserName
+                string Email
+              }
+          </div>
+        </div>
+        <div class="row g-3 mt-2">
+          <div class="col-md-6">
+            <div class="card entity-card h-100 text-center p-3">
+              <i class="bi bi-star fs-1 text-warning"></i>
+              <h6 class="mt-2">Entidad Central: Patient</h6>
+              <small class="text-muted">10 relaciones (4 1:1 con PK compartido, 6 1:N). Es el núcleo del modelo.</small>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card entity-card h-100 text-center p-3">
+              <i class="bi bi-link-45deg fs-1 text-info"></i>
+              <h6 class="mt-2">PK Compartido (PatientFKEntity)</h6>
+              <small class="text-muted">ParentsData, PersonalBackground, PerinatalBackground y CongErrors usan el mismo Id (Guid) que Patient. Son una extensión 1:1.</small>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CACHING -->
+      <section id="caching">
+        <h2><i class="bi bi-database-gear me-2"></i>Sistema de Caching</h2>
+        <p>Caché distribuido de 2 niveles (L1: IMemoryCache local + L2: Redis compartido). Cross-instancia via Pub/Sub Redis.</p>
+
+        <div class="diagram">
+          <pre style="text-align: center;">┌──────────────┐     L1: IMemoryCache (ultra-fast, local)
+│  Instancia 1 ├────► Cachea resultados en memoria
+│  (App Web)   ├────► L2: Redis (distribuido, JSON)
+└──────┬───────┘     Pub/Sub: invalida L1 en otras instancias
+       │
+┌──────▼───────┐
+│    Redis     │
+│ (7-alpine)   │
+└──────┬───────┘
+       │
+┌──────▼───────┐     Fallback: si Redis no está disponible,
+│  PostgreSQL  │     la app funciona solo con IMemoryCache
+└──────────────┘     (graceful degradation)</pre>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-sm table-bordered table-sm-cache">
+            <thead>
+              <tr><th>Cache Key</th><th>TTL Redis</th><th>Tipo</th><th>Invalidación</th></tr>
+            </thead>
+            <tbody>
+              <tr><td class="key-cell">medics</td><td>1 hora</td><td>Referencia</td><td>Al crear/editar/eliminar médico</td></tr>
+              <tr><td class="key-cell">timeTurns</td><td>1 hora</td><td>Referencia</td><td>Al crear/eliminar horario</td></tr>
+              <tr><td class="key-cell">patients</td><td>10 min</td><td>Referencia</td><td>Al crear/editar/eliminar paciente</td></tr>
+              <tr><td class="key-cell">turns:{date}:{medicId}</td><td>2 min</td><td>Turnos DTO</td><td>Al crear/editar/eliminar turno</td></tr>
+              <tr><td class="key-cell">turnsList:{date}:{medicId}</td><td>2 min</td><td>Turnos Entidad</td><td>Al crear/editar/eliminar turno</td></tr>
+              <tr><td class="key-cell">allergies:{patientId}</td><td>10 min</td><td>Datos clínicos</td><td>Al crear/editar/eliminar alergia</td></tr>
+              <tr><td class="key-cell">vaccines:{patientId}</td><td>10 min</td><td>Datos clínicos</td><td>Al crear/editar/eliminar vacuna</td></tr>
+              <tr><td class="key-cell">growthCharts:{patientId}</td><td>10 min</td><td>Datos clínicos</td><td>Al crear/editar/eliminar registro</td></tr>
+              <tr><td class="key-cell">permMed:{patientId}</td><td>10 min</td><td>Datos clínicos</td><td>Al crear/eliminar medicación</td></tr>
+              <tr><td class="key-cell">parentsData:{id}</td><td>10 min</td><td>Entidad única</td><td>Al editar/eliminar</td></tr>
+              <tr><td class="key-cell">personalBackground:{id}</td><td>10 min</td><td>Entidad única</td><td>Al editar</td></tr>
+              <tr><td class="key-cell">perinatalBackground:{id}</td><td>10 min</td><td>Entidad única</td><td>Al editar</td></tr>
+              <tr><td class="key-cell">congErrors:{id}</td><td>10 min</td><td>Entidad única</td><td>Al editar</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="card entity-card h-100">
+              <div class="card-header bg-white"><i class="bi bi-bar-chart-line text-primary me-2"></i>Dashboard de Cache</div>
+              <div class="card-body small">
+                <p class="mb-1"><strong>Ruta:</strong> Administrar → Cache (solo Admin)</p>
+                <p class="mb-1"><strong>Endpoint:</strong> <code>GET /Administration/CacheStats</code></p>
+                <p class="mb-0"><strong>Muestra:</strong> Keys via SCAN, TTL, tamaño, hits/misses por key, hit rate general. Permite limpiar keys individuales.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card entity-card h-100">
+              <div class="card-header bg-white"><i class="bi bi-fire text-danger me-2"></i>Warmup al Inicio</div>
+              <div class="card-body small">
+                <p class="mb-1">En <code>Program.cs</code> se cargan automáticamente al iniciar:</p>
+                <code>medics</code>, <code>timeTurns</code>, <code>patients</code>
+                <p class="mb-0 mt-1 text-muted">Si Redis no está disponible, se logea advertencia y la app continúa.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CONTROLADORES -->
+      <section id="controllers">
+        <h2><i class="bi bi-controller me-2"></i>Controladores</h2>
+        <p>Todos heredan de <code>TurneroBaseController : Controller</code> que provee helpers compartidos.</p>
+        <div class="table-responsive">
+          <table class="table table-sm table-bordered table-sm-cache">
+            <thead>
+              <tr><th>Controlador</th><th>Ruta</th><th>Auth</th><th>Acciones principales</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>HomeController</strong></td><td><code>/</code></td><td>Authenticated</td><td>Index (dashboard con conteo de turnos del día)</td></tr>
+              <tr><td><strong>TurnsController</strong></td><td><code>/Turns</code></td><td>Ingreso, Medico</td><td>CRUD turnos, DataTables, Excel, PDF, SignalR</td></tr>
+              <tr><td><strong>TurnsPublicController</strong></td><td><code>/TurnsPublic</code></td><td>Anonymous</td><td>Crear turno espontáneo (público)</td></tr>
+              <tr><td><strong>PatientsController</strong></td><td><code>/Patients</code></td><td>Medico</td><td>CRUD pacientes + DataTables</td></tr>
+              <tr><td><strong>MedicsController</strong></td><td><code>/Medics</code></td><td>Admin</td><td>CRUD médicos + asignación de usuarios</td></tr>
+              <tr><td><strong>TimeTurnController</strong></td><td><code>/TimeTurn</code></td><td>Admin</td><td>CRUD horarios</td></tr>
+              <tr><td><strong>AdministrationController</strong></td><td><code>/Administration</code></td><td>Admin</td><td>Users, Roles, Claims, CacheStats</td></tr>
+              <tr><td><strong>VisitsController</strong></td><td><code>/Visits</code></td><td>Medico</td><td>CRUD consultas + DataTables</td></tr>
+              <tr><td><strong>AllergiesController</strong></td><td><code>/Allergies</code></td><td>Medico</td><td>CRUD alergias + DataTables</td></tr>
+              <tr><td><strong>VaccinesController</strong></td><td><code>/Vaccines</code></td><td>Medico</td><td>CRUD vacunas + DataTables</td></tr>
+              <tr><td><strong>GrowthChartController</strong></td><td><code>/GrowthChart</code></td><td>Medico</td><td>CRUD curvas de crecimiento + DataTables</td></tr>
+              <tr><td><strong>PermMedController</strong></td><td><code>/PermMed</code></td><td>Medico</td><td>CRUD medicación permanente + DataTables</td></tr>
+              <tr><td><strong>ParentsDataController</strong></td><td><code>/ParentsData</code></td><td>Medico</td><td>Ver/Editar/Eliminar datos parentales</td></tr>
+              <tr><td><strong>PersonalBackgroundController</strong></td><td><code>/PersonalBackground</code></td><td>Medico</td><td>Ver/Editar antecedentes personales</td></tr>
+              <tr><td><strong>PerinatalBackgroundController</strong></td><td><code>/PerinatalBackground</code></td><td>Medico</td><td>Ver/Editar antecedentes perinatales</td></tr>
+              <tr><td><strong>CongErrorController</strong></td><td><code>/CongError</code></td><td>Medico</td><td>Ver/Editar errores congénitos</td></tr>
+              <tr><td><strong>FirebaseController</strong></td><td><code>/api/auth</code></td><td>Anonymous</td><td>Login, Register, Reset Password (API)</td></tr>
+              <tr><td><strong>VademecumController</strong></td><td><code>/Vademecum</code></td><td>—</td><td>Búsqueda de medicamentos</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- SERVICIOS -->
+      <section id="services">
+        <h2><i class="bi bi-gear me-2"></i>Servicios</h2>
+        <p>Organizados por funcionalidad en <code>Turnero.SL/Services/</code>. Registrados via <code>AddScoped&lt;IInterface, Impl&gt;()</code> en Program.cs.</p>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="card entity-card h-100">
+              <div class="card-header bg-primary text-white"><i class="bi bi-calendar-check me-2"></i>Turnos</div>
+              <div class="card-body small">
+                <p><strong>GetTurnsServices</strong> — Obtiene turnos por fecha/médico (cached). CRUD básico.</p>
+                <p><strong>GetTurnDTOServices</strong> — <code>IQueryable&lt;TurnDTO&gt;</code> con caché two-tier para DataTables.</p>
+                <p><strong>InsertTurnsServices</strong> / <strong>UpdateTurnsServices</strong> — Create/Update/Delete.</p>
+                <p><strong>GetTimeTurnsServices</strong> / <strong>Insert/DeleteTimeTurnServices</strong> — Horarios.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card entity-card h-100">
+              <div class="card-header bg-success text-white"><i class="bi bi-people me-2"></i>Pacientes y Médicos</div>
+              <div class="card-body small">
+                <p><strong>GetPatientService</strong> — Lista, búsqueda, GetById + GetCachedPatients.</p>
+                <p><strong>Insert/UpdatePatientService</strong> — CRUD pacientes.</p>
+                <p><strong>GetMedicsServices</strong> — GetCachedMedics + CRUD.</p>
+                <p><strong>Insert/UpdateMedicServices</strong> — CRUD médicos.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card entity-card h-100">
+              <div class="card-header bg-info text-white"><i class="bi bi-heart-pulse me-2"></i>Datos Clínicos</div>
+              <div class="card-body small">
+                <p><strong>Allergies</strong> — GetAllergiesServices, Insert/Update/Delete.</p>
+                <p><strong>Vaccines</strong> — GetVaccinesServices (cached), Insert/Update/Delete.</p>
+                <p><strong>GrowthChart</strong> — Get/Insert/Update/DeleteGrowthChartService (cached).</p>
+                <p><strong>PermMed</strong> — Get/Insert/DeletePermMedService (cached + GetById).</p>
+                <p><strong>Visit</strong> — Get/InsertVisitService (sin cache, IQueryable).</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card entity-card h-100">
+              <div class="card-header bg-warning text-dark"><i class="bi bi-file-earmark-text me-2"></i>Historia Clínica (1:1)</div>
+              <div class="card-body small">
+                <p><strong>ParentsDataService</strong> — Get (cached via Redis+MemoryCache directo), Update, Delete.</p>
+                <p><strong>PersonalBackgroundService</strong> — Get (cached), Update.</p>
+                <p><strong>PerinatalBackgroundService</strong> — Get (cached), Update.</p>
+                <p><strong>CongErrorService</strong> — Get (cached), Update.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card entity-card h-100">
+              <div class="card-header bg-secondary text-white"><i class="bi bi-shuffle me-2"></i>Cross-Cutting</div>
+              <div class="card-body small">
+                <p><strong>LoggerService</strong> (Singleton) — Logging a archivo AppLogs.log.</p>
+                <p><strong>FirebaseService</strong> (Scoped) — Registro/login Firebase, reset password.</p>
+                <p><strong>RedisCacheService</strong> (Scoped) — Operaciones Get/Set/Remove/Publish. Hits/misses tracking. <span class="badge bg-info text-dark">virtual</span></p>
+                <p><strong>RedisConnectionService</strong> (Singleton) — ConnectionMultiplexer. <span class="badge bg-warning text-dark">sealed</span></p>
+                <p><strong>CacheInvalidationHostedService</strong> (HostedService) — Suscripción Pub/Sub.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- REPOSITORIOS -->
+      <section id="repositories">
+        <h2><i class="bi bi-server me-2"></i>Repositorios</h2>
+        <p>Todos heredan de <code>RepositoryBase&lt;T&gt;</code> que implementa <code>IRepositoryBase&lt;T&gt;</code> con caché two-tier.</p>
+
+        <div class="table-responsive">
+          <table class="table table-sm table-bordered table-sm-cache">
+            <thead>
+              <tr><th>Repositorio</th><th>Entidad</th><th>Método cacheado</th><th>Notas</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>MedicRepository</td><td>Medic</td><td><code>GetCachedMedics()</code></td><td>Referencia, TTL 1h</td></tr>
+              <tr><td>TimeTurnRepository</td><td>TimeTurn</td><td><code>GetCachedTimes()</code></td><td>Referencia, TTL 1h</td></tr>
+              <tr><td>PatientRepository</td><td>Patient</td><td><code>GetCachedPatients()</code></td><td>Referencia, TTL 10min</td></tr>
+              <tr><td>TurnsRepository</td><td>Turn</td><td>—</td><td>Usa CallStoredProcedure para listas</td></tr>
+              <tr><td>TurnDTORepository</td><td>TurnDTO</td><td>—</td><td>Solo CallStoredProcedureDTO (no es DbSet)</td></tr>
+              <tr><td>AllergiesRepository</td><td>Allergies</td><td><code>GetCachedAllergiesByPatient(id)</code></td><td>Por paciente, TTL 10min</td></tr>
+              <tr><td>VaccinesRepository</td><td>Vaccines</td><td><code>GetCachedByPatientId(id)</code></td><td>Por paciente, TTL 10min</td></tr>
+              <tr><td>GrowthChartRepository</td><td>GrowthChart</td><td><code>GetCachedByPatientId(id)</code></td><td>Por paciente, TTL 10min</td></tr>
+              <tr><td>PermMedRepository</td><td>PermMed</td><td><code>GetCachedByPatientId(id)</code></td><td>Por paciente, TTL 10min + GetById</td></tr>
+              <tr><td>ParentsDataRepository</td><td>ParentsData</td><td>— (cache en servicio)</td><td>PK compartido con Patient</td></tr>
+              <tr><td>PersonalBackgroundRepository</td><td>PersonalBackground</td><td>— (cache en servicio)</td><td>PK compartido</td></tr>
+              <tr><td>PerinatalBackgroundRepositroy</td><td>PerinatalBackground</td><td>— (cache en servicio)</td><td>PK compartido</td></tr>
+              <tr><td>CongErrorsRepository</td><td>CongErrors</td><td>— (cache en servicio)</td><td>PK compartido</td></tr>
+              <tr><td>VisitRepository</td><td>Visit</td><td>— (sin cache)</td><td>Retorna IQueryable&lt;VisitDTO&gt;</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card entity-card bg-light">
+          <div class="card-body small">
+            <strong><code>RepositoryBase.GetCachedData&lt;TResult&gt;(cacheKey, getDataFunc)</code></strong> — Flujo two-tier:<br>
+            <code>L1: IMemoryCache → hit? → return</code><br>
+            <code>L2: Redis (GetAsync) → hit? → poblar L1 → return</code><br>
+            <code>Miss: DB (getDataFunc) → poblar L1 + L2 → return</code>
+          </div>
+        </div>
+      </section>
+
+      <!-- FRONTEND -->
+      <section id="frontend">
+        <h2><i class="bi bi-window-stack me-2"></i>Frontend</h2>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="card entity-card h-100">
+              <div class="card-header bg-white"><i class="bi bi-palette me-2"></i>Librerías CSS/JS</div>
+              <div class="card-body small">
+                <ul class="mb-0">
+                  <li><strong>Bootstrap 5.3</strong> — Framework CSS principal</li>
+                  <li><strong>Bootstrap Icons</strong> + <strong>Font Awesome 7</strong> — Iconos</li>
+                  <li><strong>jQuery 3.7.1</strong> — Manipulación DOM</li>
+                  <li><strong>SweetAlert2</strong> — Modales y alertas</li>
+                  <li><strong>Flatpickr</strong> — Datepicker</li>
+                  <li><strong>PDFMake</strong> + <strong>SheetJS</strong> — Exportación PDF/Excel</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card entity-card h-100">
+              <div class="card-header bg-white"><i class="bi bi-lightning-charge me-2"></i>SignalR</div>
+              <div class="card-body small">
+                <p><strong>Hub:</strong> <code>TurnsTableHub</code> en <code>/TurnsTableHub</code></p>
+                <p><strong>Eventos:</strong></p>
+                <ul class="mb-0">
+                  <li><code>UpdateTableDirected(user, message, date)</code> — Notificación dirigida al médico cuando se crea un turno</li>
+                  <li><code>UpdateTable(message)</code> — Broadcast a todos cuando se actualiza la tabla</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card entity-card h-100">
+              <div class="card-header bg-white"><i class="bi bi-table me-2"></i>DataTables (Server-side)</div>
+              <div class="card-body small">
+                <p>Procesamiento server-side via endpoints <code>Initialize[Entity]</code>.</p>
+                <p><strong>Helper:</strong> <code>DataTablesHelper</code> estática — paginación, ordenamiento, extracción de patientId.</p>
+                <p><code>InitializePatientDataTablesAsync&lt;T&gt;</code> — método genérico usado por 5+ controladores.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card entity-card h-100">
+              <div class="card-header bg-white"><i class="bi bi-layout-text-window me-2"></i>Vistas</div>
+              <div class="card-body small">
+                <p>Layout principal en <code>Views/Shared/_Layout.cshtml</code>.</p>
+                <p>La mayoría de las vistas CRUD son <strong>parciales</strong> cargadas via AJAX en modales:</p>
+                <code>_Create.cshtml</code>, <code>_Edit.cshtml</code>, <code>_Details.cshtml</code>, <code>_Table.cshtml</code>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- AUTH -->
+      <section id="auth">
+        <h2><i class="bi bi-shield-lock me-2"></i>Autenticación</h2>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="card entity-card h-100">
+              <div class="card-header bg-white"><i class="bi bi-person-badge me-2"></i>Roles</div>
+              <div class="card-body">
+                <span class="badge bg-danger fs-6 me-2">Admin</span>
+                <span class="badge bg-primary fs-6 me-2">Medico</span>
+                <span class="badge bg-success fs-6">Ingreso</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card entity-card h-100">
+              <div class="card-header bg-white"><i class="bi bi-key me-2"></i>Métodos</div>
+              <div class="card-body small">
+                <p><strong>Firebase Auth</strong> — Registro, Login, Reset Password vía API externa</p>
+                <p><strong>ASP.NET Core Identity</strong> — Cookies, sesión, roles locales</p>
+                <p><strong>JWT Bearer</strong> — Autenticación secundaria configurable</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TESTS -->
+      <section id="tests">
+        <h2><i class="bi bi-check-circle me-2"></i>Tests</h2>
+        <p><strong>221 tests unitarios</strong> con xUnit + Moq.</p>
+        <div class="card-grid">
+          <div class="card entity-card"><div class="card-body small"><strong>26 archivos de test</strong></div></div>
+          <div class="card entity-card"><div class="card-body small"><strong>Service Layer</strong> — Todos los servicios con cobertura CRUD</div></div>
+          <div class="card entity-card"><div class="card-body small"><strong>RepositoryBaseTests</strong> — Pruebas del patrón Repository Base</div></div>
+          <div class="card entity-card"><div class="card-body small"><strong>DataTablesHelperTests</strong> — Helpers de server-side processing</div></div>
+          <div class="card entity-card"><div class="card-body small"><strong>DateCalculationsTests</strong> — Cálculos de edad</div></div>
+          <div class="card entity-card"><div class="card-body small"><strong>LoggerServicesTests</strong> — Logging</div></div>
+        </div>
+      </section>
+
+      <!-- DEPLOYMENT -->
+      <section id="deployment">
+        <h2><i class="bi bi-rocket-takeoff me-2"></i>Deployment</h2>
+        
+        <h3 class="mt-4 mb-3" id="deploy-diagram"><i class="bi bi-diagram-3 me-2"></i>Diagrama de Infraestructura</h3>
+        <p>Arquitectura de despliegue con Docker Compose (desarrollo) y Docker Swarm (producción).</p>
+        <div class="mermaid-wrapper">
+          <div class="mermaid">
+            graph TB
+              subgraph Internet ["🌐 Internet"]
+                Browser["Navegador Web<br/>Usuario"]
+                Firebase["🔥 Firebase Auth<br/>(externo)"]
+              end
+
+              subgraph DevEnv ["💻 Entorno de Desarrollo — Docker Compose"]
+                direction TB
+                DevApp["turnero-app<br/>1 contenedor<br/>:8080"]
+                DevRedis["redis:7-alpine<br/>turnero-redis<br/>:6379"]
+                DevCommander["redis-commander<br/>UI Admin Redis<br/>:8081"]
+              end
+
+              subgraph SwarmCluster ["🚀 Entorno de Producción — Docker Swarm"]
+                direction TB
+                LB["Ingress Load Balancer<br/>APP_PUBLISHED_PORT:8080"]
+
+                subgraph ManagerNode ["Manager Node"]
+                  direction TB
+                  Redis["redis:7-alpine<br/>0.25 CPU / 256 MB<br/>Redis Data Volume"]
+                end
+
+                subgraph AppReplicas ["App Replicas (2)"]
+                  App1["turnero-app réplica 1<br/>0.50 CPU / 768 MB<br/>:8080"]
+                  App2["turnero-app réplica 2<br/>0.50 CPU / 768 MB<br/>:8080"]
+                end
+
+                subgraph Secrets ["Secretos"]
+                  EnvFile[".env file<br/>DB / Redis / Auth config"]
+                  FirebaseSecret["firebase.json<br/>Service Account"]
+                end
+              end
+
+              subgraph ExternalServices ["Servicios Externos"]
+                PG["🐘 PostgreSQL<br/>Base de Datos<br/>(externo al cluster)"]
+              end
+
+              %% Conexiones Desarrollo
+              Browser -->|"HTTP :8080"| DevApp
+              DevApp -->|"Redis :6379"| DevRedis
+              DevApp -->|"Npgsql :5432"| PG
+              DevCommander -->|"Redis :6379"| DevRedis
+              DevApp -->|"REST API"| Firebase
+
+              %% Conexiones Producción
+              Browser -->|"HTTPS :443 / HTTP :8080"| LB
+              LB -->|"Round Robin"| App1
+              LB -->|"Round Robin"| App2
+              App1 & App2 -->|"Redis :6379<br/>(overlay network)"| Redis
+              App1 & App2 -->|"Npgsql :5432"| PG
+              App1 & App2 -->|"REST API"| Firebase
+              App1 & App2 -.->|"Monta .env"| EnvFile
+              App1 & App2 -.->|"Monta firebase.json"| FirebaseSecret
+
+              %% Estilos
+              classDef internet fill:#e3f2fd,stroke:#1565c0,color:#000
+              classDef dev fill:#e8f5e9,stroke:#2e7d32,color:#000
+              classDef swarm fill:#fff3e0,stroke:#e65100,color:#000
+              classDef manager fill:#f3e5f5,stroke:#6a1b9a,color:#000
+              classDef apps fill:#e1f5fe,stroke:#0277bd,color:#000
+              classDef secrets fill:#fce4ec,stroke:#c62828,color:#000
+              classDef external fill:#f5f5f5,stroke:#616161,color:#000
+
+              class Browser,Firebase internet
+              class DevApp,DevRedis,DevCommander dev
+              class SwarmCluster,LB swarm
+              class ManagerNode,Redis manager
+              class AppReplicas,App1,App2 apps
+              class Secrets,EnvFile,FirebaseSecret secrets
+              class PG,ExternalServices external
+          </div>
+        </div>
+
+        <div class="row g-3 mt-2 mb-4">
+          <div class="col-md-4">
+            <div class="card entity-card h-100 text-center p-3">
+              <i class="bi bi-laptop fs-1 text-success"></i>
+              <h6 class="mt-2">Desarrollo</h6>
+              <small class="text-muted"><code>docker compose up</code><br/>App + Redis + Redis Commander<br/>Puertos: 8080, 6379, 8081</small>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card entity-card h-100 text-center p-3">
+              <i class="bi bi-server fs-1 text-warning"></i>
+              <h6 class="mt-2">Producción (Swarm)</h6>
+              <small class="text-muted">2 réplicas app + 1 Redis (manager)<br/>Rolling update, healthchecks<br/>Redis sin puerto externo (overlay)</small>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card entity-card h-100 text-center p-3">
+              <i class="bi bi-shield-check fs-1 text-danger"></i>
+              <h6 class="mt-2">Secretos</h6>
+              <small class="text-muted">.env montado como read-only<br/>Firebase credentials via secrets<br/>Redis persistente con volumen local</small>
+            </div>
+          </div>
+        </div>
+
+        <h3>Docker</h3>
+          <div class="col-md-6">
+            <div class="card entity-card h-100">
+              <div class="card-header bg-white"><i class="bi bi-box me-2"></i>Docker</div>
+              <div class="card-body small">
+                <p><strong>Dockerfile</strong> — Multi-stage (sdk:10.0 build → aspnet:10.0 runtime)</p>
+                <p><strong>docker-compose.yml</strong> — App + Redis 7-alpine con healthcheck</p>
+                <p><strong>docker-compose.dev.yml</strong> — Redis Commander en puerto 8081</p>
+                <p><strong>docker-stack.prod.yml / .tls.yml</strong> — Docker Swarm stacks</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card entity-card h-100">
+              <div class="card-header bg-white"><i class="bi bi-gear-wide me-2"></i>Variables de Entorno</div>
+              <div class="card-body small">
+                <code>ConnectionStrings__PostgresConnection</code><br>
+                <code>Redis__ConnectionString</code> (default: localhost:6379)<br>
+                <code>Firebase__CredentialsPath</code><br>
+                <code>GOOGLE_APPLICATION_CREDENTIALS</code><br>
+                <code>Authentication__*</code> (Issuer, Audience, TokenUri, etc.)
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="footer-note">
+        <i class="bi bi-filetype-json me-1"></i> Versión JSON disponible en <code>project-context.json</code>
+        <br><small>Generado: Julio 2026 · Turnero v3.0.1</small>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'base',
+      themeVariables: {
+        primaryColor: '#0d6efd',
+        primaryTextColor: '#fff',
+        primaryBorderColor: '#0d6efd',
+        lineColor: '#6c757d',
+        secondaryColor: '#e9ecef',
+        tertiaryColor: '#f8f9fc'
+      },
+      sequence: {
+        showSequenceNumbers: false,
+        actorFontSize: 13,
+        noteFontSize: 11,
+        messageFontSize: 11,
+        mirrorActors: false
+      },
+      flowchart: {
+        useMaxWidth: true,
+        htmlLabels: true,
+        curve: 'basis'
+      }
+    });
+  </script>
+</body>
+</html>

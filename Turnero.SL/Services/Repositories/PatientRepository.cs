@@ -1,10 +1,15 @@
 ﻿namespace Turnero.SL.Services.Repositories;
 
-public class PatientRepository(ApplicationDbContext context, IMemoryCache cache) : RepositoryBase<Patient>(context, cache), IPatientRepository
+public class PatientRepository(ApplicationDbContext context, IMemoryCache cache, RedisCacheService redisCache) : RepositoryBase<Patient>(context, cache, redisCache), IPatientRepository
 {
     public async Task<List<PatientDTO>> GetList()
     {
         return await FindAll().ProjectToType<PatientDTO>().ToListAsync();
+    }
+
+    public async Task<List<PatientDTO>> GetCachedPatients()
+    {
+        return await GetCachedData("patients", GetList);
     }
 
     public IQueryable<PatientDTO> GetAll()
@@ -54,6 +59,7 @@ public class PatientRepository(ApplicationDbContext context, IMemoryCache cache)
 public interface IPatientRepository
 {
     Task<List<PatientDTO>> GetList();
+    Task<List<PatientDTO>> GetCachedPatients();
     IQueryable<PatientDTO> GetAll();
     Task<Patient> GetById(Guid id);
     bool Exists(string dni, string name);

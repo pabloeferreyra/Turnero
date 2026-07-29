@@ -1,6 +1,6 @@
 ﻿namespace Turnero.SL.Services.Repositories;
 
-public class MedicRepository(ApplicationDbContext context, IMemoryCache cache) : RepositoryBase<Medic>(context, cache), IMedicRepository
+public class MedicRepository(ApplicationDbContext context, IMemoryCache cache, RedisCacheService redisCache) : RepositoryBase<Medic>(context, cache, redisCache), IMedicRepository
 {
     public async Task<List<MedicDto>> GetListDto()
     {

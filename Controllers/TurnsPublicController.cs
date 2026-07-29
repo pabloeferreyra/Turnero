@@ -31,6 +31,10 @@
                 var medic = await getMedics.GetMedicById(turn.MedicId);
                 await hubContext.Clients.User(medic.UserGuid).SendAsync("UpdateTableDirected", "La tabla se ha actualizado");
 
+                // Invalidate cached turn queries for today
+                await InvalidateCacheAsync($"turns:{DateOnly.FromDateTime(DateTime.Today):yyyy-MM-dd}:all");
+                await InvalidateCacheAsync($"turnsList:{DateOnly.FromDateTime(DateTime.Today):yyyy-MM-dd}:all");
+
                 return Ok();
             }
             catch

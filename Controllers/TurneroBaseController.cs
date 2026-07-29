@@ -71,34 +71,59 @@ public abstract class TurneroBaseController : Controller
     }
 
     /// <summary>
-    /// Returns the cached list of medics, loading from the service if not yet cached.
-    /// Replaces the identical cache.Get → Task.Run → .Result pattern across 3 controllers.
+    /// Returns the cached list of medics from Redis/IMemoryCache, loading from DB if needed.
+    /// Uses the service layer which internally uses the two-tier cache (IMemoryCache + Redis).
     /// </summary>
     protected async Task<List<MedicDto>> GetCachedMedicsAsync()
     {
-        var cache = HttpContext.RequestServices.GetRequiredService<IMemoryCache>();
-        var medics = cache.Get<List<MedicDto>>("medics");
-        if (medics == null)
-        {
-            var getMedics = HttpContext.RequestServices.GetRequiredService<IGetMedicsServices>();
-            await Task.Run(() => { medics = getMedics.GetCachedMedics().Result; });
-        }
+        var getMedics = HttpContext.RequestServices.GetRequiredService<IGetMedicsServices>();
+        var medics = await getMedics.GetCachedMedics();
         return medics ?? [];
     }
 
     /// <summary>
-    /// Returns the cached list of time turns, loading from the service if not yet cached.
-    /// Replaces the identical cache.Get → Task.Run → .Result pattern across 3 controllers.
+    /// Returns the cached list of time turns from Redis/IMemoryCache, loading from DB if needed.
+    /// Uses the service layer which internally uses the two-tier cache (IMemoryCache + Redis).
     /// </summary>
     protected async Task<List<TimeTurn>> GetCachedTimeTurnsAsync()
     {
-        var cache = HttpContext.RequestServices.GetRequiredService<IMemoryCache>();
-        var time = cache.Get<List<TimeTurn>>("timeTurns");
-        if (time == null)
-        {
-            var getTimeTurns = HttpContext.RequestServices.GetRequiredService<IGetTimeTurnsServices>();
-            await Task.Run(() => { time = getTimeTurns.GetCachedTimes().Result; });
-        }
+        var getTimeTurns = HttpContext.RequestServices.GetRequiredService<IGetTimeTurnsServices>();
+        var time = await getTimeTurns.GetCachedTimes();
         return time ?? [];
+    }
+
+    /// <summary>
+    /// Returns the cached list of patients from Redis/IMemoryCache, loading from DB if needed.
+    /// Uses the service layer which internally uses the two-tier cache (IMemoryCache + Redis).
+    /// </summary>
+    protected async Task<List<PatientDTO>> GetCachedPatientsAsync()
+    {
+        var getPatients = HttpContext.RequestServices.GetRequiredService<IGetPatientService>();
+        var patients = await getPatients.GetCachedPatients();
+        return patients ?? [];
+    }
+
+    /// <summary>
+    /// Invalidates a cache key in Redis and clears local memory cache.
+    /// Notifies other app instances to clear their local cache via Redis Pub/Sub.
+    /// </summary>
+    protected async Task InvalidateCacheAsync(string cacheKey)
+    {
+        try
+        {
+            var redisCache = HttpContext.RequestServices.GetRequiredService<RedisCacheService>();
+            var memoryCache = HttpContext.RequestServices.GetRequiredService<IMemoryCache>();
+
+            // Clear local memory cache
+            memoryCache.Remove(cacheKey);
+
+            // Clear Redis cache and notify other instances
+            await redisCache.RemoveAsync(cacheKey);
+            await redisCache.PublishAsync("cache:invalidate", cacheKey);
+        }
+        catch
+        {
+            // Silently handle - cache invalidation is best-effort
+        }
     }
 }

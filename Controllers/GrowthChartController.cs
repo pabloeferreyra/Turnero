@@ -59,6 +59,7 @@ public class GrowthChartController(IGetGrowthChartService get,
         try
         {
             await insert.Create(growthChart);
+            await InvalidateCacheAsync($"growthCharts:{growthChart.PatientId}");
             logger.LogInformation("Created Growth Chart entry for PatientId: {PatientId}", growthChart.PatientId);
             return Ok();
         }
@@ -90,6 +91,7 @@ public class GrowthChartController(IGetGrowthChartService get,
         try
         {
             await update.Edit(growthChart);
+            await InvalidateCacheAsync($"growthCharts:{growthChart.PatientId}");
             logger.LogInformation("Updated Growth Chart entry Id: {Id}", growthChart.Id);
             return Ok();
         }
@@ -107,7 +109,12 @@ public class GrowthChartController(IGetGrowthChartService get,
             return BadRequest();
         try
         {
+            var growthChart = await get.GetById(id.Value);
             await delete.Delete(id.Value);
+            if (growthChart != null)
+            {
+                await InvalidateCacheAsync($"growthCharts:{growthChart.PatientId}");
+            }
             logger.LogInformation("Deleted Growth Chart entry Id: {Id}", id);
             return Ok();
         }

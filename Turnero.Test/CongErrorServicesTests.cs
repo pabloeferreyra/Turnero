@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Caching.Memory;
 using Moq;
 using Turnero.DAL.Models;
 using Turnero.SL.Services;
@@ -11,11 +12,20 @@ public class CongErrorServicesTests
 {
     private readonly Mock<LoggerService> _loggerMock;
     private readonly Mock<ICongErrorsRepository> _repositoryMock;
+    private readonly Mock<RedisCacheService> _redisCacheMock;
+    private readonly IMemoryCache _memoryCache;
 
     public CongErrorServicesTests()
     {
         _loggerMock = new Mock<LoggerService>();
         _repositoryMock = new Mock<ICongErrorsRepository>();
+        var redisConnection = new RedisConnectionService("localhost:6379,connectTimeout=100,syncTimeout=100");
+        _redisCacheMock = new Mock<RedisCacheService>(redisConnection, _loggerMock.Object);
+        _redisCacheMock.Setup(r => r.GetAsync<CongErrors>(It.IsAny<string>()))
+            .ReturnsAsync((CongErrors?)null);
+        _redisCacheMock.Setup(r => r.SetAsync(It.IsAny<string>(), It.IsAny<CongErrors>(), It.IsAny<TimeSpan?>()))
+            .Returns(Task.CompletedTask);
+        _memoryCache = new MemoryCache(new MemoryCacheOptions());
     }
 
     #region GetCongErrorService
@@ -27,7 +37,7 @@ public class CongErrorServicesTests
         var id = Guid.NewGuid();
         var entity = new CongErrors { Id = id };
         _repositoryMock.Setup(repo => repo.Get(id)).ReturnsAsync(entity);
-        var service = new GetCongErrorService(_loggerMock.Object, _repositoryMock.Object);
+        var service = new GetCongErrorService(_loggerMock.Object, _repositoryMock.Object, _redisCacheMock.Object, _memoryCache);
 
         // Act
         var result = await service.GetCongError(id);
@@ -42,7 +52,7 @@ public class CongErrorServicesTests
     {
         // Arrange
         _repositoryMock.Setup(repo => repo.Get(It.IsAny<Guid>())).ReturnsAsync((CongErrors?)null);
-        var service = new GetCongErrorService(_loggerMock.Object, _repositoryMock.Object);
+        var service = new GetCongErrorService(_loggerMock.Object, _repositoryMock.Object, _redisCacheMock.Object, _memoryCache);
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(() => service.GetCongError(Guid.NewGuid()));
@@ -53,7 +63,7 @@ public class CongErrorServicesTests
     {
         _repositoryMock.Setup(repo => repo.Get(It.IsAny<Guid>()))
             .ThrowsAsync(new Exception("DB error"));
-        var service = new GetCongErrorService(_loggerMock.Object, _repositoryMock.Object);
+        var service = new GetCongErrorService(_loggerMock.Object, _repositoryMock.Object, _redisCacheMock.Object, _memoryCache);
 
         await Assert.ThrowsAsync<Exception>(() => service.GetCongError(Guid.NewGuid()));
         _loggerMock.Verify(l => l.Log(It.IsAny<string>()), Times.Once);

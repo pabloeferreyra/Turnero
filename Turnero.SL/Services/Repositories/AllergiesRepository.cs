@@ -1,6 +1,6 @@
 ﻿namespace Turnero.SL.Services.Repositories;
 
-public class AllergiesRepository(ApplicationDbContext context, IMemoryCache cache) : RepositoryBase<Allergies>(context, cache), IAllergiesRepository
+public class AllergiesRepository(ApplicationDbContext context, IMemoryCache cache, RedisCacheService redisCache) : RepositoryBase<Allergies>(context, cache, redisCache), IAllergiesRepository
 {
     public async Task<Allergies?> Get(Guid? id)
     {
@@ -17,6 +17,12 @@ public class AllergiesRepository(ApplicationDbContext context, IMemoryCache cach
         return await FindByCondition(a => a.PatientId == id)
             .Include(a => a.Patient)
             .ToListAsync();
+    }
+
+    public async Task<List<Allergies>> GetCachedAllergiesByPatient(Guid? id)
+    {
+        if (id == null || id == Guid.Empty) return [];
+        return await GetCachedData($"allergies:{id}", () => GetAllergiesByPatient(id));
     }
 
     public Task<IQueryable<Allergies>> SearchAllergies(Guid id)
@@ -42,6 +48,7 @@ public interface IAllergiesRepository
 {
     Task<Allergies?> Get(Guid? id);
     Task<List<Allergies>> GetAllergiesByPatient(Guid? id);
+    Task<List<Allergies>> GetCachedAllergiesByPatient(Guid? id);
     Task CreateAllergy(Allergies allergy);
     Task UpdateAllergy(Allergies allergy);
     void DeleteAllergy(Allergies allergy);

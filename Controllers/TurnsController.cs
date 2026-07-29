@@ -122,6 +122,10 @@ public class TurnsController(UserManager<IdentityUser> userManager,
 
             await hubContext.Clients.User(medic.UserGuid).SendAsync("UpdateTableDirected", medic.Name, turnMsj, t.DateTurn.ToShortDateString());
 
+            // Invalidate cached turn queries for this date
+            await InvalidateCacheAsync($"turns:{DateOnly.FromDateTime(t.DateTurn):yyyy-MM-dd}:all");
+            await InvalidateCacheAsync($"turnsList:{DateOnly.FromDateTime(t.DateTurn):yyyy-MM-dd}:all");
+
             return Ok();
         }
         catch
@@ -158,6 +162,8 @@ public class TurnsController(UserManager<IdentityUser> userManager,
         if (ModelState.IsValid)
         {
             updateTurns.Accessed(turn);
+            await InvalidateCacheAsync($"turns:{DateOnly.FromDateTime(turn.DateTurn):yyyy-MM-dd}:all");
+            await InvalidateCacheAsync($"turnsList:{DateOnly.FromDateTime(turn.DateTurn):yyyy-MM-dd}:all");
         }
         var users = await userManager.GetUsersInRoleAsync(RolesConstants.Ingreso);
         foreach (var u in users) { await hubContext.Clients.User(u.Id).SendAsync("UpdateTableDirected", "La tabla se ha actualizado"); }
@@ -202,6 +208,9 @@ public class TurnsController(UserManager<IdentityUser> userManager,
             var t = turn.Adapt<Turn>();
 
             updateTurns.Update(t);
+            // Invalidate cached turn queries for today (the date likely stays the same)
+            await InvalidateCacheAsync($"turns:{DateOnly.FromDateTime(DateTime.Today):yyyy-MM-dd}:all");
+            await InvalidateCacheAsync($"turnsList:{DateOnly.FromDateTime(DateTime.Today):yyyy-MM-dd}:all");
             var users = await userManager.GetUsersInRoleAsync(RolesConstants.Ingreso);
             foreach (var u in users) { await hubContext.Clients.User(u.Id).SendAsync("UpdateTableDirected", "La tabla se ha actualizado"); }
             return Ok();
@@ -215,6 +224,8 @@ public class TurnsController(UserManager<IdentityUser> userManager,
     {
         var turn = await getTurns.GetTurn(id);
         updateTurns.Delete(turn);
+        await InvalidateCacheAsync($"turns:{DateOnly.FromDateTime(turn.DateTurn):yyyy-MM-dd}:all");
+        await InvalidateCacheAsync($"turnsList:{DateOnly.FromDateTime(turn.DateTurn):yyyy-MM-dd}:all");
         await hubContext.Clients.All.SendAsync("UpdateTable", "La tabla se ha actualizado");
         return Ok();
     }

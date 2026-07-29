@@ -1,12 +1,29 @@
 version: "3.9"
 
 services:
+  redis:
+    image: redis:7-alpine
+    container_name: turnero-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
   turnero-app:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: turnero-app
     restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
     env_file:
       - .env
     environment:
@@ -18,3 +35,6 @@ services:
       - "8080:8080"
     volumes:
       - ${FIREBASE_CREDENTIALS_FILE:-./secrets/firebase.json}:/run/secrets/firebase.json:ro
+
+volumes:
+  redis-data:

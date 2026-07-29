@@ -1,6 +1,6 @@
 ﻿namespace Turnero.SL.Services.Repositories;
 
-public class VaccinesRepository(ApplicationDbContext context, IMemoryCache cache) : RepositoryBase<Vaccines>(context, cache), IVaccinesRepository
+public class VaccinesRepository(ApplicationDbContext context, IMemoryCache cache, RedisCacheService redisCache) : RepositoryBase<Vaccines>(context, cache, redisCache), IVaccinesRepository
 {
     public async Task<Vaccines?> Get(Guid? id)
     {
@@ -13,6 +13,11 @@ public class VaccinesRepository(ApplicationDbContext context, IMemoryCache cache
         return await FindByCondition(v => v.PatientId == patientId)
             .Include(v => v.Patient)
             .ToListAsync();
+    }
+
+    public async Task<List<Vaccines>> GetCachedByPatientId(Guid patientId)
+    {
+        return await GetCachedData($"vaccines:{patientId}", () => GetByPatientId(patientId));
     }
 
     public new async Task Update(Vaccines vaccines)
@@ -34,6 +39,7 @@ public interface IVaccinesRepository
 {
     Task<Vaccines?> Get(Guid? id);
     Task<List<Vaccines>> GetByPatientId(Guid patientId);
+    Task<List<Vaccines>> GetCachedByPatientId(Guid patientId);
     Task Update(Vaccines vaccines);
     Task Insert(Vaccines vaccines);
     void Remove(Vaccines vaccines);

@@ -1,7 +1,7 @@
 ﻿namespace Turnero.SL.Services.Repositories;
 
-public class CongErrorsRepository(ApplicationDbContext context, IMemoryCache cache)
-    : RepositoryBase<CongErrors>(context, cache), ICongErrorsRepository
+public class CongErrorsRepository(ApplicationDbContext context, IMemoryCache cache, RedisCacheService redisCache)
+    : RepositoryBase<CongErrors>(context, cache, redisCache), ICongErrorsRepository
 {
     public async Task<CongErrors?> Get(Guid id)
     {

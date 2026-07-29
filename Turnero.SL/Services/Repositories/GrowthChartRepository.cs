@@ -1,12 +1,17 @@
 ﻿namespace Turnero.SL.Services.Repositories;
 
-public class GrowthChartRepository(ApplicationDbContext context, IMemoryCache cache) : RepositoryBase<GrowthChart>(context, cache), IGrowthChartRepository
+public class GrowthChartRepository(ApplicationDbContext context, IMemoryCache cache, RedisCacheService redisCache) : RepositoryBase<GrowthChart>(context, cache, redisCache), IGrowthChartRepository
 {
     public async Task<List<GrowthChart>> GetByPatientId(Guid patientId)
     {
         return await FindByCondition(g => g.PatientId == patientId)
             .Include(g => g.Patient)
             .ToListAsync();
+    }
+
+    public async Task<List<GrowthChart>> GetCachedByPatientId(Guid patientId)
+    {
+        return await GetCachedData($"growthCharts:{patientId}", () => GetByPatientId(patientId));
     }
 
     public async Task<GrowthChart?> GetById(Guid id)
@@ -37,6 +42,7 @@ public class GrowthChartRepository(ApplicationDbContext context, IMemoryCache ca
 public interface IGrowthChartRepository
 {
     Task<List<GrowthChart>> GetByPatientId(Guid patientId);
+    Task<List<GrowthChart>> GetCachedByPatientId(Guid patientId);
     Task<GrowthChart?> GetById(Guid id);
     Task Insert(GrowthChart growthChart);
     Task Edit(GrowthChart growthChart);

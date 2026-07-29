@@ -1,6 +1,20 @@
 version: "3.9"
 
 services:
+  redis:
+    image: redis:7-alpine
+    container_name: turnero-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
   turnero-app:
     build:
       context: .
@@ -8,6 +22,9 @@ services:
     image: turnero-app:prod
     container_name: turnero-app
     restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
     env_file:
       - .env
     environment:
@@ -30,3 +47,6 @@ services:
     cpus: "1.50"
     mem_limit: 1536m
     mem_reservation: 512m
+
+volumes:
+  redis-data:
