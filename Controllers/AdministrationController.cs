@@ -5,6 +5,7 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
                                 UserManager<IdentityUser> userManager,
                                 RedisCacheService redisCache,
                                 IMemoryCache memoryCache,
+                                ApplicationDbContext dbContext,
                                 ILogger<AdministrationController> logger) : TurneroBaseController
 {
 
@@ -263,7 +264,7 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
         try
         {
             var entries = await redisCache.GetAllKeysAsync();
-            ViewBag.IsConnected = redisCache.IsConnected;
+            ViewBag.IsConnected = await redisCache.CheckConnectionAsync();
             ViewBag.TotalEntries = entries.Count;
             ViewBag.TotalHits = entries.Sum(e => e.Hits);
             ViewBag.TotalMisses = entries.Sum(e => e.Misses);
@@ -275,6 +276,67 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
             TempData["CacheError"] = $"Error al obtener estadísticas de cache: {ex.Message}";
             return View(new List<CacheEntryInfo>());
         }
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Health()
+    {
+        var checks = new List<HealthCheckResult>();
+        var overallHealthy = true;
+
+        // PostgreSQL
+        try
+        {
+            var canConnect = await dbContext.Database.CanConnectAsync();
+            checks.Add(new HealthCheckResult
+            {
+                Name = "PostgreSQL",
+                Status = canConnect ? "healthy" : "unhealthy",
+                Icon = canConnect ? "bi-database-check" : "bi-database-x",
+                Description = canConnect ? "Conexión establecida correctamente" : "No se puede conectar a la base de datos"
+            });
+            if (!canConnect) overallHealthy = false;
+        }
+        catch (Exception ex)
+        {
+            checks.Add(new HealthCheckResult
+            {
+                Name = "PostgreSQL",
+                Status = "unhealthy",
+                Icon = "bi-database-x",
+                Description = ex.Message
+            });
+            overallHealthy = false;
+        }
+
+        // Redis
+        try
+        {
+            var redisOk = await redisCache.CheckConnectionAsync();
+            checks.Add(new HealthCheckResult
+            {
+                Name = "Redis",
+                Status = redisOk ? "healthy" : "unhealthy",
+                Icon = redisOk ? "bi-database-check" : "bi-database-x",
+                Description = redisOk ? "Cache distribuido responde al PING" : "Redis no responde al PING. La app funciona con IMemoryCache como fallback."
+            });
+            if (!redisOk) overallHealthy = false;
+        }
+        catch (Exception ex)
+        {
+            checks.Add(new HealthCheckResult
+            {
+                Name = "Redis",
+                Status = "unhealthy",
+                Icon = "bi-database-x",
+                Description = ex.Message
+            });
+            overallHealthy = false;
+        }
+
+        ViewBag.OverallStatus = overallHealthy ? "healthy" : "unhealthy";
+        ViewBag.CheckedAt = DateTime.UtcNow;
+        return View(checks);
     }
 
     [HttpPost]

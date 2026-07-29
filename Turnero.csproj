@@ -20,7 +20,8 @@
 
 	<PropertyGroup>
 		<PublishReadyToRun>true</PublishReadyToRun>
-		<PublishTrimmed>false</PublishTrimmed>
+		<PublishTrimmed>true</PublishTrimmed>
+		<TrimMode>partial</TrimMode>
 		<GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
 		<Title>Turnero</Title>
 		<Company>PF Software</Company>

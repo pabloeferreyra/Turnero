@@ -31,6 +31,7 @@ services:
       ASPNETCORE_URLS: http://+:8080
       Firebase__CredentialsPath: /run/secrets/firebase.json
       GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/firebase.json
+      Redis__ConnectionString: redis:6379
     ports:
       - "8080:8080"
     volumes:

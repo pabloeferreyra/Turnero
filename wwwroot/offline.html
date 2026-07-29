@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="es-ar">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sin conexión - Turnero</title>
+    <style>
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 16px;
+            height: 100%;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f0 100%);
+            color: #333;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .offline-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 48px 40px;
+            max-width: 440px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.04);
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .icon-wrapper {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 24px;
+            background: #f0f7f9;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-wrapper svg {
+            width: 40px;
+            height: 40px;
+            fill: none;
+            stroke: #74ADB9;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 0.95rem;
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 32px;
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #f44336;
+            border-radius: 50%;
+            margin-right: 6px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .status-label {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.85rem;
+            color: #888;
+            margin-bottom: 24px;
+        }
+
+        .btn-retry {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 32px;
+            background: #74ADB9;
+            color: #fff;
+            border: none;
+            border-radius: 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.15s;
+            box-shadow: 0 4px 12px rgba(116, 173, 185, 0.3);
+        }
+
+        .btn-retry:hover {
+            background: #0B5066;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(11, 80, 102, 0.35);
+        }
+
+        .btn-retry:active {
+            transform: translateY(0);
+        }
+
+        .btn-retry svg {
+            width: 18px;
+            height: 18px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .hints {
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid #eee;
+            text-align: left;
+        }
+
+        .hints-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .hint-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 0.85rem;
+            color: #777;
+            line-height: 1.4;
+            margin-bottom: 8px;
+        }
+
+        .hint-item svg {
+            flex-shrink: 0;
+            width: 16px;
+            height: 16px;
+            margin-top: 1px;
+            fill: none;
+            stroke: #74ADB9;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .brand {
+            margin-top: 24px;
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+
+        .brand strong {
+            color: #74ADB9;
+            font-weight: 600;
+        }
+
+        @media (max-width: 480px) {
+            .offline-card {
+                padding: 32px 24px;
+                border-radius: 16px;
+            }
+
+            h1 {
+                font-size: 1.25rem;
+            }
+        }
+
+        /* Retry spinner animation */
+        .spinning {
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-card">
+        <div class="icon-wrapper">
+            <!-- Wifi-off icon -->
+            <svg viewBox="0 0 24 24">
+                <line x1="2" y1="2" x2="22" y2="22"></line>
+                <path d="M8.5 16.5a5 5 0 0 1 7 0"></path>
+                <path d="M2 8.82a15 15 0 0 1 4.17-2.65"></path>
+                <path d="M10.66 5.12A15 15 0 0 1 22 8.82"></path>
+                <path d="M14.5 20.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0Z"></path>
+            </svg>
+        </div>
+
+        <h1>Sin conexión</h1>
+        <p class="subtitle">Parece que has perdido la conexión a Internet. Algunas funciones pueden no estar disponibles hasta que te reconectes.</p>
+
+        <div class="status-label">
+            <span class="status-dot"></span>
+            Sin conexión
+        </div>
+
+        <button class="btn-retry" onclick="retryConnection()">
+            <svg viewBox="0 0 24 24" id="retry-icon">
+                <polyline points="23 4 23 10 17 10"></polyline>
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+            </svg>
+            Reintentar
+        </button>
+
+        <div class="hints">
+            <div class="hints-title">Mientras tanto</div>
+            <div class="hint-item">
+                <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10"></path><path d="M12 6v6l4 2"></path></svg>
+                <span>Los datos vistos recientemente aún pueden estar disponibles.</span>
+            </div>
+            <div class="hint-item">
+                <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                <span>Revisa tu conexión WiFi o datos móviles e inténtalo de nuevo.</span>
+            </div>
+            <div class="hint-item">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                <span>Si el problema persiste, el servidor podría estar temporalmente fuera de servicio.</span>
+            </div>
+        </div>
+
+        <div class="brand">
+            <strong>Turnero</strong> &mdash; Gestión de turnos médicos
+        </div>
+    </div>
+
+    <script>
+        function retryConnection() {
+            var btn = document.querySelector('.btn-retry');
+            var icon = document.getElementById('retry-icon');
+            btn.disabled = true;
+            icon.classList.add('spinning');
+            btn.textContent = ' Reconectando...';
+            btn.prepend(icon);
+
+            // Intentar conectar con un recurso no cacheado para verificar conectividad real
+            fetch('/_ping?' + Date.now(), { cache: 'no-store' })
+                .then(function () {
+                    window.location.reload();
+                })
+                .catch(function () {
+                    // Still offline
+                    icon.classList.remove('spinning');
+                    btn.disabled = false;
+                    btn.textContent = '';
+                    btn.appendChild(icon);
+                    btn.append(' Reintentar');
+
+                    // Brief shake animation to indicate failure
+                    document.querySelector('.offline-card').style.animation = 'none';
+                    document.querySelector('.offline-card').offsetHeight; // trigger reflow
+                    document.querySelector('.offline-card').style.animation = 'shake 0.4s ease-out';
+
+                    // Inject shake keyframes
+                    var style = document.createElement('style');
+                    style.textContent = '@keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }';
+                    document.head.appendChild(style);
+                });
+        }
+    </script>
+</body>
+</html>

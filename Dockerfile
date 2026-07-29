@@ -8,17 +8,16 @@ COPY ["Turnero.Utilities/Turnero.Utilities.csproj", "Turnero.Utilities/"]
 RUN dotnet restore "Turnero.csproj"
 
 COPY . .
-RUN dotnet publish "Turnero.csproj" -c Release -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "Turnero.csproj" -c Release -r linux-x64 --self-contained true -o /app/publish
 
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
+FROM mcr.microsoft.com/dotnet/runtime-deps:10.0-alpine AS final
 WORKDIR /app
 
-RUN apt-get update \
-	&& apt-get install -y --no-install-recommends curl \
-	&& rm -rf /var/lib/apt/lists/*
+# curl en Alpine via apk pesa ~2 MB (vs ~40 MB en Ubuntu), indispensable para healthchecks
+RUN apk add --no-cache curl
 
 ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
 
 COPY --from=build /app/publish .
-ENTRYPOINT ["dotnet", "Turnero.dll"]
+ENTRYPOINT ["./Turnero"]

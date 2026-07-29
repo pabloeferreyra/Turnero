@@ -21,15 +21,67 @@
         <link rel="manifest" href="/manifest.json">
         <script>
             // Verificar si el navegador es compatible con service worker
-              if ('serviceWorker' in navigator) {
-                  window.addEventListener('load', function () {
-                      navigator.serviceWorker.register('/service-worker.js').then(function (registration) {
-                          console.log('Service Worker registrado con éxito:', registration);
-                      }).catch(function (error) {
-                          console.log('Error al registrar el Service Worker:', error);
-                      });
-                  });
-              }
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function () {
+                    // Guardar el controlador actual para detectar si es una actualización
+                    var initialController = navigator.serviceWorker.controller;
+
+                    navigator.serviceWorker.register('/service-worker.js').then(function (registration) {
+                        console.log('Service Worker registrado con éxito:', registration);
+
+                        // Detectar cuando se encuentra una nueva versión del SW
+                        registration.addEventListener('updatefound', function () {
+                            var newWorker = registration.installing;
+                            if (!newWorker) return;
+
+                            newWorker.addEventListener('statechange', function () {
+                                // Cuando el nuevo SW se activa y HABÍA un controlador previo, es una actualización
+                                if (newWorker.state === 'activated' && initialController) {
+                                    console.log('Nueva versión del Service Worker activada');
+                                    mostrarNotificacionActualizacion();
+                                }
+                            });
+                        });
+                    }).catch(function (error) {
+                        console.log('Error al registrar el Service Worker:', error);
+                    });
+                });
+            }
+
+            /**
+             * Muestra un toast de SweetAlert2 notificando que hay una nueva versión
+             * y permite al usuario recargar la página para ver los cambios.
+             */
+            function mostrarNotificacionActualizacion() {
+                if (typeof Swal === 'undefined') return;
+
+                Swal.fire({
+                    icon: 'info',
+                    title: '¡Nueva versión disponible!',
+                    text: 'La aplicación se ha actualizado. Recargue para ver los últimos cambios.',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: true,
+                    confirmButtonText: 'Actualizar ahora',
+                    confirmButtonColor: '#0d6efd',
+                    showCancelButton: false,
+                    timer: 10000,
+                    timerProgressBar: true,
+                    didOpen: function (toast) {
+                        // Pausar el timer cuando el mouse está sobre el toast
+                        toast.addEventListener('mouseenter', function () {
+                            Swal.stopTimer();
+                        });
+                        toast.addEventListener('mouseleave', function () {
+                            Swal.resumeTimer();
+                        });
+                    }
+                }).then(function (result) {
+                    if (result.isConfirmed) {
+                        window.location.reload();
+                    }
+                });
+            }
         </script>
         @RenderSection("header", required: false)
     </head>
@@ -79,6 +131,7 @@
                                             <li><a asp-action="Index" asp-controller="TimeTurn" class="dropdown-item">Horarios</a></li>
                                             <li><hr class="dropdown-divider"></li>
                                             <li><a asp-action="CacheStats" asp-controller="Administration" class="dropdown-item"><i class="bi bi-database-gear me-1"></i>Cache</a></li>
+                                            <li><a asp-action="Health" asp-controller="Administration" class="dropdown-item"><i class="bi bi-heart-pulse me-1"></i>Health</a></li>
                                         </ul>
                                     </li>
                                 }

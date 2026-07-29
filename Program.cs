@@ -441,6 +441,50 @@ app.MapControllerRoute(
 app.MapRazorPages();
 
 app.UseCookiePolicy();
+
+// Health check endpoint con verificación de PostgreSQL y Redis
+app.MapGet("/health", async (ApplicationDbContext dbContext, RedisConnectionService redis) =>
+{
+    var checks = new List<object>();
+    var overallHealthy = true;
+
+    // PostgreSQL
+    try
+    {
+        var canConnect = await dbContext.Database.CanConnectAsync();
+        checks.Add(new { name = "postgresql", status = canConnect ? "healthy" : "unhealthy" });
+        if (!canConnect) overallHealthy = false;
+    }
+    catch (Exception ex)
+    {
+        checks.Add(new { name = "postgresql", status = "unhealthy", error = ex.Message });
+        overallHealthy = false;
+    }
+
+    // Redis
+    try
+    {
+        var redisOk = await redis.IsConnectedAsync();
+        checks.Add(new { name = "redis", status = redisOk ? "healthy" : "unhealthy" });
+        if (!redisOk) overallHealthy = false;
+    }
+    catch (Exception ex)
+    {
+        checks.Add(new { name = "redis", status = "unhealthy", error = ex.Message });
+        overallHealthy = false;
+    }
+
+    var result = new
+    {
+        status = overallHealthy ? "healthy" : "unhealthy",
+        timestamp = DateTime.UtcNow,
+        checks
+    };
+
+    return overallHealthy
+        ? Results.Ok(result)
+        : Results.Json(result, statusCode: 503);
+});
 #endregion
 
 

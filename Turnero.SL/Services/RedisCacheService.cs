@@ -20,9 +20,20 @@ public class RedisCacheService
     public ConcurrentDictionary<string, CacheStats> Stats { get; } = new();
 
     /// <summary>
-    /// Whether the Redis connection is established.
+    /// Whether the Redis connection was established at the time of the last check.
+    /// Note: this value can be stale; use <see cref="CheckConnectionAsync"/> for a
+    /// real-time verification.
     /// </summary>
     public bool IsConnected => _connectionService.IsConnected;
+
+    /// <summary>
+    /// Actively pings Redis to verify the connection is responsive.
+    /// More reliable than <see cref="IsConnected"/> for diagnosing connectivity.
+    /// </summary>
+    public async Task<bool> CheckConnectionAsync()
+    {
+        return await _connectionService.IsConnectedAsync();
+    }
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {

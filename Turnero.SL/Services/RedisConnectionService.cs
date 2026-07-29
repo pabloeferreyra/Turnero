@@ -26,5 +26,25 @@ public sealed class RedisConnectionService : IDisposable
 
     public bool IsConnected => _connection.IsConnected;
 
+    /// <summary>
+    /// Performs an actual PING to Redis to verify the connection is responsive.
+    /// More reliable than checking <see cref="IsConnected"/> alone, because
+    /// <c>ConnectionMultiplexer.IsConnected</c> can be inaccurate when
+    /// <c>AbortOnConnectFail=false</c> or during background reconnection.
+    /// </summary>
+    public async Task<bool> IsConnectedAsync()
+    {
+        try
+        {
+            var db = GetDatabase();
+            var elapsed = await db.PingAsync();
+            return elapsed != TimeSpan.Zero;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     public void Dispose() => _connection?.Dispose();
 }
