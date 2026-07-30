@@ -14,10 +14,17 @@ FROM mcr.microsoft.com/dotnet/runtime-deps:10.0-alpine AS final
 WORKDIR /app
 
 # curl en Alpine via apk pesa ~2 MB (vs ~40 MB en Ubuntu), indispensable para healthchecks
-RUN apk add --no-cache curl
+# nc (netcat) se usa en wait-for-it.sh para sondear conexiones TCP
+RUN apk add --no-cache curl netcat-openbsd
 
 ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
 
 COPY --from=build /app/publish .
-ENTRYPOINT ["./Turnero"]
+
+# wait-for-it.sh: espera a que servicios (Redis, Postgres) estén listos antes de arrancar
+# docker-entrypoint.sh: entrypoint que procesa WAIT_FOR_SERVICES y ejecuta la app
+COPY wait-for-it.sh docker-entrypoint.sh /app/
+RUN chmod +x /app/wait-for-it.sh /app/docker-entrypoint.sh
+
+ENTRYPOINT ["/app/docker-entrypoint.sh"]

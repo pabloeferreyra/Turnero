@@ -52,7 +52,6 @@ jobs:
           ./scripts/deploy-remote.ps1 `
             -RemoteHost "${{ secrets.SERVER }}" `
             -User "${{ secrets.USER_NAME }}" `
-            -Version "${{ github.event.workflow_run.head_sha }}" `
             -RemotePath "${{ secrets.SRV_PATH }}" `
             -FirebaseCredentialsFile "${{ secrets.FIREBASE_PATH }}" `
             -SshPort ${{ secrets.PORT }} `

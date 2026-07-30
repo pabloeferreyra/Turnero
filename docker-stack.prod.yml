@@ -18,7 +18,8 @@ services:
         constraints:
           - node.role == manager
       restart_policy:
-        condition: on-failure
+        condition: any
+        delay: 10s
       resources:
         limits:
           cpus: "0.25"
@@ -41,6 +42,8 @@ services:
       Authentication__TokenCode: ${Authentication__TokenCode}
       Authentication__TokenReset: ${Authentication__TokenReset}
       Redis__ConnectionString: redis:6379
+      WAIT_FOR_SERVICES: "redis:6379"
+      WAIT_FOR_POSTGRES: "true"
       Firebase__CredentialsPath: /run/secrets/firebase.json
       GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/firebase.json
     ports:
@@ -71,7 +74,9 @@ services:
         parallelism: 1
         order: stop-first
       restart_policy:
-        condition: on-failure
+        condition: any
+        delay: 15s
+        max_attempts: 0
       resources:
         limits:
           cpus: "0.50"
