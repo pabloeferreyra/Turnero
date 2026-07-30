@@ -120,6 +120,7 @@ public class AllergiesController(IInsertAllergiesServices insertAllergies,
     }
 
     [HttpDelete]
+    [ValidateAntiForgeryToken]
     public async Task<StatusCodeResult> Delete(Guid id)
     {
         var allergy = await getAllergies.Get(id);

@@ -18,9 +18,7 @@ public static class MapsterConfig
 
 
         TypeAdapterConfig<TurnDTO, Turn>.NewConfig()
-            .Map(dest => dest.Time.Id, src => src.TimeId)
             .Ignore(dest => dest.Time)
-            .Map(dest => dest.Medic.Id, src => src.MedicId)
             .Ignore(dest => dest.Medic)
             .Map(dest => dest.DateTurn,
             src => !string.IsNullOrEmpty(src.Date) ? DateTime.ParseExact(src.Date, "yyyy-MM-dd", null) : DateTime.MinValue);

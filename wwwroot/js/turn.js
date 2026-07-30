@@ -350,13 +350,14 @@
 
     function confirmAccess(btn) {
         const id = btn.dataset.id;
+        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || "";
+
+        const body = new URLSearchParams({ id });
+        body.append("__RequestVerificationToken", token);
 
         fetch("/Turns/Accessed", {
             method: "POST",
-            headers: {
-                "RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]')?.value
-            },
-            body: new URLSearchParams({ id })
+            body
         })
             .then(r => {
                 if (!r.ok) throw new Error();
@@ -368,13 +369,14 @@
 
     function confirmDelete(btn) {
         const id = btn.dataset.id;
+        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || "";
+
+        const body = new URLSearchParams({ id });
+        body.append("__RequestVerificationToken", token);
 
         fetch("/Turns/Delete", {
             method: "DELETE",
-            headers: {
-                "RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]')?.value
-            },
-            body: new URLSearchParams({ id })
+            body
         })
             .then(r => {
                 if (!r.ok) throw new Error();

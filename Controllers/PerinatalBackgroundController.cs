@@ -25,6 +25,7 @@ public class PerinatalBackgroundController(IGetPerinatalBackgroundService get,
     }
 
     [HttpPut]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(PerinatalBackground data)
     {
         try

@@ -105,8 +105,15 @@ window.ModalUtils = {
             }
 
             if (!response.ok) {
-                const error = await response.text();
-                throw new Error(error || "Error en el guardado");
+                let errorMsg = "Error en el guardado";
+                try {
+                    const errorJson = await response.json();
+                    errorMsg = errorJson.error || errorMsg;
+                } catch {
+                    const errorText = await response.text();
+                    if (errorText) errorMsg = errorText;
+                }
+                throw new Error(errorMsg);
             }
 
             const html = await response.text();

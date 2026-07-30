@@ -6,7 +6,8 @@ public class TurnsController(UserManager<IdentityUser> userManager,
                        IGetTurnDTOServices getTurnDTO,
                        IUpdateTurnsServices updateTurns,
                        IGetMedicsServices getMedics,
-                       IHubContext<TurnsTableHub> hubContext) : TurneroBaseController
+                       IHubContext<TurnsTableHub> hubContext,
+                       ILogger<TurnsController> logger) : TurneroBaseController
 {
 
     [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
@@ -21,6 +22,7 @@ public class TurnsController(UserManager<IdentityUser> userManager,
 
     [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> InitializeTurns()
     {
         string isMedic = await CheckMedic();
@@ -108,36 +110,78 @@ public class TurnsController(UserManager<IdentityUser> userManager,
 
     [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
     [HttpPost]
-    //[ValidateAntiForgeryToken]
-    public async Task<StatusCodeResult> Create(TurnDTO turn)
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create(TurnDTO turn)
     {
         try
         {
+            // ── Validación de campos requeridos ───────────────────────────────
+            if (turn.MedicId == Guid.Empty)
+            {
+                logger.LogWarning("Intento de crear turno sin Médico seleccionado.");
+                return Conflict(new { error = "Debe seleccionar un médico." });
+            }
+
+            if (turn.TimeId == Guid.Empty)
+            {
+                logger.LogWarning("Intento de crear turno sin Horario seleccionado.");
+                return Conflict(new { error = "Debe seleccionar un horario." });
+            }
+
+            // ── Normalizar datos ───────────────────────────────────────────
             turn.Reason = string.IsNullOrWhiteSpace(turn.Reason) ? string.Empty : turn.Reason.TrimEnd('\"');
-            turn.Date = turn.Date ?? DateTime.Today.ToString("dd-MM-yyyy");
+            turn.Date = turn.Date ?? DateTime.Today.ToString("yyyy-MM-dd");
+
+            // ── Validación de turno duplicado ────────────────────────────────
+            if (!DateOnly.TryParseExact(turn.Date, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out var parsedDate))
+            {
+                logger.LogWarning("Fecha inválida al crear turno: {Date}", turn.Date);
+                return Conflict(new { error = "La fecha ingresada no es válida." });
+            }
+
+            var dateTurn = parsedDate.ToDateTime(TimeOnly.MinValue);
+            var exists = getTurns.CheckTurn(turn.MedicId, dateTurn, turn.TimeId);
+            if (exists)
+            {
+                logger.LogWarning("Turno duplicado: Médico {MedicId}, Fecha {Date}, Horario {TimeId}",
+                    turn.MedicId, turn.Date, turn.TimeId);
+                return Conflict(new { error = "El médico ya tiene un turno en esa fecha y horario." });
+            }
+
+            // ── Procesar y guardar ───────────────────────────────────────────
+
             var t = turn.Adapt<Turn>();
-            await insertTurns.CreateTurnAsync(t);
+            var created = await insertTurns.CreateTurnAsync(t);
+
+            if (!created)
+            {
+                logger.LogWarning("CreateTurnAsync devolvió false para Médico {MedicId}, Fecha {Date}",
+                    turn.MedicId, turn.Date);
+                return Conflict(new { error = "No se pudo crear el turno. Intente nuevamente." });
+            }
+
+            // ── Notificar vía SignalR e invalidar caché ─────────────────────
             var medic = await getMedics.GetMedicById(turn.MedicId);
             var turnMsj = "se agrego un nuevo turno";
 
             await hubContext.Clients.User(medic.UserGuid).SendAsync("UpdateTableDirected", medic.Name, turnMsj, t.DateTurn.ToShortDateString());
 
-            // Invalidate cached turn queries for this date
             await InvalidateCacheAsync($"turns:{DateOnly.FromDateTime(t.DateTurn):yyyy-MM-dd}:all");
             await InvalidateCacheAsync($"turnsList:{DateOnly.FromDateTime(t.DateTurn):yyyy-MM-dd}:all");
 
-            return Ok();
+            return Ok(new { message = "Turno creado correctamente." });
         }
-        catch
+        catch (Exception ex)
         {
-            return Conflict();
+            logger.LogError(ex, "Error al crear turno para Médico {MedicId}, Fecha {Date}",
+                turn.MedicId, turn.Date);
+            return Conflict(new { error = "Ocurrió un error al crear el turno." });
         }
-
-
     }
 
     [Authorize(Roles = RolesConstants.Medico)]
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Accessed(Guid? id)
     {
         Turn turn;
@@ -220,6 +264,7 @@ public class TurnsController(UserManager<IdentityUser> userManager,
 
     [Authorize(Roles = RolesConstants.Admin + ", " + RolesConstants.Ingreso)]
     [HttpDelete, ActionName("Delete")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(Guid id)
     {
         var turn = await getTurns.GetTurn(id);
@@ -248,6 +293,7 @@ public class TurnsController(UserManager<IdentityUser> userManager,
         return getTurns.CheckTurn(medicId, date, timeTurn);
     }    [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> ExportExcel()
     {
         var data = await GetFilteredTurns();
@@ -288,6 +334,7 @@ public class TurnsController(UserManager<IdentityUser> userManager,
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             "turnos.xlsx");
     }    [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> ExportPdf()
     {
         var data = await GetFilteredTurns();

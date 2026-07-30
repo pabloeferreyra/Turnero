@@ -16,6 +16,7 @@
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<StatusCodeResult> Create(TurnDTO turn)
         {
             if (!ModelState.IsValid) return this.BadRequest();

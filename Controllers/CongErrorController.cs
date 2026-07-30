@@ -39,6 +39,7 @@ public class CongErrorController(IGetCongErrorService get,
     }
 
     [HttpPut]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(CongErrors data)
     {
         try

@@ -68,6 +68,7 @@ public class PermMedController(IGetPermMedService get,
     }
 
     [HttpDelete]
+    [ValidateAntiForgeryToken]
     public async Task<StatusCodeResult> Delete(Guid? id)
     {
         if (id == null || id == Guid.Empty)

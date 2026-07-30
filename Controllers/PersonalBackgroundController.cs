@@ -14,6 +14,7 @@ public class PersonalBackgroundController(IGetPersonalBackgroundService get,
     }
 
     [HttpPut]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(PersonalBackground data)
     {
         try

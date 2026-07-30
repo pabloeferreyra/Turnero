@@ -53,6 +53,7 @@ public class PatientsController(IInsertPatientService insertPatient,
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<StatusCodeResult> Create(Patient patient)
     {
         try
@@ -107,6 +108,7 @@ public class PatientsController(IInsertPatientService insertPatient,
 
     [HttpDelete, ActionName("Delete")]
     [Authorize(Roles = RolesConstants.Admin + ", " + RolesConstants.Medico)]
+    [ValidateAntiForgeryToken]
     public async Task<StatusCodeResult> DeletePatient(Guid id)
     {
         try

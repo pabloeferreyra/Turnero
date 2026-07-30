@@ -33,6 +33,7 @@ public class ParentsDataController(
     }
 
     [HttpPut]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(ParentsData data)
     {
         try
@@ -50,6 +51,7 @@ public class ParentsDataController(
     }
 
     [HttpDelete]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete([FromBody] ParentsData data)
     {
         try

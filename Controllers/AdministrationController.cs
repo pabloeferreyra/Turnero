@@ -39,6 +39,7 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> ManageUserClaims(UserClaimsViewModel model)
     {
         var user = await userManager.FindByIdAsync(model.UserId);
@@ -91,6 +92,7 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> EditUser(EditUserViewModel model)
     {
         var user = await userManager.FindByIdAsync(model.Id);
@@ -123,6 +125,7 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteUser(string id)
     {
         var user = await userManager.FindByIdAsync(id);
@@ -153,6 +156,7 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteRole(string id)
     {
         var role = await roleManager.FindByIdAsync(id);
@@ -222,6 +226,7 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> EditRole(EditRoleViewModel model)
     {
         var role = await roleManager.FindByIdAsync(model.Id);
@@ -252,6 +257,7 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> CreateRole(IdentityRole role)
     {
         await roleManager.CreateAsync(role);
@@ -340,6 +346,7 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> ClearCache(string key)
     {
         if (string.IsNullOrEmpty(key))
@@ -395,6 +402,7 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> EditUsersInRole(List<UserRoleViewModel> model, string roleId)
     {
         var role = await roleManager.FindByIdAsync(roleId);
