@@ -203,6 +203,7 @@ builder.Services.AddScoped<IInsertTurnsServices, InsertTurnsServices>();
 builder.Services.AddScoped<IUpdateTurnsServices, UpdateTurnsServices>();
 builder.Services.AddScoped<IGetTurnsServices, GetTurnsServices>();
 builder.Services.AddScoped<IGetTurnDTOServices, GetTurnDTOServices>();
+builder.Services.AddScoped<IGetDashboardDataService, GetDashboardDataService>();
 
 // Medic Services
 builder.Services.AddScoped<IInsertMedicServices, InsertMedicServices>();

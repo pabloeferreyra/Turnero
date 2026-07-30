@@ -1,0 +1,355 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+}
+
+@Html.AntiForgeryToken()
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="display-6 fw-bold" style="color: #272643;">
+                <i class="bi bi-bar-chart-fill me-2"></i>Dashboard de Turnos
+            </h1>
+            <p class="text-muted mb-0">Visualización de turnos por día, médico y horario</p>
+        </div>
+    </div>
+
+    <!-- Date Range Filter -->
+    <div class="card border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, #e3f6f5 0%, #ffffff 100%);">
+        <div class="card-body">
+            <form id="dashboardFilter" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label for="startDate" class="form-label fw-semibold">Fecha inicio</label>
+                    <input type="text" id="startDate" class="form-control" value="@ViewBag.StartDate" />
+                </div>
+                <div class="col-md-3">
+                    <label for="endDate" class="form-label fw-semibold">Fecha fin</label>
+                    <input type="text" id="endDate" class="form-control" value="@ViewBag.EndDate" />
+                </div>
+                <div class="col-md-3">
+                    <label for="medicFilter" class="form-label fw-semibold">Médico</label>
+                    <select id="medicFilter" class="form-control" asp-items="@ViewBag.Medics">
+                        <option value="">Todos los médicos</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-grow-1">
+                            <i class="bi bi-search me-1"></i>Actualizar
+                        </button>
+                        <button type="button" id="btnLast7" class="btn btn-outline-primary" title="Últimos 7 días">7d</button>
+                        <button type="button" id="btnLast30" class="btn btn-outline-primary" title="Últimos 30 días">30d</button>
+                        <button type="button" id="btnLast90" class="btn btn-outline-primary" title="Últimos 90 días">90d</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Loading overlay -->
+    <div id="dashboardLoading" class="text-center py-5 d-none">
+        <div class="spinner-border" style="color: #2c698d; width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p class="mt-2 text-muted">Cargando datos del dashboard...</p>
+    </div>
+
+    <!-- Summary Cards -->
+    <div id="summaryCards" class="row g-3 mb-4">
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #2c698d !important;">
+                <div class="card-body text-center">
+                    <div class="fs-1 fw-bold" style="color: #2c698d;" id="totalTurns">0</div>
+                    <div class="text-muted">Total Turnos</div>
+                    <i class="bi bi-calendar-check fs-4" style="color: #bae8e8;"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #28a745 !important;">
+                <div class="card-body text-center">
+                    <div class="fs-1 fw-bold text-success" id="totalAccessed">0</div>
+                    <div class="text-muted">Ingresados</div>
+                    <i class="bi bi-check-circle fs-4" style="color: #28a745;"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #ffc107 !important;">
+                <div class="card-body text-center">
+                    <div class="fs-1 fw-bold text-warning" id="totalPending">0</div>
+                    <div class="text-muted">Pendientes</div>
+                    <i class="bi bi-hourglass-split fs-4" style="color: #ffc107;"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #272643 !important;">
+                <div class="card-body text-center">
+                    <div class="fs-1 fw-bold" style="color: #272643;" id="busiestMedic">-</div>
+                    <div class="text-muted" id="busiestMedicLabel">Médico + ocupado</div>
+                    <i class="bi bi-person-badge fs-4" style="color: #272643;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 1 -->
+    <div class="row g-3 mb-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-0 pt-3">
+                    <h5 class="card-title mb-0 fw-semibold" style="color: #272643;">
+                        <i class="bi bi-calendar3 me-1"></i>Turnos por día
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="turnsPerDayChart" height="280"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-0 pt-3">
+                    <h5 class="card-title mb-0 fw-semibold" style="color: #272643;">
+                        <i class="bi bi-pie-chart me-1"></i>Ingresados vs Pendientes
+                    </h5>
+                </div>
+                <div class="card-body d-flex align-items-center justify-content-center">
+                    <canvas id="accessedPieChart" height="280"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 2 -->
+    <div class="row g-3 mb-4">
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-0 pt-3">
+                    <h5 class="card-title mb-0 fw-semibold" style="color: #272643;">
+                        <i class="bi bi-people me-1"></i>Turnos por médico
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="turnsPerMedicChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-0 pt-3">
+                    <h5 class="card-title mb-0 fw-semibold" style="color: #272643;">
+                        <i class="bi bi-clock me-1"></i>Turnos por horario
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="turnsPerTimeSlotChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Highlights Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-0 pt-3">
+                    <h5 class="card-title mb-0 fw-semibold" style="color: #272643;">
+                        <i class="bi bi-grid-3x3-gap me-1"></i>Día más / menos concurrido
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row h-100 align-items-center">
+                        <div class="col-6 text-center">
+                            <div class="p-4 rounded-3" style="background: linear-gradient(135deg, #e3f6f5, #ffffff);">
+                                <i class="bi bi-arrow-up-circle fs-1" style="color: #28a745;"></i>
+                                <div class="fs-3 fw-bold mt-2" style="color: #272643;" id="busiestDayName">-</div>
+                                <div class="fs-1 fw-bold" style="color: #2c698d;" id="busiestDayCount">0</div>
+                                <div class="text-muted">turnos (día pico)</div>
+                            </div>
+                        </div>
+                        <div class="col-6 text-center">
+                            <div class="p-4 rounded-3" style="background: linear-gradient(135deg, #f0f0f0, #ffffff);">
+                                <i class="bi bi-arrow-down-circle fs-1" style="color: #dc3545;"></i>
+                                <div class="fs-3 fw-bold mt-2" style="color: #272643;" id="quietestDayName">-</div>
+                                <div class="fs-1 fw-bold" style="color: #2c698d;" id="quietestDayCount">0</div>
+                                <div class="text-muted">turnos (día valle)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-0 pt-3">
+                    <h5 class="card-title mb-0 fw-semibold" style="color: #272643;">
+                        <i class="bi bi-trophy me-1"></i>Médico más ocupado
+                    </h5>
+                </div>
+                <div class="card-body d-flex align-items-center justify-content-center">
+                    <div class="text-center">
+                        <i class="bi bi-person-circle fs-1" style="color: #2c698d;"></i>
+                        <div class="fs-2 fw-bold mt-2" style="color: #272643;" id="busiestMedicName">-</div>
+                        <div class="fs-4 fw-bold" style="color: #2c698d;" id="busiestMedicCountDetail">0</div>
+                        <div class="text-muted">turnos en el período</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Week-over-week trend line chart -->
+    <div class="row g-3 mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0 pt-3 d-flex justify-content-between align-items-start">
+                    <div>
+                        <h5 class="card-title mb-0 fw-semibold" style="color: #272643;">
+                            <i class="bi bi-graph-up me-1"></i>Comparativa semana a semana
+                        </h5>
+                        <p class="text-muted small mb-0">Evolución de turnos totales, ingresados y pendientes por semana</p>
+                    </div>
+                    <div class="btn-group btn-group-sm" role="group" aria-label="Período promedio móvil">
+                        <button type="button" class="btn btn-outline-primary btn-sm ma-period-btn" data-period="2">2 sem</button>
+                        <button type="button" class="btn btn-primary btn-sm ma-period-btn active" data-period="3">3 sem</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm ma-period-btn" data-period="4">4 sem</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <canvas id="weeklyTrendChart" height="240"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Weekly / Monthly Summary -->
+    <div class="row g-3 mb-4" id="summarySection">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-0 pt-3">
+                    <h5 class="card-title mb-0 fw-semibold" style="color: #272643;">
+                        <i class="bi bi-calendar-week me-1"></i>Resumen semanal
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm mb-0" id="weeklySummaryTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Semana</th>
+                                    <th>Total</th>
+                                    <th class="text-nowrap">Vs. ant.</th>
+                                    <th class="text-nowrap">Prom. móvil</th>
+                                    <th>Ingresados</th>
+                                    <th>Pend.</th>
+                                    <th class="text-nowrap">Prom./día</th>
+                                    <th>Días</th>
+                                    <th>Día pico</th>
+                                </tr>
+                            </thead>
+                            <tbody id="weeklySummaryBody">
+                                <tr><td colspan="9" class="text-center text-muted">Cargando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-0 pt-3 d-flex justify-content-between align-items-start">
+                    <div>
+                        <h5 class="card-title mb-0 fw-semibold" style="color: #272643;">
+                            <i class="bi bi-calendar-month me-1"></i>Resumen mensual
+                        </h5>
+                    </div>
+                    <div class="btn-group btn-group-sm" role="group" aria-label="Período promedio móvil mensual">
+                        <button type="button" class="btn btn-primary btn-sm ma-monthly-btn active" data-period="2">2m</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm ma-monthly-btn" data-period="3">3m</button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm mb-0" id="monthlySummaryTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Mes</th>
+                                    <th>Total</th>
+                                    <th class="text-nowrap">Vs. ant.</th>
+                                    <th class="text-nowrap">Prom. móvil</th>
+                                    <th>Ingresados</th>
+                                    <th>Pend.</th>
+                                    <th class="text-nowrap">Prom./día</th>
+                                    <th>Días</th>
+                                    <th>Día pico</th>
+                                </tr>
+                            </thead>
+                            <tbody id="monthlySummaryBody">
+                                <tr><td colspan="9" class="text-center text-muted">Cargando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart Row 3: Per medic per day (heatmap style) -->
+    <div class="row g-3 mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0 pt-3">
+                    <h5 class="card-title mb-0 fw-semibold" style="color: #272643;">
+                        <i class="bi bi-bar-chart-steps me-1"></i>Turnos por médico y día
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="turnsPerMedicPerDayChart" height="320"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="row g-3">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0 pt-3 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0 fw-semibold" style="color: #272643;">
+                        <i class="bi bi-table me-1"></i>Detalle por día
+                    </h5>
+                    <button id="btnExportDashboard" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-download me-1"></i>Exportar
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-hover table-sm" id="dashboardTable">
+                            <thead class="table-light" style="position: sticky; top: 0; z-index: 1;">
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Turnos</th>
+                                    <th>Ingresados</th>
+                                    <th>Pendientes</th>
+                                    <th>Médico más cargado</th>
+                                    <th>Turnos</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dashboardTableBody">
+                                <tr><td colspan="6" class="text-center text-muted">Cargando datos...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script src="~/js/dashboard.js" asp-append-version="true"></script>
+}

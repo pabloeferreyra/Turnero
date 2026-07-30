@@ -79,4 +79,20 @@ public class TurnsRepository(ApplicationDbContext context, IMemoryCache cache, R
         turn.DateTurn = turn.DateTurn.ToUniversalTime();
         await CreateAsync(turn);
     }
+
+    public List<Turn> GetTurnsByDateRange(DateTime startDate, DateTime endDate, Guid? medicId = null)
+    {
+        var query = FindByCondition(t => t.DateTurn >= startDate && t.DateTurn <= endDate);
+
+        if (medicId.HasValue)
+        {
+            query = query.Where(t => t.MedicId == medicId.Value);
+        }
+
+        return query
+            .Include(t => t.Medic)
+            .Include(t => t.Time)
+            .OrderBy(t => t.DateTurn)
+            .ToList();
+    }
 }
