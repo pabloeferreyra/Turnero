@@ -20,8 +20,6 @@
 
 	<PropertyGroup>
 		<PublishReadyToRun>true</PublishReadyToRun>
-		<PublishTrimmed>true</PublishTrimmed>
-		<TrimMode>partial</TrimMode>
 		<GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
 		<Title>Turnero</Title>
 		<Company>PF Software</Company>
@@ -89,7 +87,7 @@
     <None Remove="Turnero.Utilities\**" />
   </ItemGroup>
 
-  <ItemGroup>
+<ItemGroup>
     <PackageReference Include="ClosedXML" Version="0.105.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="10.0.10" />
