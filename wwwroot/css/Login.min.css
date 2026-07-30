@@ -1,5 +1,14 @@
 body {
-    background: #508bfc !important
+    background: #2c698d !important
+}
+
+a#help {
+    color: #e3f6f5 !important;
+    text-decoration: underline
+}
+
+a#help:hover {
+    color: #fff !important
 }
 
 .wrapper {
