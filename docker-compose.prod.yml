@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   redis:
     image: redis:7-alpine
@@ -44,8 +46,8 @@ services:
       retries: 5
       start_period: 40s
     cpus: "1.0"
-    mem_limit: 768m
-    mem_reservation: 256m
+    mem_limit: 1536m
+    mem_reservation: 512m
 
 volumes:
   redis-data:
