@@ -10,7 +10,7 @@
     <Version>3.0.1</Version>
     <AssemblyVersion>3.0.1</AssemblyVersion>
 	<Deterministic>False</Deterministic>
-    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <IsPackable>true</IsPackable>
     <Nullable>annotations</Nullable>
     <SignAssembly>False</SignAssembly>
@@ -106,5 +106,24 @@
     <ProjectReference Include="Turnero.SL\Turnero.SL.csproj" />
     <ProjectReference Include="Turnero.Utilities\Turnero.Utilities.csproj" />
   </ItemGroup>
+
+  <!-- Dynamically generate AssemblyInformationalVersion with Git commit hash -->
+  <Target Name="GenerateAssemblyInfoVersion" BeforeTargets="CoreCompile" Condition="'$(DesignTimeBuild)' != 'true'">
+    <Exec Command="git rev-parse HEAD" ConsoleToMSBuild="true" StandardOutputImportance="low" IgnoreExitCode="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitHash" />
+    </Exec>
+    <PropertyGroup>
+      <GitSuffix Condition="'$(GitCommitHash)' != ''">+$(GitCommitHash)</GitSuffix>
+      <FullInformationalVersion>$(Version)$(GitSuffix)</FullInformationalVersion>
+    </PropertyGroup>
+    <WriteLinesToFile
+      File="$(IntermediateOutputPath)AssemblyInfo.g.cs"
+      Lines="// &lt;auto-generated&gt;&#xd;&#xa;// Git commit: $(GitCommitHash)&#xd;&#xa;// &lt;/auto-generated&gt;&#xd;&#xa;[assembly: System.Reflection.AssemblyInformationalVersionAttribute(&quot;$(FullInformationalVersion)&quot;)]"
+      Overwrite="true" />
+    <ItemGroup>
+      <Compile Remove="$(IntermediateOutputPath)AssemblyInfo.g.cs" />
+      <Compile Include="$(IntermediateOutputPath)AssemblyInfo.g.cs" />
+    </ItemGroup>
+  </Target>
 
 </Project>
