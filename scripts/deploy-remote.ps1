@@ -21,7 +21,7 @@ Param(
 
     [string]$RemotePath = "/opt/turnero",
     [string]$StackName = "turnero",
-    [string]$StackFilePath = "docker-stack.prod.yml",
+    [string]$StackFilePath = "docker-compose.prod.yml",
     [switch]$UseTls,
     [string]$ImageRepo = "turnero-app",
     [string]$FirebaseCredentialsFile = "/opt/secrets/firebase.json",
@@ -68,7 +68,7 @@ if ($BackupEnvRetention -lt 0) {
 }
 
 if ($UseTls -and -not $PSBoundParameters.ContainsKey("StackFilePath")) {
-    $StackFilePath = "docker-stack.tls.yml"
+    $StackFilePath = "docker-compose.prod.yml"
 }
 
 $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
@@ -91,8 +91,8 @@ function Resolve-LocalPath {
     throw "Path not found: $Path"
 }
 
-$localStackFullPath = Resolve-LocalPath -Path $StackFilePath
-$stackFileName = Split-Path -Leaf $localStackFullPath
+$localComposeFullPath = Resolve-LocalPath -Path $StackFilePath
+$composeFileName = Split-Path -Leaf $localComposeFullPath
 $imageTag = "$ImageRepo`:$Version"
 
 $sshArgs = @()
@@ -239,10 +239,10 @@ finally {
     Pop-Location
 }
 
-Write-Host "Syncing stack file to ${target}:$RemotePath/$stackFileName"
-& scp @scpArgs $localStackFullPath "${target}:$RemotePath/$stackFileName"
+Write-Host "Syncing compose file to ${target}:$RemotePath/$composeFileName"
+& scp @scpArgs $localComposeFullPath "${target}:$RemotePath/$composeFileName"
 if ($LASTEXITCODE -ne 0) {
-    throw "Failed to upload stack file to remote path: $RemotePath/$stackFileName"
+    throw "Failed to upload compose file to remote path: $RemotePath/$composeFileName"
 }
 
 Write-Host "Transferring Docker image to remote host: $imageTag"
@@ -260,7 +260,16 @@ try {
         throw "Failed to upload image tar to remote host"
     }
 
-    Invoke-RemoteBash -Script "docker load -i '$remoteImageTar'; rm -f '$remoteImageTar'" | Out-Host
+    # Load image on remote and tag for compose
+    Invoke-RemoteBash -Script @"
+set -e
+echo '   Loading image on remote...'
+docker load -i '$remoteImageTar'
+echo '   Tagging as $ImageRepo:prod for docker compose...'
+docker tag '$imageTag' '$ImageRepo`:prod'
+rm -f '$remoteImageTar'
+echo '   Image loaded and tagged successfully.'
+"@ | Out-Host
 }
 finally {
     if (Test-Path $tempImageTar) {
@@ -268,102 +277,59 @@ finally {
     }
 }
 
+# ── Deploy with docker compose ─────────────────────────────
 $remoteScript = @"
-set -eu
-(set -o pipefail) 2>/dev/null && set -o pipefail
-mkdir -p '$RemotePath'
+set -e
 cd '$RemotePath'
+
 if [ ! -f .env ]; then
-    echo "Error: .env file not found in $RemotePath. Use -SyncEnv or create it manually." >&2
-    exit 1
+    echo "Warning: .env file not found in $RemotePath." >&2
+    echo "The app may not start correctly without environment variables." >&2
+elif ! grep -q '^ConnectionStrings__PostgresConnection=' .env; then
+    echo "Warning: .env is missing ConnectionStrings__PostgresConnection." >&2
+    echo "The app will not be able to connect to the database." >&2
 fi
 
-if ! grep -q '^ConnectionStrings__PostgresConnection=' .env; then
-    echo "Error: .env is missing ConnectionStrings__PostgresConnection." >&2
-    exit 1
-fi
-
-# Load .env values into current shell for docker stack variable interpolation.
-while IFS= read -r line || [ -n "`$line" ]; do
-    line=`$(printf '%s' "`$line" | tr -d '\r')
-    case "`$line" in
-        ''|\#*) continue ;;
-    esac
-    if [[ "`$line" == *=* ]]; then
-        key="`${line%%=*}"
-        val="`${line#*=}"
-        key=`$(printf '%s' "`$key" | tr -d '\r')
-        val=`$(printf '%s' "`$val" | tr -d '\r')
-        export "`$key=`$val"
-    fi
-done < .env
-
-if [ -z "`${ConnectionStrings__PostgresConnection:-}" ]; then
-    echo "Error: ConnectionStrings__PostgresConnection resolved empty after loading .env." >&2
-    exit 1
-fi
-
-# ── Redis validation ──
-if [ -z "`${Redis__ConnectionString:-}" ]; then
-    echo "Warning: Redis__ConnectionString not found in .env. Defaulting to 'redis:6379' for Swarm." >&2
-    export Redis__ConnectionString="redis:6379"
-else
-    echo "   Redis__ConnectionString=`${Redis__ConnectionString}"
-fi
-# ──────────────────────
-
-if [ '$stackFileName' = 'docker-stack.tls.yml' ]; then
-    tls_domain=`$(printf '%s' "`${LETSENCRYPT_DOMAIN:-}" | tr -d '\r' | sed -e 's/^"//' -e 's/"`$//' -e 's/^[[:space:]]*//' -e 's/[[:space:]]*`$//')
-
-    if [ -z "`$tls_domain" ]; then
-        echo "Error: LETSENCRYPT_DOMAIN is required for TLS deploy (docker-stack.tls.yml)." >&2
-        exit 1
-    fi
-
-    cert_dir="/etc/letsencrypt/live/`$tls_domain"
-    if [ ! -e "`$cert_dir" ]; then
-        echo "Error: Let's Encrypt directory not found on remote host: `$cert_dir" >&2
-        available_dirs=`$(ls -1 /etc/letsencrypt/live 2>/dev/null | tr '\n' ' ' || true)
-        if [ -n "`$available_dirs" ]; then
-            echo "Available /etc/letsencrypt/live entries: `$available_dirs" >&2
-        fi
-        exit 1
-    fi
-
-    if [ ! -f "`$cert_dir/fullchain.pem" ] || [ ! -f "`$cert_dir/privkey.pem" ]; then
-        echo "Error: Missing certificate files in `$cert_dir (fullchain.pem and/or privkey.pem)." >&2
-        exit 1
-    fi
-fi
-
-if [ "`$(docker info --format '{{.Swarm.ControlAvailable}}' 2>/dev/null || echo false)" != "true" ]; then
-    echo "Error: this node is not a Swarm manager. Run on a manager node or initialize swarm (docker swarm init)." >&2
-    exit 1
-fi
-export TURNERO_IMAGE='$imageTag'
+# Export variables needed by docker compose for interpolation
 export FIREBASE_CREDENTIALS_FILE='$FirebaseCredentialsFile'
-export REMOTE_DEPLOY_PATH='$RemotePath'
-docker stack deploy -c '$stackFileName' '$StackName'
-service_name='${StackName}_turnero-app'
-docker service ls | grep "`$service_name" || true
-docker service ps "`$service_name" --no-trunc || true
 
-published_ports=`$(docker service inspect "`$service_name" --format '{{range .Endpoint.Ports}}{{.PublishedPort}}->{{.TargetPort}}/{{.Protocol}} {{end}}' 2>/dev/null || true)
-if [ -n "`$published_ports" ]; then
-    echo "Published ports for `"`$service_name`": `$published_ports"
-else
-    echo "No published ports detected for `"`$service_name`"."
-fi
+echo '   Stopping existing containers (if any)...'
+docker compose -f '$composeFileName' down --remove-orphans 2>/dev/null || true
+
+# ── Retry loop for docker compose up ───────────────────────
+RETRIES=3
+for i in `$(seq 1 `$RETRIES); do
+  echo "   [Attempt `$i/`$RETRIES] Running: docker compose -f $composeFileName up -d..."
+  if docker compose -f '$composeFileName' up -d; then
+    echo "   [Attempt `$i/`$RETRIES] Deploy succeeded."
+    break
+  fi
+  if [ "`$i" -lt "`$RETRIES" ]; then
+    echo "   [Attempt `$i/`$RETRIES] Failed. Retrying in 10s..."
+    sleep 10
+  else
+    echo "   [Attempt `$i/`$RETRIES] All attempts failed." >&2
+    exit 1
+  fi
+done
+
+echo ''
+echo '   Container status:'
+docker ps --filter 'name=$StackName' --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
+
+echo ''
+echo '   Compose services:'
+docker compose -f '$composeFileName' ps
 
 # ── Log deploy ──
 log_file="$RemotePath/deploy.log"
 timestamp=`$(date '+%Y-%m-%d %H:%M:%S')
-log_entry="[`$timestamp] INFO: Deploy successful | version=$Version | image=$imageTag | stack=$StackName | user=$User"
-echo "`$log_entry" >> "`$log_file"
-echo "   Deploy logged to: `$log_file"
+log_entry="[$timestamp] INFO: Deploy successful | version=$Version | image=$imageTag | compose=$composeFileName | user=$User"
+echo "$log_entry" >> "$log_file"
+echo "   Deploy logged to: $log_file"
 "@
 
-Write-Host "Executing rolling deploy on $target ($RemotePath) with version $Version..."
+Write-Host "Executing deploy on $target ($RemotePath) with version $Version..."
 Invoke-RemoteBash -Script $remoteScript | Out-Host
 
 Write-Host "Remote deploy command completed."
