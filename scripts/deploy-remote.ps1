@@ -6,8 +6,18 @@ Param(
     [Parameter(Mandatory = $true)]
     [string]$User,
 
-    [Parameter(Mandatory = $true)]
-    [string]$Version,
+     [Parameter(Mandatory = $false)]
+    [string]$Version = $(
+        if (-not [string]::IsNullOrWhiteSpace($env:GITHUB_RUN_NUMBER)) {
+            "run-$($env:GITHUB_RUN_NUMBER)"
+        }
+        elseif (-not [string]::IsNullOrWhiteSpace($env:GITHUB_RUN_ID)) {
+            "runid-$($env:GITHUB_RUN_ID)"
+        }
+        else {
+            throw "Version is required when not running in GitHub Actions. Pass -Version or set GITHUB_RUN_NUMBER."
+        }
+    ),
 
     [string]$RemotePath = "/opt/turnero",
     [string]$StackName = "turnero",
