@@ -377,7 +377,7 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
         }
 
         ViewBag.OverallStatus = overallHealthy ? "healthy" : "unhealthy";
-        ViewBag.CheckedAt = DateTime.UtcNow;
+        ViewBag.CheckedAt = DateTime.Now;
         return View(checks);
     }
 
