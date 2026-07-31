@@ -8,7 +8,7 @@ COPY ["Turnero.Utilities/Turnero.Utilities.csproj", "Turnero.Utilities/"]
 RUN dotnet restore "Turnero.csproj"
 
 COPY . .
-RUN dotnet publish "Turnero.csproj" -c Release -r linux-x64 --self-contained true -o /app/publish
+RUN dotnet publish "Turnero.csproj" -c Release -r linux-musl-x64 --self-contained true -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/runtime-deps:10.0-alpine AS final
 WORKDIR /app
