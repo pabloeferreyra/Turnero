@@ -340,6 +340,9 @@ builder.Services.AddScoped<RedisCacheService>();
 
 // Cross-instance cache invalidation via Redis Pub/Sub
 builder.Services.AddHostedService<CacheInvalidationHostedService>();
+
+// Container memory monitoring – logs warnings when usage exceeds 80/90/95 % of limit
+builder.Services.AddHostedService<ContainerMemoryMonitor>();
 #endregion
 
 #region Response Compression
@@ -443,7 +446,7 @@ app.MapRazorPages();
 
 app.UseCookiePolicy();
 
-// Health check endpoint con verificación de PostgreSQL y Redis
+// Health check endpoint con verificación de PostgreSQL, Redis, y memoria del contenedor
 app.MapGet("/health", async (ApplicationDbContext dbContext, RedisConnectionService redis) =>
 {
     var checks = new List<object>();
@@ -475,9 +478,41 @@ app.MapGet("/health", async (ApplicationDbContext dbContext, RedisConnectionServ
         overallHealthy = false;
     }
 
+    // Container memory
+    var memDegraded = false;
+    try
+    {
+        var memInfo = ContainerMemoryMonitor.ReadMemoryInfo();
+        if (memInfo.HasValue)
+        {
+            var usageMb = memInfo.Value.CurrentBytes / (1024.0 * 1024.0);
+            var limitMb = memInfo.Value.LimitBytes / (1024.0 * 1024.0);
+            var percentage = memInfo.Value.Percentage;
+            memDegraded = percentage >= 0.95;
+            if (memDegraded) overallHealthy = false;
+
+            checks.Add(new
+            {
+                name = "memory",
+                status = memDegraded ? "degraded" : "healthy",
+                usageMb = $"{usageMb:F0}",
+                limitMb = $"{limitMb:F0}",
+                usagePercent = $"{percentage * 100:F1}%"
+            });
+        }
+        else
+        {
+            checks.Add(new { name = "memory", status = "unknown", note = "cgroup stats not available" });
+        }
+    }
+    catch (Exception ex)
+    {
+        checks.Add(new { name = "memory", status = "unknown", error = ex.Message });
+    }
+
     var result = new
     {
-        status = overallHealthy ? "healthy" : "unhealthy",
+        status = overallHealthy ? "healthy" : (memDegraded ? "degraded" : "unhealthy"),
         timestamp = DateTime.UtcNow,
         checks
     };

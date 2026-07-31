@@ -340,6 +340,42 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
             overallHealthy = false;
         }
 
+        // Container Memory
+        var memInfo = ContainerMemoryMonitor.ReadMemoryInfo();
+        var memDegraded = false;
+        if (memInfo.HasValue)
+        {
+            var usageMb = memInfo.Value.CurrentBytes / (1024.0 * 1024.0);
+            var limitMb = memInfo.Value.LimitBytes / (1024.0 * 1024.0);
+            var percentage = memInfo.Value.Percentage;
+            memDegraded = percentage >= 0.95;
+            if (memDegraded) overallHealthy = false;
+
+            ViewBag.MemoryUsageMb = usageMb;
+            ViewBag.MemoryLimitMb = limitMb;
+            ViewBag.MemoryPercentage = percentage * 100;
+            ViewBag.MemoryStatus = memDegraded ? "degraded" : "healthy";
+
+            checks.Add(new HealthCheckResult
+            {
+                Name = "Memoria",
+                Status = memDegraded ? "degraded" : "healthy",
+                Icon = "bi-memory-stick",
+                Description = $"{usageMb:F0} MB / {limitMb:F0} MB ({percentage * 100:F1}%)"
+            });
+        }
+        else
+        {
+            ViewBag.MemoryStatus = "unknown";
+            checks.Add(new HealthCheckResult
+            {
+                Name = "Memoria",
+                Status = "unknown",
+                Icon = "bi-memory-stick",
+                Description = "No disponible (fuera del contenedor)"
+            });
+        }
+
         ViewBag.OverallStatus = overallHealthy ? "healthy" : "unhealthy";
         ViewBag.CheckedAt = DateTime.UtcNow;
         return View(checks);

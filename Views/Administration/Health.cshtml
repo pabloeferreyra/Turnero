@@ -1,96 +1,206 @@
-﻿@model List<HealthCheckResult>
+@model List<HealthCheckResult>
 @{
     ViewData["Title"] = "Health Check";
     var overallStatus = ViewBag.OverallStatus as string ?? "unhealthy";
     var checkedAt = ViewBag.CheckedAt as DateTime? ?? DateTime.UtcNow;
     var isHealthy = overallStatus == "healthy";
-    var healthyCount = Model?.Count(c => c.Status == "healthy") ?? 0;
-    var totalServices = Model?.Count ?? 0;
+
+    // Memory (passed as doubles from controller)
+    var memUsageMb = ViewBag.MemoryUsageMb as double?;
+    var memLimitMb = ViewBag.MemoryLimitMb as double?;
+    var memPct = ViewBag.MemoryPercentage as double?;
+    var memStatus = ViewBag.MemoryStatus as string ?? "unknown";
+    var hasMemory = memPct.HasValue && memUsageMb.HasValue && memLimitMb.HasValue;
 }
 
 <div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="mb-0">
-            <i class="bi bi-heart-pulse me-2"></i>Estado del Sistema
+
+    @* ── Header ── *@
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <h1 class="mb-0 d-flex align-items-center gap-2">
+            <i class="bi bi-heart-pulse fs-1" style="color:var(--bs-primary);"></i>
+            <span>Estado del Sistema</span>
         </h1>
-        <a href="@Url.Action("Health")" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-arrow-clockwise me-1"></i>Recargar
-        </a>
+        <div class="d-flex align-items-center gap-2">
+            <span id="lastUpdatedBadge" class="badge bg-light text-dark border px-3 py-2 small">
+                <i class="bi bi-clock me-1"></i>
+                <span id="lastUpdatedText">@checkedAt.ToLocalTime().ToString("HH:mm:ss")</span>
+            </span>
+            <button id="btnReload" class="btn btn-outline-secondary btn-sm" onclick="refreshHealth()" title="Recargar ahora">
+                <i id="reloadIcon" class="bi bi-arrow-clockwise"></i>
+                <span class="ms-1 d-none d-sm-inline">Recargar</span>
+            </button>
+        </div>
     </div>
 
-    @* Overall status banner *@
-    <div class="alert @(isHealthy ? "alert-success" : "alert-danger") d-flex align-items-center gap-3 border-0 shadow-sm mb-4" role="alert">
-        <div class="fs-1">
+    @* ── Overall Status Banner ── *@
+    <div id="statusBanner"
+         class="alert d-flex align-items-center gap-3 border-0 shadow-sm mb-4 rounded-4
+                @(isHealthy ? "alert-success" : "alert-danger")"
+         role="alert">
+        <div class="fs-1 lh-1">
             <i class="bi @(isHealthy ? "bi-check-circle-fill" : "bi-exclamation-triangle-fill")"></i>
         </div>
-        <div>
-            <strong class="fs-5">@(isHealthy ? "Todos los servicios funcionando correctamente" : "Hay servicios con problemas")</strong><br>
+        <div class="flex-grow-1">
+            <strong class="fs-5 d-block">
+                @(isHealthy
+                    ? "Todos los servicios funcionando correctamente"
+                    : "Hay servicios con problemas")
+            </strong>
             <span class="small opacity-75">
-                @healthyCount de @totalServices servicios saludables &middot; Última verificación: @checkedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss")
+                <span id="healthyCount">@Model?.Count(c => c.Status is "healthy" or "unknown")</span>
+                de <span id="totalServices">@Model?.Count</span> servicios saludables
+                &middot; Última verificación: <span id="checkedAtDisplay">@checkedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss")</span>
             </span>
         </div>
+        @if (!isHealthy)
+        {
+            <span class="badge bg-light text-danger fs-6 px-3 py-2 rounded-pill">
+                <i class="bi bi-exclamation-circle me-1"></i>Atenci&oacute;n
+            </span>
+        }
     </div>
 
-    @* Service cards *@
-    @if (Model != null && Model.Any())
-    {
-        <div class="row g-4">
-        @foreach (var check in Model)
-        {
-            var isServiceHealthy = check.Status == "healthy";
-            <div class="col-md-6 col-lg-4">
-                <div class="card border-0 shadow-sm h-100 @(isServiceHealthy ? "" : "border-start border-danger border-4")">
-                    <div class="card-body">
-                        <div class="d-flex align-items-start gap-3">
-                            <div class="fs-1 @(isServiceHealthy ? "text-success" : "text-danger")">
-                                <i class="bi @check.Icon"></i>
-                            </div>
-                            <div class="flex-grow-1">
-                                <h5 class="card-title mb-1">@check.Name</h5>
-                                <span class="badge @(isServiceHealthy ? "bg-success" : "bg-danger") small px-2 py-1">
-                                    <i class="bi @(isServiceHealthy ? "bi-check-circle" : "bi-x-circle") me-1"></i>
-                                    @(isServiceHealthy ? "Saludable" : "No disponible")
-                                </span>
-                                <p class="card-text text-muted small mt-2 mb-0">
-                                    @check.Description
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                    @if (isServiceHealthy)
+    @* ── Main Grid: service cards + memory gauge ── *@
+    <div class="row g-4 mb-4">
+        @* Service cards column *@
+        <div class="@(hasMemory ? "col-lg-7" : "col-12")">
+            <div class="row g-3">
+                @if (Model != null)
+                {
+                    @foreach (var check in Model)
                     {
-                        <div class="card-footer bg-transparent border-0 pt-0 px-3 pb-3">
-                            <div class="d-flex align-items-center gap-2 text-success small">
-                                <span class="spinner-grow spinner-grow-sm" role="status"></span>
-                                Respondiendo correctamente
+                        if (check.Name == "Memoria") continue; // rendered separately
+                        var isSvcHealthy = check.Status == "healthy";
+                        var icon = isSvcHealthy ? "bi-check-circle" : "bi-x-circle";
+                        var badgeClass = isSvcHealthy ? "bg-success" : "bg-danger";
+                        var label = isSvcHealthy ? "Saludable" : "No disponible";
+
+                        <div class="col-md-6">
+                            <div class="card border-0 shadow-sm h-100 rounded-3 service-card
+                                        @(isSvcHealthy ? "" : "border-start border-4 border-danger")">
+                                <div class="card-body d-flex align-items-start gap-3">
+                                    <div class="fs-1 @(isSvcHealthy ? "text-success" : "text-danger")">
+                                        <i class="bi @check.Icon"></i>
+                                    </div>
+                                    <div class="flex-grow-1 min-w-0">
+                                        <h5 class="card-title mb-1 fw-semibold">@check.Name</h5>
+                                        <span class="badge @badgeClass small px-2 py-1 rounded-pill">
+                                            <i class="bi @icon me-1"></i>@label
+                                        </span>
+                                        <p class="card-text text-muted small mt-2 mb-0 text-break">
+                                            @check.Description
+                                        </p>
+                                    </div>
+                                </div>
+                                @if (isSvcHealthy)
+                                {
+                                    <div class="card-footer bg-transparent border-0 pt-0 px-3 pb-3">
+                                        <div class="d-flex align-items-center gap-2 text-success small">
+                                            <span class="spinner-grow spinner-grow-sm" style="animation-duration:1.5s;" role="status"></span>
+                                            Respondiendo correctamente
+                                        </div>
+                                    </div>
+                                }
                             </div>
                         </div>
                     }
+                }
+            </div>
+        </div>
+
+        @* ── Memory gauge column ── *@
+        @if (hasMemory)
+        {
+            var memValue = memPct.Value;
+            var memColor = memValue < 70 ? "success" : memValue < 85 ? "warning" : memValue < 95 ? "orange" : "danger";
+            var memLabel = memValue < 70 ? "Normal" : memValue < 85 ? "Elevado" : memValue < 95 ? "Alto" : "Critico";
+            var memIcon = memValue < 70 ? "bi-emoji-smile" : memValue < 85 ? "bi-exclamation-triangle" : "bi-exclamation-octagon";
+
+            <div class="col-lg-5">
+                <div class="card border-0 shadow-sm h-100 rounded-3">
+                    <div class="card-body d-flex flex-column h-100">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <i class="bi bi-memory-stick fs-4 text-primary"></i>
+                            <h5 class="mb-0 fw-semibold flex-grow-1">Memoria del Contenedor</h5>
+                            <span id="memBadge" class="badge bg-@memColor bg-opacity-10 text-@memColor rounded-pill px-3 py-1 small fw-medium">
+                                <i class="bi @memIcon me-1"></i>@memLabel
+                            </span>
+                        </div>
+
+                        @* Circular gauge *@
+                        <div class="text-center mb-3">
+                            <div class="position-relative d-inline-block">
+                                <canvas id="memGauge" width="160" height="160"
+                                        data-pct="@memValue.ToString("F0")"
+                                        data-color="@memColor"></canvas>
+                                <div class="position-absolute top-50 start-50 translate-middle text-center">
+                                    <div class="fs-3 fw-bold" style="color:var(--bs-@memColor);">@memValue.ToString("F0")%</div>
+                                    <div class="small text-muted">usado</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @* Stats row *@
+                        <div class="row g-2 mt-auto">
+                            <div class="col-6">
+                                <div class="bg-light rounded-3 p-2 text-center">
+                                    <div class="small text-muted">Usado</div>
+                                    <div class="fw-semibold fs-6">@memUsageMb.Value.ToString("F0") MB</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="bg-light rounded-3 p-2 text-center">
+                                    <div class="small text-muted">L&iacute;mite</div>
+                                    <div class="fw-semibold fs-6">@memLimitMb.Value.ToString("F0") MB</div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="bg-light rounded-3 p-2 text-center">
+                                    <div class="small text-muted">Disponible</div>
+                                    @{
+                                        var free = Math.Max(0, memLimitMb.Value - memUsageMb.Value);
+                                    }
+                                    <div class="fw-semibold fs-6 @(free < 100 ? "text-danger" : "text-success")">
+                                        @free.ToString("F0") MB
+                                        @if (free < 100)
+                                        {
+                                            <i class="bi bi-exclamation-triangle-fill text-danger ms-1 small"></i>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        else if (memStatus == "unknown")
+        {
+            <div class="col-lg-5">
+                <div class="card border-0 shadow-sm h-100 rounded-3">
+                    <div class="card-body d-flex flex-column align-items-center justify-content-center text-center py-5">
+                        <i class="bi bi-memory-stick fs-1 text-muted mb-3"></i>
+                        <h5 class="fw-semibold">Memoria del Contenedor</h5>
+                        <p class="text-muted small mb-0">No disponible &mdash; la app no se ejecuta dentro de un contenedor Docker.</p>
+                    </div>
                 </div>
             </div>
         }
     </div>
-    }
-    else
-    {
-        <div class="text-center py-5">
-            <i class="bi bi-inbox fs-1 text-muted"></i>
-            <p class="text-muted mt-2 mb-0">No hay servicios para verificar.</p>
-        </div>
-    }
 
-    @* Quick links *@
+    @* ── Quick links ── *@
     <div class="row g-3 mt-2">
         <div class="col-md-6">
-            <div class="card border-0 shadow-sm">
+            <div class="card border-0 shadow-sm rounded-3">
                 <div class="card-body d-flex align-items-center gap-3">
                     <div class="fs-2 text-primary">
                         <i class="bi bi-database-gear"></i>
                     </div>
                     <div>
-                        <h6 class="mb-1">Estado del Cache</h6>
-                        <p class="text-muted small mb-0">Ver métricas detalladas de Redis y cache keys</p>
-                        <a asp-action="CacheStats" asp-controller="Administration" class="btn btn-outline-primary btn-sm mt-2">
+                        <h6 class="mb-1 fw-semibold">Estado del Cache</h6>
+                        <p class="text-muted small mb-0">Ver m&eacute;tricas detalladas de Redis y cache keys</p>
+                        <a asp-action="CacheStats" asp-controller="Administration" class="btn btn-outline-primary btn-sm mt-2 rounded-pill">
                             <i class="bi bi-arrow-right me-1"></i>Ir al Cache
                         </a>
                     </div>
@@ -98,18 +208,146 @@
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card border-0 shadow-sm">
+            <div class="card border-0 shadow-sm rounded-3">
                 <div class="card-body d-flex align-items-center gap-3">
                     <div class="fs-2 text-primary">
                         <i class="bi bi-activity"></i>
                     </div>
                     <div>
-                        <h6 class="mb-1">Endpoint /health</h6>
-                        <p class="text-muted small mb-0">Respuesta JSON del endpoint usado por Docker healthcheck</p>
-                        <code class="small">GET /health</code>
+                        <h6 class="mb-1 fw-semibold">Endpoint /health (JSON)</h6>
+                        <p class="text-muted small mb-0">Respuesta utilizada por Docker healthcheck, incluye m&eacute;tricas de memoria</p>
+                        <code class="small bg-light px-2 py-1 rounded">GET /health</code>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        // Shared canvas gauge drawer
+        function drawGauge(canvas, pct, color) {
+            if (!canvas) return;
+            pct = pct || 0;
+            color = color || 'success';
+            var ctx = canvas.getContext('2d');
+            var w = canvas.width, h = canvas.height;
+            var cx = w / 2, cy = h / 2, r = 68, lw = 10;
+            var colorMap = { success: '#198754', warning: '#ffc107', orange: '#fd7e14', danger: '#dc3545' };
+            var sc = colorMap[color] || '#198754';
+
+            function d2r(d) { return d * Math.PI / 180; }
+            ctx.clearRect(0, 0, w, h);
+            ctx.beginPath(); ctx.arc(cx, cy, r, d2r(135), d2r(405));
+            ctx.strokeStyle = '#e9ecef'; ctx.lineWidth = lw; ctx.lineCap = 'round'; ctx.stroke();
+            var ea = 135 + (pct / 100) * 270;
+            ctx.beginPath(); ctx.arc(cx, cy, r, d2r(135), d2r(ea));
+            ctx.strokeStyle = sc; ctx.lineWidth = lw; ctx.lineCap = 'round'; ctx.stroke();
+        }
+
+        // Initial draw
+        (function() {
+            var c = document.getElementById('memGauge');
+            if (c) drawGauge(c, parseFloat(c.dataset.pct) || 0, c.dataset.color || 'success');
+        })();
+
+        // Auto-refresh every 30 seconds
+        var refreshInterval = setInterval(refreshHealth, 30000);
+        var isRefreshing = false;
+
+        async function refreshHealth() {
+            if (isRefreshing) return;
+            isRefreshing = true;
+
+            var btn = document.getElementById('btnReload');
+            var icon = document.getElementById('reloadIcon');
+            var badge = document.getElementById('lastUpdatedBadge');
+            var checkedAtEl = document.getElementById('checkedAtDisplay');
+            var lastUpdatedText = document.getElementById('lastUpdatedText');
+
+            if (icon) icon.className = 'bi bi-arrow-clockwise spinning';
+            if (btn) btn.disabled = true;
+            if (badge) badge.className = 'badge bg-warning text-dark border px-3 py-2 small';
+
+            try {
+                var response = await fetch('@Url.Action("Health")', {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                var html = await response.text();
+                var parser = new DOMParser();
+                var doc = parser.parseFromString(html, 'text/html');
+
+                // Banner
+                var nb = doc.querySelector('#statusBanner');
+                var ob = document.querySelector('#statusBanner');
+                if (nb && ob) ob.outerHTML = nb.outerHTML;
+
+                // Gauge
+                var nc = doc.querySelector('#memGauge');
+                var oc = document.querySelector('#memGauge');
+                if (nc && oc) {
+                    oc.dataset.pct = nc.dataset.pct;
+                    oc.dataset.color = nc.dataset.color;
+                    drawGauge(oc, parseFloat(oc.dataset.pct) || 0, oc.dataset.color || 'success');
+                    var pctDiv = oc.parentElement.querySelector('.position-absolute .fs-3');
+                    var pctVal = parseFloat(oc.dataset.pct) || 0;
+                    var col = oc.dataset.color || 'success';
+                    if (pctDiv) {
+                        pctDiv.textContent = pctVal.toFixed(0) + '%';
+                        pctDiv.style.color = 'var(--bs-' + col + ')';
+                    }
+                }
+
+                // Memory badge & stats
+                var nmb = doc.querySelector('.badge.bg-opacity-10');
+                var omb = document.querySelector('.badge.bg-opacity-10');
+                if (nmb && omb) omb.outerHTML = nmb.outerHTML;
+
+                var ns = doc.querySelector('.row.g-2.mt-auto');
+                var os = document.querySelector('.row.g-2.mt-auto');
+                if (ns && os) os.innerHTML = ns.innerHTML;
+
+                // Service cards
+                var nc2 = doc.querySelector('.row.g-3');
+                var oc2 = document.querySelector('.row.g-3');
+                if (nc2 && oc2) oc2.innerHTML = nc2.innerHTML;
+
+                // Timestamps
+                var nct = doc.querySelector('#checkedAtDisplay');
+                if (nct && checkedAtEl) checkedAtEl.textContent = nct.textContent;
+                var nt = doc.querySelector('#lastUpdatedText');
+                if (nt && lastUpdatedText) lastUpdatedText.textContent = nt.textContent;
+
+                // Healthy count
+                var nhc = doc.querySelector('#healthyCount');
+                var ohc = document.querySelector('#healthyCount');
+                if (nhc && ohc) ohc.textContent = nhc.textContent;
+
+                if (badge) badge.className = 'badge bg-light text-dark border px-3 py-2 small';
+            } catch (err) {
+                console.warn('Health auto-refresh failed:', err);
+                if (badge) {
+                    badge.className = 'badge bg-danger text-white border px-3 py-2 small';
+                    badge.innerHTML = '<i class="bi bi-exclamation-triangle me-1"></i>Error al recargar';
+                }
+            } finally {
+                if (icon) icon.className = 'bi bi-arrow-clockwise';
+                if (btn) btn.disabled = false;
+                isRefreshing = false;
+            }
+        }
+
+        // Inject styles once
+        if (!document.getElementById('gauge-style')) {
+            var st = document.createElement('style');
+            st.id = 'gauge-style';
+            st.textContent =
+                '.spinning { animation: spin 0.8s linear infinite; display: inline-block; } ' +
+                '@keyframes spin { to { transform: rotate(360deg); } } ' +
+                '.service-card { transition: box-shadow 0.2s ease, transform 0.2s ease; } ' +
+                '.service-card:hover { box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.1) !important; transform: translateY(-2px); }';
+            document.head.appendChild(st);
+        }
+    </script>
+}
