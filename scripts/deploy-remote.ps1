@@ -324,9 +324,9 @@ docker compose -f '$composeFileName' ps
 # ── Log deploy ──
 log_file="$RemotePath/deploy.log"
 timestamp=`$(date '+%Y-%m-%d %H:%M:%S')
-log_entry="[$timestamp] INFO: Deploy successful | version=$Version | image=$imageTag | compose=$composeFileName | user=$User"
-echo "$log_entry" >> "$log_file"
-echo "   Deploy logged to: $log_file"
+log_entry="[`$timestamp] INFO: Deploy successful | version=$Version | image=$imageTag | compose=$composeFileName | user=$User"
+echo "`$log_entry" >> "`$log_file"
+echo "   Deploy logged to: `$log_file"
 "@
 
 Write-Host "Executing deploy on $target ($RemotePath) with version $Version..."
