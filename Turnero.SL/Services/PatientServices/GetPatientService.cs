@@ -5,20 +5,6 @@ public class GetPatientService(LoggerService logger, IPatientRepository patientR
     private readonly LoggerService _logger = logger;
     private readonly IPatientRepository _patientRepository = patientRepository;
 
-    public async Task<List<PatientDTO>> GetCachedPatients()
-    {
-        try
-        {
-            var result = await _patientRepository.GetCachedPatients();
-            return result ?? [];
-        }
-        catch (Exception ex)
-        {
-            _logger.Log($"Error in {nameof(GetCachedPatients)}: {ex.Message}");
-            return [];
-        }
-    }
-
     public async Task<List<PatientDTO>> GetPatients()
     {
         try
@@ -79,7 +65,6 @@ public class GetPatientService(LoggerService logger, IPatientRepository patientR
 public interface IGetPatientService
 {
     Task<List<PatientDTO>> GetPatients();
-    Task<List<PatientDTO>> GetCachedPatients();
     IQueryable<PatientDTO> GetAllPatients();
     Task<Patient> GetPatientById(Guid id);
     Task<IQueryable<PatientDTO>> SearchPatients(string search);

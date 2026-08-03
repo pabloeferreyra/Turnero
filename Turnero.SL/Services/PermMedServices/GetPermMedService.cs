@@ -4,7 +4,7 @@ public class GetPermMedService(IPermMedRepository permMedRepository) : IGetPermM
 {
     public async Task<List<PermMed>> Get(Guid patientId)
     {
-        return await permMedRepository.GetCachedByPatientId(patientId);
+        return await permMedRepository.GetByPatientId(patientId);
     }
 
     public async Task<PermMed?> GetById(Guid id)

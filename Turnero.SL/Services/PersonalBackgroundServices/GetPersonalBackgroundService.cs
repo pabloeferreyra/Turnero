@@ -1,7 +1,6 @@
 ﻿namespace Turnero.SL.Services.PersonalBackgroundServices;
 
 public class GetPersonalBackgroundService(LoggerService logger, IPersonalBackgroundRepository repository,
-    RedisCacheService redisCache,
     IMemoryCache memoryCache) : IGetPersonalBackgroundService
 {
     public async Task<PersonalBackground> GetPersonalBackground(Guid id)
@@ -10,28 +9,15 @@ public class GetPersonalBackgroundService(LoggerService logger, IPersonalBackgro
         {
             var cacheKey = $"personalBackground:{id}";
 
-            // L1: Check local memory cache
+            // Check local memory cache
             var cached = memoryCache.Get<PersonalBackground>(cacheKey);
             if (cached != null) return cached;
 
-            // L2: Check Redis
-            var redisCached = await redisCache.GetAsync<PersonalBackground>(cacheKey);
-            if (redisCached != null)
-            {
-                memoryCache.Set(cacheKey, redisCached);
-                return redisCached;
-            }
-
             // Miss: load from database
-            var personalBackground = await repository.Get(id);
-            if (personalBackground == null)
-            {
-                throw new InvalidOperationException($"Personal background with ID {id} not found.");
-            }
+            var personalBackground = await repository.Get(id) ?? throw new InvalidOperationException($"Personal background with ID {id} not found.");
 
-            // Populate both caches
+            // Populate memory cache
             memoryCache.Set(cacheKey, personalBackground);
-            await redisCache.SetAsync(cacheKey, personalBackground, TimeSpan.FromMinutes(10));
 
             return personalBackground;
         }

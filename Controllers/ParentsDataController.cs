@@ -9,7 +9,6 @@ public class ParentsDataController(
     IGetParentsDataService getParentsData,
     ILogger<ParentsDataController> logger) : TurneroBaseController
 {
-    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public async Task<IActionResult> Index(Guid? id)
     {
         if (id == null)
@@ -39,7 +38,6 @@ public class ParentsDataController(
         try
         {
             await updateParentsData.UpdateParentsData(data);
-            await InvalidateCacheAsync($"parentsData:{data.Id}");
             var Data = await getParentsData.GetParentsData(data.Id);
             return PartialView("_Details", Data);
         }
@@ -61,7 +59,6 @@ public class ParentsDataController(
                 return BadRequest();
             }
             deleteParentsData.DeleteParentsData(data);
-            await InvalidateCacheAsync($"parentsData:{data.Id}");
             return Ok();
         }
         catch (Exception ex)

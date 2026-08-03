@@ -23,7 +23,7 @@ public class GrowthChartServicesTests
         // Arrange
         var patientId = Guid.NewGuid();
         var charts = new List<GrowthChart> { new() { Id = Guid.NewGuid(), PatientId = patientId } };
-        _repositoryMock.Setup(repo => repo.GetCachedByPatientId(patientId)).ReturnsAsync(charts);
+        _repositoryMock.Setup(repo => repo.GetByPatientId(patientId)).ReturnsAsync(charts);
         var service = new GetGrowthChartService(_repositoryMock.Object);
 
         // Act

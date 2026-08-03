@@ -1,10 +1,9 @@
 ﻿namespace Turnero.SL.Services.Repositories;
 
-public abstract class RepositoryBase<T>(ApplicationDbContext context, IMemoryCache cache, RedisCacheService redisCache) : IRepositoryBase<T> where T : class
+public abstract class RepositoryBase<T>(ApplicationDbContext context, IMemoryCache cache) : IRepositoryBase<T> where T : class
 {
     protected ApplicationDbContext _context = context;
     public IMemoryCache _cache = cache;
-    protected RedisCacheService _redisCache = redisCache;
 
     public IQueryable<T> FindAll()
     {
@@ -46,66 +45,18 @@ public abstract class RepositoryBase<T>(ApplicationDbContext context, IMemoryCac
     }
 
     /// <summary>
-    /// Two-tier cache: checks local IMemoryCache (L1) first, then Redis (L2), falling back to DB.
-    /// On miss, populates both caches from the database.
+    /// Caches data in local memory (IMemoryCache).
+    /// On miss, loads from the database and populates the cache.
     /// </summary>
     public async Task<List<TResult>> GetCachedData<TResult>(string cacheKey, Func<Task<List<TResult>>> getDataFunc)
     {
-        // L1: Check local memory cache (ultra-fast)
         var data = _cache.Get<List<TResult>>(cacheKey);
-        if (data != null) return data;
-
-        // L2: Check Redis (distributed cache)
-        data = await _redisCache.GetAsync<List<TResult>>(cacheKey);
-        if (data != null)
+        if (data == null)
         {
-            // Populate L1 from L2
+            data = await getDataFunc();
             _cache.Set(cacheKey, data);
-            return data;
         }
-
-        // Miss in both caches: load from database
-        data = await getDataFunc();
-
-        if (data != null)
-        {
-            // Populate both caches
-            _cache.Set(cacheKey, data);
-            var cacheEntryOptions = GetCacheExpiry(cacheKey);
-            await _redisCache.SetAsync(cacheKey, data, cacheEntryOptions);
-        }
-
-        return data ?? [];
-    }
-
-    /// <summary>
-    /// Invalidates a cache key in both Redis and local memory cache.
-    /// Also publishes an invalidation message so other instances clear their L1 cache.
-    /// </summary>
-    public async Task InvalidateCacheAsync(string cacheKey)
-    {
-        // Clear local memory cache
-        _cache.Remove(cacheKey);
-
-        // Clear Redis cache
-        await _redisCache.RemoveAsync(cacheKey);
-
-        // Notify other instances to clear their local cache
-        await _redisCache.PublishAsync("cache:invalidate", cacheKey);
-    }
-
-    /// <summary>
-    /// Returns appropriate cache expiry based on the cache key.
-    /// Reference data (medics, timeTurns) can be cached longer.
-    /// </summary>
-    private static TimeSpan? GetCacheExpiry(string cacheKey)
-    {
-        return cacheKey switch
-        {
-            "medics" => TimeSpan.FromHours(1),
-            "timeTurns" => TimeSpan.FromHours(1),
-            _ => TimeSpan.FromMinutes(10)
-        };
+        return data;
     }
 
     public List<T> CallStoredProcedure(string procedureName, params object[] parameters)

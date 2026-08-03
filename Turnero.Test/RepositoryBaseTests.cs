@@ -119,22 +119,6 @@ namespace Turnero.Test
         }
 
         [Fact]
-        public async Task GetCachedData_ShouldReturnCachedData()
-        {
-            // Arrange
-            var cacheKey = "testKey";
-            var cachedData = new List<string> { "data1", "data2" };
-            _repositoryMock.Setup(repo => repo.GetCachedData(cacheKey, It.IsAny<Func<Task<List<string>>>>()))
-                           .ReturnsAsync(cachedData);
-
-            // Act
-            var result = await _repositoryMock.Object.GetCachedData(cacheKey, () => Task.FromResult(new List<string>()));
-
-            // Assert
-            Assert.Equal(2, result.Count);
-        }
-
-        [Fact]
         public void CallStoredProcedure_ShouldReturnData()
         {
             // Arrange

@@ -35,7 +35,6 @@ public class PatientsController(IInsertPatientService insertPatient,
     }
 
     [HttpGet]
-    [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
     public async Task<IActionResult> Details(Guid? id)
     {
         if (id == null)
@@ -63,7 +62,6 @@ public class PatientsController(IInsertPatientService insertPatient,
                 return BadRequest();
             }
             await insertPatient.InsertPatient(patient);
-            await InvalidateCacheAsync("patients");
             return Ok();
         }
         catch (Exception)
@@ -97,7 +95,6 @@ public class PatientsController(IInsertPatientService insertPatient,
                 return BadRequest();
             }
             await updatePatient.UpdatePatient(patient);
-            await InvalidateCacheAsync("patients");
             return Ok();
         }
         catch (Exception)
@@ -114,7 +111,6 @@ public class PatientsController(IInsertPatientService insertPatient,
         try
         {
             await updatePatient.DeletePatient(id);
-            await InvalidateCacheAsync("patients");
             return Ok();
         }
         catch (Exception)

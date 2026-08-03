@@ -71,8 +71,8 @@ public abstract class TurneroBaseController : Controller
     }
 
     /// <summary>
-    /// Returns the cached list of medics from Redis/IMemoryCache, loading from DB if needed.
-    /// Uses the service layer which internally uses the two-tier cache (IMemoryCache + Redis).
+    /// Returns the cached list of medics from IMemoryCache, loading from DB if needed.
+    /// Uses the service layer which internally uses the memory cache.
     /// </summary>
     protected async Task<List<MedicDto>> GetCachedMedicsAsync()
     {
@@ -82,48 +82,13 @@ public abstract class TurneroBaseController : Controller
     }
 
     /// <summary>
-    /// Returns the cached list of time turns from Redis/IMemoryCache, loading from DB if needed.
-    /// Uses the service layer which internally uses the two-tier cache (IMemoryCache + Redis).
+    /// Returns the cached list of time turns from IMemoryCache, loading from DB if needed.
+    /// Uses the service layer which internally uses the memory cache.
     /// </summary>
     protected async Task<List<TimeTurn>> GetCachedTimeTurnsAsync()
     {
         var getTimeTurns = HttpContext.RequestServices.GetRequiredService<IGetTimeTurnsServices>();
         var time = await getTimeTurns.GetCachedTimes();
         return time ?? [];
-    }
-
-    /// <summary>
-    /// Returns the cached list of patients from Redis/IMemoryCache, loading from DB if needed.
-    /// Uses the service layer which internally uses the two-tier cache (IMemoryCache + Redis).
-    /// </summary>
-    protected async Task<List<PatientDTO>> GetCachedPatientsAsync()
-    {
-        var getPatients = HttpContext.RequestServices.GetRequiredService<IGetPatientService>();
-        var patients = await getPatients.GetCachedPatients();
-        return patients ?? [];
-    }
-
-    /// <summary>
-    /// Invalidates a cache key in Redis and clears local memory cache.
-    /// Notifies other app instances to clear their local cache via Redis Pub/Sub.
-    /// </summary>
-    protected async Task InvalidateCacheAsync(string cacheKey)
-    {
-        try
-        {
-            var redisCache = HttpContext.RequestServices.GetRequiredService<RedisCacheService>();
-            var memoryCache = HttpContext.RequestServices.GetRequiredService<IMemoryCache>();
-
-            // Clear local memory cache
-            memoryCache.Remove(cacheKey);
-
-            // Clear Redis cache and notify other instances
-            await redisCache.RemoveAsync(cacheKey);
-            await redisCache.PublishAsync("cache:invalidate", cacheKey);
-        }
-        catch
-        {
-            // Silently handle - cache invalidation is best-effort
-        }
     }
 }

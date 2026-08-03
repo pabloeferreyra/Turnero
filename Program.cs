@@ -317,30 +317,6 @@ builder.Services.AddMemoryCache(options =>
     options.ExpirationScanFrequency = TimeSpan.FromMinutes(10);
 });
 
-// Redis distributed cache
-var redisConnectionString = builder.Configuration["Redis:ConnectionString"]
-    ?? builder.Configuration["ConnectionStrings:Redis"]
-    ?? "localhost:6379";
-
-builder.Services.AddSingleton(sp =>
-{
-    try
-    {
-        return new RedisConnectionService(redisConnectionString);
-    }
-    catch (Exception ex)
-    {
-        var logger = sp.GetRequiredService<ILogger<Program>>();
-        logger.LogWarning(ex, "Redis connection failed. Cache will fall back to IMemoryCache only.");
-        throw; // Re-throw - AbortOnConnectFail=false in RedisConnectionService handles graceful degradation
-    }
-});
-
-builder.Services.AddScoped<RedisCacheService>();
-
-// Cross-instance cache invalidation via Redis Pub/Sub
-builder.Services.AddHostedService<CacheInvalidationHostedService>();
-
 // Container memory monitoring – logs warnings when usage exceeds 80/90/95 % of limit
 builder.Services.AddHostedService<ContainerMemoryMonitor>();
 #endregion
@@ -378,12 +354,11 @@ using (var scope = app.Services.CreateScope())
     {
         await timeTurnsRepository.GetCachedTimes();
         await medicsRepository.GetCachedMedics();
-        await patientsRepository.GetCachedPatients();
         app.Logger.LogInformation("Cache initialized: medics, timeTurns, and patients loaded.");
     }
     catch (Exception ex)
     {
-        app.Logger.LogWarning(ex, "Cache initialization warning (Redis may be unavailable). App will continue with DB fallback.");
+        app.Logger.LogWarning(ex, "Cache initialization warning. App will continue with DB fallback.");
     }
 }
 #endregion
@@ -446,8 +421,8 @@ app.MapRazorPages();
 
 app.UseCookiePolicy();
 
-// Health check endpoint con verificación de PostgreSQL, Redis, y memoria del contenedor
-app.MapGet("/health", async (ApplicationDbContext dbContext, RedisConnectionService redis) =>
+// Health check endpoint con verificación de PostgreSQL y memoria del contenedor
+app.MapGet("/health", async (ApplicationDbContext dbContext) =>
 {
     var checks = new List<object>();
     var overallHealthy = true;
@@ -462,19 +437,6 @@ app.MapGet("/health", async (ApplicationDbContext dbContext, RedisConnectionServ
     catch (Exception ex)
     {
         checks.Add(new { name = "postgresql", status = "unhealthy", error = ex.Message });
-        overallHealthy = false;
-    }
-
-    // Redis
-    try
-    {
-        var redisOk = await redis.IsConnectedAsync();
-        checks.Add(new { name = "redis", status = redisOk ? "healthy" : "unhealthy" });
-        if (!redisOk) overallHealthy = false;
-    }
-    catch (Exception ex)
-    {
-        checks.Add(new { name = "redis", status = "unhealthy", error = ex.Message });
         overallHealthy = false;
     }
 

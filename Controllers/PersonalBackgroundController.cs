@@ -24,7 +24,6 @@ public class PersonalBackgroundController(IGetPersonalBackgroundService get,
                 return BadRequest();
             }
             await update.UpdatePersonalBackground(data);
-            await InvalidateCacheAsync($"personalBackground:{data.Id}");
             return await Index(data.Id);
         }
         catch (Exception ex)

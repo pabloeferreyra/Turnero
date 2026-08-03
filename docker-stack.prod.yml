@@ -1,33 +1,6 @@
 version: "3.9"
 
 services:
-  redis:
-    image: redis:7-alpine
-    # No external port exposure for security — app connects via internal overlay network (redis:6379).
-    # Set Redis__ConnectionString=redis:6379 in .env for Swarm deployment.
-    volumes:
-      - redis-data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-          - node.role == manager
-      restart_policy:
-        condition: any
-        delay: 10s
-      resources:
-        limits:
-          cpus: "0.25"
-          memory: 256M
-        reservations:
-          cpus: "0.05"
-          memory: 64M
-
   turnero-app:
     image: ${TURNERO_IMAGE:-turnero-app:prod}
     env_file:
@@ -41,8 +14,6 @@ services:
       Authentication__TokenUri: ${Authentication__TokenUri}
       Authentication__TokenCode: ${Authentication__TokenCode}
       Authentication__TokenReset: ${Authentication__TokenReset}
-      Redis__ConnectionString: redis:6379
-      WAIT_FOR_SERVICES: "redis:6379"
       WAIT_FOR_POSTGRES: "true"
       Firebase__CredentialsPath: /run/secrets/firebase.json
       GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/firebase.json
@@ -60,8 +31,6 @@ services:
       timeout: 10s
       retries: 5
       start_period: 40s
-    depends_on:
-      - redis
     deploy:
       replicas: 2
       update_config:
@@ -85,6 +54,3 @@ services:
           cpus: "0.05"
           memory: 256M
 
-volumes:
-  redis-data:
-    driver: local

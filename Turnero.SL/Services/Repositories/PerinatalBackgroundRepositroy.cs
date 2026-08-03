@@ -1,6 +1,6 @@
 ﻿namespace Turnero.SL.Services.Repositories;
 
-public class PerinatalBackgroundRepositroy(ApplicationDbContext context, IMemoryCache cache, RedisCacheService redisCache) : RepositoryBase<PerinatalBackground>(context, cache, redisCache), IPerinatalBackgroundRepository
+public class PerinatalBackgroundRepositroy(ApplicationDbContext context, IMemoryCache cache) : RepositoryBase<PerinatalBackground>(context, cache), IPerinatalBackgroundRepository
 {
     public async Task<PerinatalBackground?> Get(Guid id)
     {

@@ -1,6 +1,6 @@
 ﻿namespace Turnero.SL.Services.Repositories;
 
-public class PersonalBackgroundRepository(ApplicationDbContext context, IMemoryCache cache, RedisCacheService redisCache) : RepositoryBase<PersonalBackground>(context, cache, redisCache), IPersonalBackgroundRepository
+public class PersonalBackgroundRepository(ApplicationDbContext context, IMemoryCache cache) : RepositoryBase<PersonalBackground>(context, cache), IPersonalBackgroundRepository
 {
     public async Task<PersonalBackground?> Get(Guid id)
     {

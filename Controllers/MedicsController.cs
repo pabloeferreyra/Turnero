@@ -44,7 +44,6 @@ public class MedicsController(UserManager<IdentityUser> userManager,
         if (ModelState.IsValid)
         {
             await insertMedicServices.Create(medic);
-            await InvalidateCacheAsync("medics");
             return RedirectToAction(nameof(Index));
         }
         return View(medic);
@@ -81,7 +80,6 @@ public class MedicsController(UserManager<IdentityUser> userManager,
             {
                 return View("Error");
             }
-            await InvalidateCacheAsync("medics");
         }
         return RedirectToAction(nameof(Index));
     }
@@ -110,7 +108,6 @@ public class MedicsController(UserManager<IdentityUser> userManager,
         {
             var medic = await getMedicsServices.GetMedicById(id);
             updateMedicServices.Delete(medic);
-            await InvalidateCacheAsync("medics");
         }
         return RedirectToAction(nameof(Index));
     }

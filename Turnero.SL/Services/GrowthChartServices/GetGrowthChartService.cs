@@ -4,7 +4,7 @@ public class GetGrowthChartService(IGrowthChartRepository repository) : IGetGrow
 {
     public async Task<List<GrowthChart>> Get(Guid patientId)
     {
-        return await repository.GetCachedByPatientId(patientId);
+        return await repository.GetByPatientId(patientId);
     }
     public async Task<GrowthChart?> GetById(Guid id)
     {

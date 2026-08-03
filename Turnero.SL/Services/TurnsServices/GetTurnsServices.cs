@@ -2,12 +2,10 @@
 
 public class GetTurnsServices(LoggerService logger,
                         ITurnRepository turnRepository,
-                        RedisCacheService redisCache,
                         IMemoryCache memoryCache) : IGetTurnsServices
 {
     private readonly LoggerService _logger = logger;
     private readonly ITurnRepository _turnRepository = turnRepository;
-    private readonly RedisCacheService _redisCache = redisCache;
     private readonly IMemoryCache _memoryCache = memoryCache;
 
     public List<Turn> GetTurns(DateTime? dateTurn, Guid? medicId)
@@ -18,25 +16,16 @@ public class GetTurnsServices(LoggerService logger,
             var medicSuffix = medicId.HasValue ? medicId.Value.ToString()[..8] : "all";
             var cacheKey = $"turnsList:{date:yyyy-MM-dd}:{medicSuffix}";
 
-            // L1: Check local memory cache
+            // Check local memory cache
             var cached = _memoryCache.Get<List<Turn>>(cacheKey);
             if (cached != null) return cached;
 
-            // L2: Check Redis
-            var redisCached = _redisCache.Get<List<Turn>>(cacheKey);
-            if (redisCached != null)
-            {
-                _memoryCache.Set(cacheKey, redisCached, TimeSpan.FromSeconds(30));
-                return redisCached;
-            }
-
-            // Miss in both caches: fetch from database via stored procedure
+            // Miss: fetch from database via stored procedure
             var data = _turnRepository.GetList(dateTurn, medicId);
 
             if (data.Count > 0)
             {
                 _memoryCache.Set(cacheKey, data, TimeSpan.FromSeconds(30));
-                _redisCache.Set(cacheKey, data, TimeSpan.FromMinutes(2));
             }
 
             return data;

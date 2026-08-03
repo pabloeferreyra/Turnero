@@ -22,7 +22,6 @@ public class TimeTurnController(IGetTimeTurnsServices getTimeTurns,
         if (ModelState.IsValid)
         {
             await insertTimeTurn.Create(timeTurnViewModel);
-            await InvalidateCacheAsync("timeTurns");
             return RedirectToAction(nameof(Index));
         }
         return View(timeTurnViewModel);
@@ -50,7 +49,6 @@ public class TimeTurnController(IGetTimeTurnsServices getTimeTurns,
     {
         var timeTurnViewModel = await getTimeTurns.GetTimeTurn(id);
         deleteTimeTurn.Delete(timeTurnViewModel);
-        await InvalidateCacheAsync("timeTurns");
         return RedirectToAction(nameof(Index));
     }
 }

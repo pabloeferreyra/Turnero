@@ -23,7 +23,7 @@ public class PermMedServicesTests
         // Arrange
         var patientId = Guid.NewGuid();
         var permMeds = new List<PermMed> { new() { Id = Guid.NewGuid(), PatientId = patientId } };
-        _permMedRepositoryMock.Setup(repo => repo.GetCachedByPatientId(patientId)).ReturnsAsync(permMeds);
+        _permMedRepositoryMock.Setup(repo => repo.GetByPatientId(patientId)).ReturnsAsync(permMeds);
         var service = new GetPermMedService(_permMedRepositoryMock.Object);
 
         // Act
@@ -37,7 +37,7 @@ public class PermMedServicesTests
     [Fact]
     public async Task Get_ShouldReturnEmptyList()
     {
-        _permMedRepositoryMock.Setup(repo => repo.GetCachedByPatientId(It.IsAny<Guid>()))
+        _permMedRepositoryMock.Setup(repo => repo.GetByPatientId(It.IsAny<Guid>()))
             .ReturnsAsync(new List<PermMed>());
         var service = new GetPermMedService(_permMedRepositoryMock.Object);
 

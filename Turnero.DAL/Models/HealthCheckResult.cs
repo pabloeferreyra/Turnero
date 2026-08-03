@@ -2,7 +2,7 @@ namespace Turnero.DAL.Models;
 
 /// <summary>
 /// Represents the result of a health check for a service dependency
-/// (e.g., PostgreSQL, Redis).
+/// (e.g., PostgreSQL, container memory).
 /// </summary>
 public class HealthCheckResult
 {

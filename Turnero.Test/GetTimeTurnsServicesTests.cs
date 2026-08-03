@@ -85,7 +85,6 @@ public class GetTimeTurnsServicesTests
         // Arrange
         var cachedTimeTurns = new List<TimeTurn> { new() { Id = Guid.NewGuid(), Time = "10:00" } };
         _timeTurnRepositoryMock.Setup(repo => repo.GetCachedTimes()).ReturnsAsync(cachedTimeTurns);
-
         // Act
         var result = await _getTimeTurnsServices.GetCachedTimes();
 

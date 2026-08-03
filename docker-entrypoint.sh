@@ -3,7 +3,7 @@ set -eu
 
 # ── Wait for required services ────────────────────────────────────
 # WAIT_FOR_SERVICES is a space-separated list of "host:port" pairs.
-# Example: "redis:6379 postgres:5432"
+# Example: "postgres:5432"
 if [ -n "${WAIT_FOR_SERVICES:-}" ]; then
     for service in $WAIT_FOR_SERVICES; do
         /app/wait-for-it.sh "$service" -t 60

@@ -62,7 +62,6 @@ public class VaccinesController(IGetVaccinesServices get,
         try
         {
             await insert.Insert(dto);
-            await InvalidateCacheAsync($"vaccines:{dto.PatientId}");
             logger.LogInformation("Vaccine created successfully for patient {PatientId}", dto.PatientId);
             return Ok();
         }
@@ -96,7 +95,6 @@ public class VaccinesController(IGetVaccinesServices get,
         try
         {
             await update.Update(dto);
-            await InvalidateCacheAsync($"vaccines:{dto.PatientId}");
             logger.LogInformation("Vaccine updated successfully for patient {PatientId}", dto.PatientId);
             return Ok();
         }
@@ -117,10 +115,6 @@ public class VaccinesController(IGetVaccinesServices get,
         {
             var vaccine = await get.Get(id.Value);
             await delete.Delete(id.Value);
-            if (vaccine != null)
-            {
-                await InvalidateCacheAsync($"vaccines:{vaccine.PatientId}");
-            }
             logger.LogInformation("Vaccine with ID {VaccineId} deleted successfully", id);
             return Ok();
         }

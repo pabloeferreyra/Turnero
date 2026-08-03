@@ -42,7 +42,6 @@ public class AllergiesController(IInsertAllergiesServices insertAllergies,
         try
         {
             await insertAllergies.InsertAllergy(allergy);
-            await InvalidateCacheAsync($"allergies:{allergy.PatientId}");
             logger.LogInformation("Allergy created successfully for patient {PatientId}", allergy.PatientId);
             return Ok();
         }
@@ -108,7 +107,6 @@ public class AllergiesController(IInsertAllergiesServices insertAllergies,
         try
         {
             await updateAllergies.UpdateAllergy(allergy);
-            await InvalidateCacheAsync($"allergies:{allergy.PatientId}");
             logger.LogInformation("Allergy updated successfully for patient {PatientId}", allergy.PatientId);
             return Ok();
         }
@@ -127,7 +125,6 @@ public class AllergiesController(IInsertAllergiesServices insertAllergies,
         if (allergy != null)
         {
             deleteAllergies.DeleteAllergy(allergy);
-            await InvalidateCacheAsync($"allergies:{allergy.PatientId}");
         }
         return Ok();
     }

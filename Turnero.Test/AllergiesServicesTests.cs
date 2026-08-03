@@ -26,7 +26,7 @@ public class AllergiesServicesTests
         // Arrange
         var patientId = Guid.NewGuid();
         var allergies = new List<Allergies> { new() { Id = Guid.NewGuid(), PatientId = patientId } };
-        _allergiesRepositoryMock.Setup(repo => repo.GetCachedAllergiesByPatient(patientId)).ReturnsAsync(allergies);
+        _allergiesRepositoryMock.Setup(repo => repo.GetAllergiesByPatient(patientId)).ReturnsAsync(allergies);
         var service = new GetAllergiesServices(_allergiesRepositoryMock.Object, _loggerMock.Object);
 
         // Act
@@ -41,7 +41,7 @@ public class AllergiesServicesTests
     public async Task GetAllergiesByPatient_ShouldThrowOnException()
     {
         // Arrange
-        _allergiesRepositoryMock.Setup(repo => repo.GetCachedAllergiesByPatient(It.IsAny<Guid?>()))
+        _allergiesRepositoryMock.Setup(repo => repo.GetAllergiesByPatient(It.IsAny<Guid?>()))
             .ThrowsAsync(new Exception("DB error"));
         var service = new GetAllergiesServices(_allergiesRepositoryMock.Object, _loggerMock.Object);
 

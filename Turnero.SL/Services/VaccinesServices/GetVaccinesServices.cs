@@ -20,7 +20,7 @@ public class GetVaccinesServices(LoggerService logger, IVaccinesRepository vacci
     {
         try
         {
-            var vaccines = await vaccinesRepository.GetCachedByPatientId(patientId);
+            var vaccines = await vaccinesRepository.GetByPatientId(patientId);
             return vaccines;
         }
         catch (Exception ex)

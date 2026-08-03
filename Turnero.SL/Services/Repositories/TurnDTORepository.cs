@@ -1,6 +1,6 @@
 ﻿namespace Turnero.SL.Services.Repositories
 {
-    public class TurnDTORepository(ApplicationDbContext context, IMemoryCache cache, RedisCacheService redisCache) : RepositoryBase<TurnDTO>(context, cache, redisCache), ITurnDTORepository
+    public class TurnDTORepository(ApplicationDbContext context, IMemoryCache cache) : RepositoryBase<TurnDTO>(context, cache), ITurnDTORepository
     {
         /// <summary>
         /// TurnDTO no es una entidad mapeada en ApplicationDbContext.

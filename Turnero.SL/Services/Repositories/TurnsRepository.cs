@@ -1,7 +1,7 @@
 
 namespace Turnero.SL.Services.Repositories;
 
-public class TurnsRepository(ApplicationDbContext context, IMemoryCache cache, RedisCacheService redisCache) : RepositoryBase<Turn>(context, cache, redisCache), ITurnRepository
+public class TurnsRepository(ApplicationDbContext context, IMemoryCache cache) : RepositoryBase<Turn>(context, cache), ITurnRepository
 {
     public void Access(Turn turn)
     {

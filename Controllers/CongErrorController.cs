@@ -49,7 +49,6 @@ public class CongErrorController(IGetCongErrorService get,
                 return BadRequest();
             }
             await update.UpdateCongError(data);
-            await InvalidateCacheAsync($"congErrors:{data.Id}");
             return await Index(data.Id);
         }
         catch (Exception ex)

@@ -7,7 +7,7 @@
 #   -- command   Command to execute after the service is ready
 #
 # Example:
-#   wait-for-it.sh redis:6379 -t 30 -- ./Turnero
+#   wait-for-it.sh postgres:5432 -t 30 -- ./Turnero
 
 set -eu
 

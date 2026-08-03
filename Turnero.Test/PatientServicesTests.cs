@@ -242,7 +242,7 @@ public class PatientServicesTests
     public async Task DeletePatient_ShouldThrowWhenNotFound()
     {
         _patientRepositoryMock.Setup(repo => repo.GetById(It.IsAny<Guid>()))
-            .ReturnsAsync((Patient?)null);
+            .ReturnsAsync((Patient)null!);
         var service = new UpdatePatientService(_loggerMock.Object, _patientRepositoryMock.Object);
 
         await Assert.ThrowsAsync<Exception>(() => service.DeletePatient(Guid.NewGuid()));

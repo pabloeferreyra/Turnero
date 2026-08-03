@@ -7,7 +7,7 @@ public class GetAllergiesServices(IAllergiesRepository _allergiesRepository, Log
         try
         {
             if (id == null || id == Guid.Empty) return [];
-            return await _allergiesRepository.GetCachedAllergiesByPatient(id);
+            return await _allergiesRepository.GetAllergiesByPatient(id);
         }
         catch (Exception ex)
         {

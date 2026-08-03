@@ -22,7 +22,7 @@ EXPOSE 8080
 
 COPY --from=build /app/publish .
 
-# wait-for-it.sh: espera a que servicios (Redis, Postgres) estén listos antes de arrancar
+# wait-for-it.sh: espera a que servicios (Postgres) estén listos antes de arrancar
 # docker-entrypoint.sh: entrypoint que procesa WAIT_FOR_SERVICES y ejecuta la app
 COPY wait-for-it.sh docker-entrypoint.sh /app/
 RUN chmod +x /app/wait-for-it.sh /app/docker-entrypoint.sh

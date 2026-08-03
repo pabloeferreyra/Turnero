@@ -40,27 +40,6 @@ if [ "${SWARM_STATE}" != "active" ]; then
   exit 1
 fi
 
-# ── Redis validation ──────────────────────────────────────
-if [ -z "${Redis__ConnectionString:-}" ]; then
-  # Fallback: read from .env if present
-  ENV_PATH=".env"
-  if [ -f "$ENV_PATH" ]; then
-    REDIS_VAL="$(grep -E '^Redis__ConnectionString=' "$ENV_PATH" | tail -1 | cut -d= -f2-)"
-    if [ -n "$REDIS_VAL" ]; then
-      export Redis__ConnectionString="$REDIS_VAL"
-      echo "   Redis__ConnectionString loaded from $ENV_PATH"
-    fi
-  fi
-fi
-
-if [ -z "${Redis__ConnectionString:-}" ]; then
-  echo "Warning: Redis__ConnectionString is not set. Defaulting to 'redis:6379' for Swarm." >&2
-  export Redis__ConnectionString="redis:6379"
-else
-  echo "   Redis__ConnectionString=${Redis__ConnectionString}"
-fi
-# ───────────────────────────────────────────────────────────
-
 IMAGE_TAG="${IMAGE_REPO}:${VERSION}"
 
 echo "[1/4] Building image ${IMAGE_TAG}"
@@ -69,7 +48,6 @@ docker build -t "${IMAGE_TAG}" .
 echo "[2/4] Exporting deploy variables"
 export TURNERO_IMAGE="${IMAGE_TAG}"
 export FIREBASE_CREDENTIALS_FILE="${FIREBASE_FILE}"
-export Redis__ConnectionString="${Redis__ConnectionString}"
 
 echo "[3/4] Deploying stack ${STACK_NAME}"
 docker stack deploy -c "${STACK_FILE}" "${STACK_NAME}"
