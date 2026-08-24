@@ -14,8 +14,8 @@
         "type": "Class Library",
         "purpose": "Data Access Layer - Models, DbContext, Migrations",
         "nugetPackages": [
-          "Microsoft.AspNetCore.Identity.EntityFrameworkCore 10.0.10",
-          "Microsoft.EntityFrameworkCore.Design 10.0.10",
+          "Microsoft.AspNetCore.Identity.EntityFrameworkCore 10.0.11",
+          "Microsoft.EntityFrameworkCore.Design 10.0.11",
           "Npgsql.EntityFrameworkCore.PostgreSQL 10.0.3"
         ]
       },
