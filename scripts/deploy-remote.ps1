@@ -54,13 +54,13 @@ if (-not (Get-Command scp -ErrorAction SilentlyContinue)) {
     throw "scp command not found. Install OpenSSH Client in Windows."
 }
 
-if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
-    throw "docker command not found. Install Docker and ensure it is available in PATH."
+if (-not (Get-Command podman -ErrorAction SilentlyContinue)) {
+    throw "podman command not found. Install Podman and ensure it is available in PATH."
 }
 
-$null = (& docker version --format '{{.Server.Version}}' 2>$null)
+$null = (& podman version --format '{{.Server.Version}}' 2>$null)
 if ($LASTEXITCODE -ne 0) {
-    throw "Docker daemon is not available locally. Start Docker Desktop (or Docker Engine) and retry."
+    throw "Podman daemon is not available locally. Start Podman Desktop (or Podman Engine) and retry."
 }
 
 if ($BackupEnvRetention -lt 0) {
@@ -233,7 +233,7 @@ if ($SyncEnv) {
 Write-Host "Building image locally: $imageTag"
 Push-Location $projectRoot
 try {
-    & docker build -t $imageTag .
+    & podman build -t $imageTag .
 }
 finally {
     Pop-Location
@@ -245,14 +245,14 @@ if ($LASTEXITCODE -ne 0) {
     throw "Failed to upload stack file to remote path: $RemotePath/$stackFileName"
 }
 
-Write-Host "Transferring Docker image to remote host: $imageTag"
+Write-Host "Transferring Podman image to remote host: $imageTag"
 $tempImageTar = Join-Path ([System.IO.Path]::GetTempPath()) ("$($ImageRepo)-$($Version)-" + [guid]::NewGuid().ToString("N") + ".tar")
 $remoteImageTar = "$RemotePath/.image-$Version.tar"
 
 try {
-    & docker save -o $tempImageTar $imageTag
+    & podman save -o $tempImageTar $imageTag
     if ($LASTEXITCODE -ne 0) {
-        throw "docker save failed for image $imageTag"
+        throw "podman save failed for image $imageTag"
     }
 
     & scp @scpArgs $tempImageTar "${target}:$remoteImageTar"
@@ -260,7 +260,7 @@ try {
         throw "Failed to upload image tar to remote host"
     }
 
-    Invoke-RemoteBash -Script "docker load -i '$remoteImageTar'; rm -f '$remoteImageTar'" | Out-Host
+    Invoke-RemoteBash -Script "podman load -i '$remoteImageTar'; rm -f '$remoteImageTar'" | Out-Host
 }
 finally {
     if (Test-Path $tempImageTar) {
@@ -283,7 +283,7 @@ if ! grep -q '^ConnectionStrings__PostgresConnection=' .env; then
     exit 1
 fi
 
-# Load .env values into current shell for docker stack variable interpolation.
+# Load .env values into current shell for podman stack variable interpolation.
 while IFS= read -r line || [ -n "`$line" ]; do
     line=`$(printf '%s' "`$line" | tr -d '\r')
     case "`$line" in
@@ -327,19 +327,19 @@ if [ '$stackFileName' = 'docker-stack.tls.yml' ]; then
     fi
 fi
 
-if [ "`$(docker info --format '{{.Swarm.ControlAvailable}}' 2>/dev/null || echo false)" != "true" ]; then
-    echo "Error: this node is not a Swarm manager. Run on a manager node or initialize swarm (docker swarm init)." >&2
+if [ "`$(podman info --format '{{.Swarm.ControlAvailable}}' 2>/dev/null || echo false)" != "true" ]; then
+    echo "Error: this node is not a Swarm manager. Run on a manager node or initialize swarm (podman swarm init)." >&2
     exit 1
 fi
 export TURNERO_IMAGE='$imageTag'
 export FIREBASE_CREDENTIALS_FILE='$FirebaseCredentialsFile'
 export REMOTE_DEPLOY_PATH='$RemotePath'
-docker stack deploy -c '$stackFileName' '$StackName'
+podman stack deploy -c '$stackFileName' '$StackName'
 service_name='${StackName}_turnero-app'
-docker service ls | grep "`$service_name" || true
-docker service ps "`$service_name" --no-trunc || true
+podman service ls | grep "`$service_name" || true
+podman service ps "`$service_name" --no-trunc || true
 
-published_ports=`$(docker service inspect "`$service_name" --format '{{range .Endpoint.Ports}}{{.PublishedPort}}->{{.TargetPort}}/{{.Protocol}} {{end}}' 2>/dev/null || true)
+published_ports=`$(podman service inspect "`$service_name" --format '{{range .Endpoint.Ports}}{{.PublishedPort}}->{{.TargetPort}}/{{.Protocol}} {{end}}' 2>/dev/null || true)
 if [ -n "`$published_ports" ]; then
     echo "Published ports for `"`$service_name`": `$published_ports"
 else
