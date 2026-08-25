@@ -200,7 +200,7 @@
       },
       {
         "id": 7,
-        "title": "Diagrama de Infraestructura / Deployment (Docker Swarm + Redis + PostgreSQL)",
+        "title": "Diagrama de Infraestructura / Deployment (Podman Compose + Redis + PostgreSQL)",
         "type": "graph TB (infrastructure)",
         "subgraphs": [
           {
@@ -208,11 +208,11 @@
             "components": ["Navegador Web (Usuario)", "Firebase Auth (externo)"]
           },
           {
-            "name": "Entorno de Desarrollo (Docker Compose)",
+            "name": "Entorno de Desarrollo (Podman Compose)",
             "components": ["turnero-app (1 contenedor, :8080)", "redis:7-alpine (:6379)", "redis-commander UI (:8081)"]
           },
           {
-            "name": "Entorno de Producción (Docker Swarm)",
+            "name": "Entorno de Producción (Podman Compose)",
             "components": ["Ingress Load Balancer (APP_PUBLISHED_PORT:8080)", "Manager Node (Redis, 0.25 CPU/256MB)", "App Replicas (2 instancias, 0.50 CPU/768MB c/u)", "Secretos (.env + firebase.json montados como read-only)"]
           },
           {
@@ -235,7 +235,7 @@
           "App Replicas → .env (volume mount read-only)",
           "App Replicas → firebase.json (secret mount)"
         ],
-        "description": "Arquitectura de despliegue con Docker Compose para desarrollo (app + redis + redis-commander) y Docker Swarm para producción (2 réplicas de app, Redis en manager node sin puerto externo, PostgreSQL externo). Muestra los límites de recursos, healthchecks, rolling updates y montaje de secretos."
+        "description": "Arquitectura de despliegue con Podman Compose para desarrollo y producción (una instancia de la app, PostgreSQL externo). Muestra los límites de recursos, healthchecks y montaje de credenciales."
       },
       {
         "id": 8,
@@ -638,9 +638,8 @@
   },
 
   "deployment": {
-    "docker": {
-      "composeFiles": ["docker-compose.yml (app + redis)", "docker-compose.dev.yml (adds Redis Commander on port 8081)", "docker-compose.prod.yml"],
-      "stackFiles": ["docker-stack.prod.yml", "docker-stack.tls.yml"],
+    "podman": {
+      "composeFiles": ["docker-compose.yml", "docker-compose.prod.yml", "docker-stack.tls.yml"],
       "appImage": "Multi-stage Dockerfile (sdk:10.0 build -> aspnet:10.0 final)",
       "redis": "redis:7-alpine with healthcheck and persistent volume"
     },

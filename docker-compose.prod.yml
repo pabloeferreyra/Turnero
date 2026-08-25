@@ -20,7 +20,7 @@ services:
       - "8080:8080"
     volumes:
       - ./.env:/app/.env:ro
-      - ${FIREBASE_CREDENTIALS_FILE}:/run/secrets/firebase.json:ro
+      - ${FIREBASE_CREDENTIALS_FILE:-./secrets/firebase.json}:/run/secrets/firebase.json:ro
     healthcheck:
       test: ["CMD-SHELL", "code=$$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/health); [ \"$$code\" -ge 200 ] && [ \"$$code\" -lt 500 ]"]
       interval: 30s

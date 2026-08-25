@@ -96,31 +96,38 @@ Note:
 *   In Development, User Secrets still works as an optional fallback.
 *   Inline JSON credentials in environment variables are disabled to reduce secret exposure risk.
 
-<h2>🐳 Docker (using external database)</h2>
+<h2>Podman (using external database)</h2>
 
-This setup runs only the web app in Docker and keeps PostgreSQL outside Docker.
+This setup runs only the web app in Podman and keeps PostgreSQL outside the container runtime.
 
 Recommended TLS approach:
 
 *   Prefer a reverse proxy such as Nginx or Traefik in front of the app.
 *   Avoid baking Let's Encrypt certificates into the image.
-*   If you want Kestrel to terminate TLS directly, use [docker-stack.tls.yml](docker-stack.tls.yml) and mount the host certificate directory read-only.
+*   If you want Kestrel to terminate TLS directly, use [docker-stack.tls.yml](docker-stack.tls.yml) with Podman Compose and mount the host certificate directory read-only.
 
 1. Ensure `.env` has `ConnectionStrings__PostgresConnection` with your current external DB connection string.
-2. Provide a firebase service account file path through `FIREBASE_CREDENTIALS_FILE`.
+2. Provide a Firebase service account file at `./secrets/firebase.json` or set `FIREBASE_CREDENTIALS_FILE` to its path.
+
+Podman Compose uses an external Compose provider. To avoid depending on Docker Desktop, install `podman-compose` and select it in PowerShell:
+
+```powershell
+python -m pip install podman-compose
+$env:PODMAN_COMPOSE_PROVIDER = "podman-compose"
+```
 
 Windows PowerShell:
 
 ```powershell
 $env:FIREBASE_CREDENTIALS_FILE = "D:/UserSecrets/aspnet-Turnero-1D8EA02B-D124-439A-B5F8-DE2044EFFABA/firebase.json"
-docker compose up --build
+podman compose up --build
 ```
 
 Linux/macOS Bash:
 
 ```bash
 export FIREBASE_CREDENTIALS_FILE="/opt/secrets/firebase.json"
-docker compose up --build
+podman compose up --build
 ```
 
 Application URL:
@@ -131,12 +138,12 @@ Production compose (healthcheck + resource limits):
 
 ```powershell
 $env:FIREBASE_CREDENTIALS_FILE = "D:/UserSecrets/aspnet-Turnero-1D8EA02B-D124-439A-B5F8-DE2044EFFABA/firebase.json"
-docker compose -f docker-compose.prod.yml up --build -d
+podman compose -f docker-compose.prod.yml up --build -d
 ```
 
 ```bash
 export FIREBASE_CREDENTIALS_FILE="/opt/secrets/firebase.json"
-docker compose -f docker-compose.prod.yml up --build -d
+podman compose -f docker-compose.prod.yml up --build -d
 ```
 
 Direct TLS stack with mounted Let's Encrypt certs:
@@ -144,44 +151,41 @@ Direct TLS stack with mounted Let's Encrypt certs:
 ```bash
 export LETSENCRYPT_DOMAIN="vps-1821822-x.dattaweb.com"
 export FIREBASE_CREDENTIALS_FILE="/opt/secrets/firebase.json"
-docker stack deploy -c docker-stack.tls.yml turnero
+podman compose -p turnero -f docker-stack.tls.yml up --build -d
 ```
 
 You can also set `LETSENCRYPT_DOMAIN` in `.env` and let the deploy script load it automatically.
 
 Notes for direct TLS:
 
-*   The certificate directory must exist on every Swarm node that can run the task.
+*   The certificate directory must exist on the Podman host.
 *   The app listens on `443` and `8080` in that stack.
 *   Healthcheck uses `curl -k` because the certificate is validated against the real domain, not `localhost`.
 
 <h2>🔁 Zero-downtime updates (2 instances)</h2>
 
-For true rolling updates (keep one instance running while the next starts), use Docker Swarm with `docker-stack.prod.yml`.
+Podman Compose runs one application container on the target host. It does not provide Swarm replicas or zero-downtime rolling updates.
 
 Initial setup (Linux server):
 
 ```bash
-docker swarm init
 export FIREBASE_CREDENTIALS_FILE="/opt/secrets/firebase.json"
-docker build -t turnero-app:prod .
-docker stack deploy -c docker-stack.prod.yml turnero
+podman compose -p turnero -f docker-compose.prod.yml up --build -d
 ```
 
 Update to a new version without downtime:
 
 ```bash
-docker build -t turnero-app:prod-v3.0.2 .
+podman build -t turnero-app:prod-v3.0.2 .
 export TURNERO_IMAGE="turnero-app:prod-v3.0.2"
 export FIREBASE_CREDENTIALS_FILE="/opt/secrets/firebase.json"
-docker stack deploy -c docker-stack.prod.yml turnero
+podman compose -p turnero -f docker-compose.prod.yml up -d --no-build
 ```
 
 Verify rollout:
 
 ```bash
-docker service ls
-docker service ps turnero_turnero-app
+podman compose -p turnero -f docker-compose.prod.yml ps
 ```
 
 One-command deploy script:
@@ -193,8 +197,8 @@ chmod +x ./scripts/deploy.sh
 
 Optional env vars:
 
-*   `STACK_NAME` (default: `turnero`)
-*   `STACK_FILE` (default: `docker-stack.prod.yml`)
+*   `COMPOSE_PROJECT_NAME` (default: `turnero`)
+*   `COMPOSE_FILE` (default: `docker-compose.prod.yml`)
 *   `IMAGE_REPO` (default: `turnero-app`)
 *   `FIREBASE_CREDENTIALS_FILE` (if you prefer not to pass arg2)
 
@@ -204,13 +208,13 @@ Deploy from Windows to Linux over SSH:
 ./scripts/deploy-remote.ps1 -RemoteHost "your-server" -User "deploy" -Version "v3.0.2" -RemotePath "/opt/turnero" -FirebaseCredentialsFile "/opt/secrets/firebase.json" -SshPort 2222
 ```
 
-This command now builds the Docker image locally, transfers it to the remote host (`docker save | docker load`), and runs `docker stack deploy` remotely.
+This command builds the image locally with Podman, transfers it to the remote host (`podman save | podman load`), and runs Podman Compose remotely.
 After deploy, the script prints the published ports for the target service.
 
 Prerequisites:
 
-*   Local Docker daemon must be running.
-*   Remote host must be a Docker Swarm manager node.
+*   Podman must be available locally and on the remote host.
+*   The remote Podman machine/service must be running.
 
 Sync `.env` only when changed (hash comparison):
 
@@ -232,9 +236,9 @@ Backup retention example (keep last 20 backups):
 
 Optional params:
 
-*   `-StackName` (default: `turnero`)
-*   `-StackFilePath` (default: `docker-stack.prod.yml`)
-*   `-UseTls` (uses `docker-stack.tls.yml` unless `-StackFilePath` is explicitly provided)
+*   `-ComposeProjectName` (default: `turnero`)
+*   `-ComposeFilePath` (default: `docker-compose.prod.yml`)
+*   `-UseTls` (uses `docker-stack.tls.yml` unless `-ComposeFilePath` is explicitly provided)
 *   `-ImageRepo` (default: `turnero-app`)
 *   `-SshKeyPath` (for key-based auth)
 *   `-SshPort` (default: `22`)
@@ -261,14 +265,11 @@ Environment variable fallback for SSH port:
 *   `DEPLOY_SSH_PORT` (preferred)
 *   `SSH_PORT` (fallback)
 
-The stack is configured with:
+The production Compose file is configured with:
 
-*   `replicas: 2`
-*   `update_config.parallelism: 1`
-*   `update_config.order: start-first`
-*   `failure_action: rollback`
-*   Resource limits are intentionally low so the stack can run on a single-CPU host.
-*   Set `APP_PUBLISHED_PORT` to avoid conflicts when another stack already uses the same host port.
+*   One application container with healthchecks and resource limits.
+*   Resource limits are intentionally low so it can run on a single-CPU host.
+*   Set the published port in the Compose file if another application already uses port `8080`.
 *   For the TLS stack, set `APP_HTTPS_PORT` if you need a non-standard published HTTPS port.
 
 <h2>🛡️ License:</h2>

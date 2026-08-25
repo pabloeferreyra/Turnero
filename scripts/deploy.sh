@@ -10,17 +10,22 @@ fi
 
 VERSION="$1"
 FIREBASE_FILE="${2:-${FIREBASE_CREDENTIALS_FILE:-}}"
-STACK_NAME="${STACK_NAME:-turnero}"
-STACK_FILE="${STACK_FILE:-docker-stack.prod.yml}"
+COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-turnero}"
+COMPOSE_FILE="${COMPOSE_FILE:-docker-compose.prod.yml}"
 IMAGE_REPO="${IMAGE_REPO:-turnero-app}"
 
-if ! command -v docker >/dev/null 2>&1; then
-  echo "Error: docker is not installed or not available in PATH." >&2
+if ! command -v podman >/dev/null 2>&1; then
+  echo "Error: podman is not installed or not available in PATH." >&2
   exit 1
 fi
 
-if [ ! -f "${STACK_FILE}" ]; then
-  echo "Error: stack file not found: ${STACK_FILE}" >&2
+if ! podman info >/dev/null 2>&1; then
+  echo "Error: Podman is not available. Start Podman machine/service and retry." >&2
+  exit 1
+fi
+
+if [ ! -f "${COMPOSE_FILE}" ]; then
+  echo "Error: compose file not found: ${COMPOSE_FILE}" >&2
   exit 1
 fi
 
@@ -34,26 +39,19 @@ if [ ! -f "${FIREBASE_FILE}" ]; then
   exit 1
 fi
 
-SWARM_STATE="$(docker info --format '{{.Swarm.LocalNodeState}}' 2>/dev/null || true)"
-if [ "${SWARM_STATE}" != "active" ]; then
-  echo "Error: Docker Swarm is not active. Run: docker swarm init" >&2
-  exit 1
-fi
-
 IMAGE_TAG="${IMAGE_REPO}:${VERSION}"
 
 echo "[1/4] Building image ${IMAGE_TAG}"
-docker build -t "${IMAGE_TAG}" .
+podman build -t "${IMAGE_TAG}" .
 
 echo "[2/4] Exporting deploy variables"
 export TURNERO_IMAGE="${IMAGE_TAG}"
 export FIREBASE_CREDENTIALS_FILE="${FIREBASE_FILE}"
 
-echo "[3/4] Deploying stack ${STACK_NAME}"
-docker stack deploy -c "${STACK_FILE}" "${STACK_NAME}"
+echo "[3/4] Starting compose project ${COMPOSE_PROJECT_NAME}"
+podman compose -p "${COMPOSE_PROJECT_NAME}" -f "${COMPOSE_FILE}" up -d --no-build --remove-orphans
 
 echo "[4/4] Service status"
-docker service ls | grep "${STACK_NAME}_turnero-app" || true
-docker service ps "${STACK_NAME}_turnero-app" --no-trunc || true
+podman compose -p "${COMPOSE_PROJECT_NAME}" -f "${COMPOSE_FILE}" ps
 
-echo "Deploy request sent. Rolling update is handled by Swarm (start-first + rollback)."
+echo "Deployment completed with Podman Compose."

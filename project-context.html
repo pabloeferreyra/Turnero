@@ -1155,7 +1155,7 @@
         <h2><i class="bi bi-rocket-takeoff me-2"></i>Deployment</h2>
         
         <h3 class="mt-4 mb-3" id="deploy-diagram"><i class="bi bi-diagram-3 me-2"></i>Diagrama de Infraestructura</h3>
-        <p>Arquitectura de despliegue con Docker Compose (desarrollo) y Docker Swarm (producción).</p>
+        <p>Arquitectura de despliegue con Podman Compose en desarrollo y producción.</p>
         <div class="mermaid-wrapper">
           <div class="mermaid">
             graph TB
@@ -1164,25 +1164,24 @@
                 Firebase["🔥 Firebase Auth<br/>(externo)"]
               end
 
-              subgraph DevEnv ["💻 Entorno de Desarrollo — Docker Compose"]
+              subgraph DevEnv ["💻 Entorno de Desarrollo — Podman Compose"]
                 direction TB
                 DevApp["turnero-app<br/>1 contenedor<br/>:8080"]
                 DevRedis["redis:7-alpine<br/>turnero-redis<br/>:6379"]
                 DevCommander["redis-commander<br/>UI Admin Redis<br/>:8081"]
               end
 
-              subgraph SwarmCluster ["🚀 Entorno de Producción — Docker Swarm"]
+              subgraph SwarmCluster ["🚀 Entorno de Producción — Podman Compose"]
                 direction TB
-                LB["Ingress Load Balancer<br/>APP_PUBLISHED_PORT:8080"]
+                LB["Puerto publicado<br/>8080"]
 
-                subgraph ManagerNode ["Manager Node"]
+                subgraph ManagerNode ["Podman Host"]
                   direction TB
-                  Redis["redis:7-alpine<br/>0.25 CPU / 256 MB<br/>Redis Data Volume"]
+                  Redis["Servicio externo/configurado<br/>Redis"]
                 end
 
-                subgraph AppReplicas ["App Replicas (2)"]
-                  App1["turnero-app réplica 1<br/>0.50 CPU / 768 MB<br/>:8080"]
-                  App2["turnero-app réplica 2<br/>0.50 CPU / 768 MB<br/>:8080"]
+                subgraph AppReplicas ["Aplicación (1 contenedor)"]
+                  App1["turnero-app<br/>1.0 CPU / 1536 MB<br/>:8080"]
                 end
 
                 subgraph Secrets ["Secretos"]
@@ -1204,13 +1203,12 @@
 
               %% Conexiones Producción
               Browser -->|"HTTPS :443 / HTTP :8080"| LB
-              LB -->|"Round Robin"| App1
-              LB -->|"Round Robin"| App2
-              App1 & App2 -->|"Redis :6379<br/>(overlay network)"| Redis
-              App1 & App2 -->|"Npgsql :5432"| PG
-              App1 & App2 -->|"REST API"| Firebase
-              App1 & App2 -.->|"Monta .env"| EnvFile
-              App1 & App2 -.->|"Monta firebase.json"| FirebaseSecret
+              LB -->|"HTTP"| App1
+              App1 -->|"Redis :6379"| Redis
+              App1 -->|"Npgsql :5432"| PG
+              App1 -->|"REST API"| Firebase
+              App1 -.->|"Monta .env"| EnvFile
+              App1 -.->|"Monta firebase.json"| FirebaseSecret
 
               %% Estilos
               classDef internet fill:#e3f2fd,stroke:#1565c0,color:#000
@@ -1236,13 +1234,13 @@
             <div class="card entity-card h-100 text-center p-3">
               <i class="bi bi-laptop fs-1 text-success"></i>
               <h6 class="mt-2">Desarrollo</h6>
-              <small class="text-muted"><code>docker compose up</code><br/>App + Redis + Redis Commander<br/>Puertos: 8080, 6379, 8081</small>
+              <small class="text-muted"><code>podman compose up</code><br/>App + Redis + Redis Commander<br/>Puertos: 8080, 6379, 8081</small>
             </div>
           </div>
           <div class="col-md-4">
             <div class="card entity-card h-100 text-center p-3">
               <i class="bi bi-server fs-1 text-warning"></i>
-              <h6 class="mt-2">Producción (Swarm)</h6>
+              <h6 class="mt-2">Producción (Podman Compose)</h6>
               <small class="text-muted">2 réplicas app + 1 Redis (manager)<br/>Rolling update, healthchecks<br/>Redis sin puerto externo (overlay)</small>
             </div>
           </div>
@@ -1255,15 +1253,15 @@
           </div>
         </div>
 
-        <h3>Docker</h3>
+        <h3>Podman</h3>
           <div class="col-md-6">
             <div class="card entity-card h-100">
-              <div class="card-header bg-white"><i class="bi bi-box me-2"></i>Docker</div>
+              <div class="card-header bg-white"><i class="bi bi-box me-2"></i>Podman</div>
               <div class="card-body small">
                 <p><strong>Dockerfile</strong> — Multi-stage (sdk:10.0 build → aspnet:10.0 runtime)</p>
                 <p><strong>docker-compose.yml</strong> — App + Redis 7-alpine con healthcheck</p>
                 <p><strong>docker-compose.dev.yml</strong> — Redis Commander en puerto 8081</p>
-                <p><strong>docker-stack.prod.yml / .tls.yml</strong> — Docker Swarm stacks</p>
+                <p><strong>docker-stack.prod.yml / .tls.yml</strong> — archivos Compose para Podman</p>
               </div>
             </div>
           </div>

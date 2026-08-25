@@ -20,8 +20,8 @@ Param(
     ),
 
     [string]$RemotePath = "/opt/turnero",
-    [string]$StackName = "turnero",
-    [string]$StackFilePath = "docker-stack.prod.yml",
+    [string]$ComposeProjectName = "turnero",
+    [string]$ComposeFilePath = "docker-compose.prod.yml",
     [switch]$UseTls,
     [string]$ImageRepo = "turnero-app",
     [string]$FirebaseCredentialsFile = "/opt/secrets/firebase.json",
@@ -67,8 +67,8 @@ if ($BackupEnvRetention -lt 0) {
     throw "BackupEnvRetention cannot be negative. Use 0 to disable pruning, or a positive number to keep that many backups."
 }
 
-if ($UseTls -and -not $PSBoundParameters.ContainsKey("StackFilePath")) {
-    $StackFilePath = "docker-stack.tls.yml"
+if ($UseTls -and -not $PSBoundParameters.ContainsKey("ComposeFilePath")) {
+    $ComposeFilePath = "docker-stack.tls.yml"
 }
 
 $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
@@ -91,8 +91,8 @@ function Resolve-LocalPath {
     throw "Path not found: $Path"
 }
 
-$localStackFullPath = Resolve-LocalPath -Path $StackFilePath
-$stackFileName = Split-Path -Leaf $localStackFullPath
+$localComposeFullPath = Resolve-LocalPath -Path $ComposeFilePath
+$composeFileName = Split-Path -Leaf $localComposeFullPath
 $imageTag = "$ImageRepo`:$Version"
 
 $sshArgs = @()
@@ -239,10 +239,10 @@ finally {
     Pop-Location
 }
 
-Write-Host "Syncing stack file to ${target}:$RemotePath/$stackFileName"
-& scp @scpArgs $localStackFullPath "${target}:$RemotePath/$stackFileName"
+Write-Host "Syncing compose file to ${target}:$RemotePath/$composeFileName"
+& scp @scpArgs $localComposeFullPath "${target}:$RemotePath/$composeFileName"
 if ($LASTEXITCODE -ne 0) {
-    throw "Failed to upload stack file to remote path: $RemotePath/$stackFileName"
+    throw "Failed to upload compose file to remote path: $RemotePath/$composeFileName"
 }
 
 Write-Host "Transferring Podman image to remote host: $imageTag"
@@ -283,7 +283,7 @@ if ! grep -q '^ConnectionStrings__PostgresConnection=' .env; then
     exit 1
 fi
 
-# Load .env values into current shell for podman stack variable interpolation.
+# Load .env values into current shell for Podman Compose variable interpolation.
 while IFS= read -r line || [ -n "`$line" ]; do
     line=`$(printf '%s' "`$line" | tr -d '\r')
     case "`$line" in
@@ -303,7 +303,7 @@ if [ -z "`${ConnectionStrings__PostgresConnection:-}" ]; then
     exit 1
 fi
 
-if [ '$stackFileName' = 'docker-stack.tls.yml' ]; then
+if [ '$composeFileName' = 'docker-stack.tls.yml' ]; then
     tls_domain=`$(printf '%s' "`${LETSENCRYPT_DOMAIN:-}" | tr -d '\r' | sed -e 's/^"//' -e 's/"`$//' -e 's/^[[:space:]]*//' -e 's/[[:space:]]*`$//')
 
     if [ -z "`$tls_domain" ]; then
@@ -327,24 +327,11 @@ if [ '$stackFileName' = 'docker-stack.tls.yml' ]; then
     fi
 fi
 
-if [ "`$(podman info --format '{{.Swarm.ControlAvailable}}' 2>/dev/null || echo false)" != "true" ]; then
-    echo "Error: this node is not a Swarm manager. Run on a manager node or initialize swarm (podman swarm init)." >&2
-    exit 1
-fi
 export TURNERO_IMAGE='$imageTag'
 export FIREBASE_CREDENTIALS_FILE='$FirebaseCredentialsFile'
 export REMOTE_DEPLOY_PATH='$RemotePath'
-podman stack deploy -c '$stackFileName' '$StackName'
-service_name='${StackName}_turnero-app'
-podman service ls | grep "`$service_name" || true
-podman service ps "`$service_name" --no-trunc || true
-
-published_ports=`$(podman service inspect "`$service_name" --format '{{range .Endpoint.Ports}}{{.PublishedPort}}->{{.TargetPort}}/{{.Protocol}} {{end}}' 2>/dev/null || true)
-if [ -n "`$published_ports" ]; then
-    echo "Published ports for `"`$service_name`": `$published_ports"
-else
-    echo "No published ports detected for `"`$service_name`"."
-fi
+podman compose -p '$ComposeProjectName' -f '$composeFileName' up -d --no-build --remove-orphans
+podman compose -p '$ComposeProjectName' -f '$composeFileName' ps
 "@
 
 Write-Host "Executing rolling deploy on $target ($RemotePath) with version $Version..."
