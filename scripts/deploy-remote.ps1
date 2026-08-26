@@ -266,6 +266,7 @@ set -eu
 (set -o pipefail) 2>/dev/null && set -o pipefail
 mkdir -p '$RemotePath'
 cd '$RemotePath'
+
 if [ ! -f .env ]; then
     echo "Error: .env file not found in $RemotePath. Use -SyncEnv or create it manually." >&2
     exit 1
@@ -276,7 +277,7 @@ if ! grep -q '^ConnectionStrings__PostgresConnection=' .env; then
     exit 1
 fi
 
-# Cargar variables de .env en la sesión remota de Bash
+# Cargar variables de .env a la sesión remota de Bash
 while IFS= read -r line || [ -n "`$line" ]; do
     line=`$(printf '%s' "`$line" | tr -d '\r')
     case "`$line" in
@@ -296,7 +297,25 @@ if [ -z "`${ConnectionStrings__PostgresConnection:-}" ]; then
     exit 1
 fi
 
-# 1. Asignar la versión transferida a la etiqueta :prod que lee el docker-compose
+# Validar que LETSENCRYPT_DOMAIN esté definido
+if [ -z "`${LETSENCRYPT_DOMAIN:-}" ]; then
+    echo "Error: LETSENCRYPT_DOMAIN is missing or empty in .env" >&2
+    exit 1
+fi
+
+# Validar existencia física de los certificados en el VPS
+cert_dir="/etc/letsencrypt/live/`${LETSENCRYPT_DOMAIN}"
+if [ ! -d "`$cert_dir" ]; then
+    echo "Error: Let's Encrypt directory not found: `$cert_dir" >&2
+    exit 1
+fi
+
+if [ ! -f "`$cert_dir/fullchain.pem" ] || [ ! -f "`$cert_dir/privkey.pem" ]; then
+    echo "Error: Missing certificate files in `$cert_dir (fullchain.pem or privkey.pem)." >&2
+    exit 1
+fi
+
+# 1. Asignar la versión transferida a la etiqueta :prod que lee el compose
 echo "Tagging image '$imageTag' as '$ImageRepo:prod'..."
 podman tag '$imageTag' '$ImageRepo:prod'
 
@@ -309,7 +328,7 @@ if ! command -v podman-compose >/dev/null 2>&1; then
     COMPOSE_BIN="podman compose"
 fi
 
-# 3. Recrear contenedor con la nueva versión
+# 3. Recrear el contenedor con la nueva versión
 echo "Redeploying application container..."
 `$COMPOSE_BIN -f '$composeFileName' up -d --force-recreate
 
