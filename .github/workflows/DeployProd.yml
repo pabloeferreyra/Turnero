@@ -59,4 +59,3 @@ jobs:
             -EnvFilePath ".env" `
             -BackupEnv `
             -BackupEnvRetention 20 `
-            -UseTls
