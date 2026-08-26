@@ -85,9 +85,15 @@ function Resolve-LocalPath {
     throw "Path not found: $Path"
 }
 
+# Garantizar un nombre de repositorio por defecto si viene nulo o vacío
+if ([string]::IsNullOrWhiteSpace($ImageRepo)) {
+    $ImageRepo = "turnero-app"
+}
+
 $localComposeFullPath = Resolve-LocalPath -Path $ComposeFilePath
 $composeFileName = Split-Path -Leaf $localComposeFullPath
 $imageTag = "$ImageRepo`:$Version"
+$targetImageProd = "$ImageRepo`:prod"
 
 $sshArgs = @()
 $scpArgs = @()
@@ -315,9 +321,9 @@ if [ ! -f "`$cert_dir/fullchain.pem" ] || [ ! -f "`$cert_dir/privkey.pem" ]; the
     exit 1
 fi
 
-# 1. Asignar la versión transferida a la etiqueta :prod que lee el compose
-echo "Tagging image '$imageTag' as '$ImageRepo:prod'..."
-podman tag '$imageTag' '$ImageRepo:prod'
+# 1. Re-etiquetar la imagen transferida como :prod usando la variable pre-evaluada
+echo "Tagging image '$imageTag' as '$targetImageProd'..."
+podman tag '$imageTag' '$targetImageProd'
 
 export FIREBASE_CREDENTIALS_FILE='$FirebaseCredentialsFile'
 export REMOTE_DEPLOY_PATH='$RemotePath'
