@@ -6,7 +6,7 @@ Param(
     [Parameter(Mandatory = $true)]
     [string]$User,
 
-     [Parameter(Mandatory = $false)]
+    [Parameter(Mandatory = $false)]
     [string]$Version = $(
         if (-not [string]::IsNullOrWhiteSpace($env:GITHUB_RUN_NUMBER)) {
             "run-$($env:GITHUB_RUN_NUMBER)"
@@ -20,9 +20,7 @@ Param(
     ),
 
     [string]$RemotePath = "/opt/turnero",
-    [string]$ComposeProjectName = "turnero",
     [string]$ComposeFilePath = "docker-compose.prod.yml",
-    [switch]$UseTls,
     [string]$ImageRepo = "turnero-app",
     [string]$FirebaseCredentialsFile = "/opt/secrets/firebase.json",
     [string]$SshKeyPath,
@@ -67,10 +65,6 @@ if ($BackupEnvRetention -lt 0) {
     throw "BackupEnvRetention cannot be negative. Use 0 to disable pruning, or a positive number to keep that many backups."
 }
 
-if ($UseTls -and -not $PSBoundParameters.ContainsKey("ComposeFilePath")) {
-    $ComposeFilePath = "docker-stack.tls.yml"
-}
-
 $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 
 function Resolve-LocalPath {
@@ -113,7 +107,6 @@ function Invoke-RemoteBash {
         [switch]$SilenceStdErr
     )
 
-    # Ensure Linux shell receives LF-only script content.
     $normalizedScript = $Script -replace "`r", ""
     $encodedScript = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($normalizedScript))
     $remoteCommand = "echo '$encodedScript' | base64 -d | bash"
@@ -283,7 +276,7 @@ if ! grep -q '^ConnectionStrings__PostgresConnection=' .env; then
     exit 1
 fi
 
-# Load .env values into current shell for Podman Compose variable interpolation.
+# Cargar variables de .env en la sesión remota de Bash
 while IFS= read -r line || [ -n "`$line" ]; do
     line=`$(printf '%s' "`$line" | tr -d '\r')
     case "`$line" in
@@ -303,35 +296,28 @@ if [ -z "`${ConnectionStrings__PostgresConnection:-}" ]; then
     exit 1
 fi
 
-if [ '$composeFileName' = 'docker-stack.tls.yml' ]; then
-    tls_domain=`$(printf '%s' "`${LETSENCRYPT_DOMAIN:-}" | tr -d '\r' | sed -e 's/^"//' -e 's/"`$//' -e 's/^[[:space:]]*//' -e 's/[[:space:]]*`$//')
+# 1. Asignar la versión transferida a la etiqueta :prod que lee el docker-compose
+echo "Tagging image '$imageTag' as '$ImageRepo:prod'..."
+podman tag '$imageTag' '$ImageRepo:prod'
 
-    if [ -z "`$tls_domain" ]; then
-        echo "Error: LETSENCRYPT_DOMAIN is required for TLS deploy (docker-stack.tls.yml)." >&2
-        exit 1
-    fi
-
-    cert_dir="/etc/letsencrypt/live/`$tls_domain"
-    if [ ! -e "`$cert_dir" ]; then
-        echo "Error: Let's Encrypt directory not found on remote host: `$cert_dir" >&2
-        available_dirs=`$(ls -1 /etc/letsencrypt/live 2>/dev/null | tr '\n' ' ' || true)
-        if [ -n "`$available_dirs" ]; then
-            echo "Available /etc/letsencrypt/live entries: `$available_dirs" >&2
-        fi
-        exit 1
-    fi
-
-    if [ ! -f "`$cert_dir/fullchain.pem" ] || [ ! -f "`$cert_dir/privkey.pem" ]; then
-        echo "Error: Missing certificate files in `$cert_dir (fullchain.pem and/or privkey.pem)." >&2
-        exit 1
-    fi
-fi
-
-export TURNERO_IMAGE='$imageTag'
 export FIREBASE_CREDENTIALS_FILE='$FirebaseCredentialsFile'
 export REMOTE_DEPLOY_PATH='$RemotePath'
-podman compose -p '$ComposeProjectName' -f '$composeFileName' up -d --no-build --remove-orphans
-podman compose -p '$ComposeProjectName' -f '$composeFileName' ps
+
+# 2. Detectar binario de Podman Compose disponible
+COMPOSE_BIN="podman-compose"
+if ! command -v podman-compose >/dev/null 2>&1; then
+    COMPOSE_BIN="podman compose"
+fi
+
+# 3. Recrear contenedor con la nueva versión
+echo "Redeploying application container..."
+`$COMPOSE_BIN -f '$composeFileName' up -d --force-recreate
+
+# 4. Limpieza de imágenes huérfanas/antiguas
+podman image prune -f >/dev/null 2>&1 || true
+
+# 5. Imprimir el estado final
+`$COMPOSE_BIN -f '$composeFileName' ps
 "@
 
 Write-Host "Executing rolling deploy on $target ($RemotePath) with version $Version..."
