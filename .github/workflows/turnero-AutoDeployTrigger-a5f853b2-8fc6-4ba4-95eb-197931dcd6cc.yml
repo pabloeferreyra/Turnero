@@ -1,0 +1,49 @@
+name: Trigger auto deployment for turnero
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ master ]
+    paths:
+    - '**'
+    - '.github/workflows/turnero-AutoDeployTrigger-a5f853b2-8fc6-4ba4-95eb-197931dcd6cc.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:      
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      id-token: write #This is required for requesting the OIDC JWT Token
+      contents: read #Required when GH token is used to authenticate with private repo
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.TURNERO_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.TURNERO_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.TURNERO_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}
+          _dockerfilePathKey_: _dockerfilePath_
+          _targetLabelKey_: _targetLabel_
+          registryUrl: 
+          registryUsername: ${{ secrets.TURNERO_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.TURNERO_REGISTRY_PASSWORD }}
+          containerAppName: turnero
+          resourceGroup: turnero
+          imageToBuild: default/[parameters('containerAppName')]:${{ github.sha }}
+          _buildArgumentsKey_: |
+            _buildArgumentsValues_
+
+
