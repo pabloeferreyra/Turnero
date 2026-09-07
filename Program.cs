@@ -12,21 +12,52 @@ if (builder.Environment.IsDevelopment())
     builder.Configuration.AddUserSecrets<Program>(optional: true);
 }
 
-string? firebaseCredentialsPath = GetFirebaseCredentialsPath(builder.Configuration);
+GoogleCredential? firebaseCredential = GetFirebaseCredential(builder.Configuration);
 
-static string? GetFirebaseCredentialsPath(IConfiguration configuration)
+static GoogleCredential? GetFirebaseCredential(IConfiguration configuration)
+{
+    var credentialsJson = configuration["Firebase:CredentialsJson"];
+    if (!string.IsNullOrWhiteSpace(credentialsJson))
+    {
+        return GoogleCredential.FromJson(credentialsJson);
+    }
+
+    var credentialFields = new Dictionary<string, string?>
+    {
+        ["type"] = configuration["Firebase:Type"],
+        ["project_id"] = configuration["Firebase:ProjectId"],
+        ["private_key_id"] = configuration["Firebase:PrivateKeyId"],
+        ["private_key"] = configuration["Firebase:PrivateKey"]?.Replace("\\n", "\n"),
+        ["client_email"] = configuration["Firebase:ClientEmail"],
+        ["client_id"] = configuration["Firebase:ClientId"],
+        ["auth_uri"] = configuration["Firebase:AuthUri"],
+        ["token_uri"] = configuration["Firebase:TokenUri"],
+        ["auth_provider_x509_cert_url"] = configuration["Firebase:AuthProviderX509CertUrl"],
+        ["client_x509_cert_url"] = configuration["Firebase:ClientX509CertUrl"],
+        ["universe_domain"] = configuration["Firebase:UniverseDomain"]
+    };
+
+    if (credentialFields.Any(field => string.IsNullOrWhiteSpace(field.Value)))
+    {
+        return GetFirebaseCredentialFromPath(configuration);
+    }
+
+    return GoogleCredential.FromJson(System.Text.Json.JsonSerializer.Serialize(credentialFields));
+}
+
+static GoogleCredential? GetFirebaseCredentialFromPath(IConfiguration configuration)
 {
     var configuredPath = configuration["Firebase:CredentialsPath"];
 
     if (!string.IsNullOrWhiteSpace(configuredPath))
     {
-        return Path.GetFullPath(configuredPath);
+        return GoogleCredential.FromFile(Path.GetFullPath(configuredPath));
     }
 
     var googleCredentialsPath = Environment.GetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS");
     return string.IsNullOrWhiteSpace(googleCredentialsPath)
         ? null
-        : Path.GetFullPath(googleCredentialsPath);
+        : GoogleCredential.FromFile(Path.GetFullPath(googleCredentialsPath));
 }
 
 static void AddDotEnvFile(IConfigurationBuilder configurationBuilder, string filePath)
@@ -186,11 +217,11 @@ builder.Services.AddRazorPages();
 #endregion
 
 #region Firebase Configuration
-if (!string.IsNullOrWhiteSpace(firebaseCredentialsPath) && File.Exists(firebaseCredentialsPath))
+if (firebaseCredential is not null)
 {
     FirebaseApp.Create(new AppOptions
     {
-        Credential = GoogleCredential.FromFile(firebaseCredentialsPath)
+        Credential = firebaseCredential
     });
 }
 #endregion
