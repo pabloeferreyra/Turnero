@@ -35,6 +35,7 @@ jobs:
         uses: azure/container-apps-deploy-action@v2
         with:
           appSourcePath: ${{ github.workspace }}
+           acrName: turnero-h6bkg0ascgebeqcr
           _dockerfilePathKey_: _dockerfilePath_
           _targetLabelKey_: _targetLabel_
           registryUrl: 
