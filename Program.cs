@@ -508,12 +508,29 @@ app.MapGet("/health", async (ApplicationDbContext dbContext) =>
     {
         status = overallHealthy ? "healthy" : (memDegraded ? "degraded" : "unhealthy"),
         timestamp = DateTime.UtcNow,
+        logs = new
+        {
+            downloadUrl = "/health/logs",
+            description = "Descarga el archivo AppLogs.log del contenedor"
+        },
         checks
     };
 
     return overallHealthy
         ? Results.Ok(result)
         : Results.Json(result, statusCode: 503);
+});
+
+app.MapGet("/health/logs", () =>
+{
+    var logPath = Path.Combine(AppContext.BaseDirectory, "AppLogs.log");
+
+    if (!File.Exists(logPath))
+    {
+        return Results.NotFound(new { error = "Todavía no existe AppLogs.log en este entorno." });
+    }
+
+    return Results.File(logPath, "text/plain", fileDownloadName: "AppLogs.log");
 });
 #endregion
 
