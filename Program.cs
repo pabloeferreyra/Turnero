@@ -132,12 +132,13 @@ builder.Host.UseDefaultServiceProvider(options =>
     options.ValidateOnBuild = true;
 });
 
+// Logging centralizado en AppLogs.log para todas las capas
+builder.Logging.ClearProviders();
+builder.Logging.AddProvider(new FileLoggerProvider("AppLogs.log"));
+
 // Diagnóstico adicional (solo en desarrollo)
 if (builder.Environment.IsDevelopment())
 {
-    builder.Logging.AddConsole();
-    builder.Logging.AddDebug();
-
     // Validación manual para servicios críticos
     builder.Services.AddHostedService<DependencyDiagnosticsHostedService>();
 }

@@ -50,7 +50,7 @@ public class TurnsController(UserManager<IdentityUser> userManager,
         {
             t.IsMedic = isMedic != null;
         }
-
+        logger.LogInformation("InitializeTurns called with draw={Draw}, pageSize={PageSize}, skip={Skip}, medic={Medic}, dateTurn={DateTurn}. Returning {Count} records.", draw, pageSize, skip, medic, dateTurn, data.Count);
         return Ok(new { draw, recordsFiltered = recordsTotal, recordsTotal, data });
     }
 
@@ -130,10 +130,10 @@ public class TurnsController(UserManager<IdentityUser> userManager,
 
             // ── Normalizar datos ───────────────────────────────────────────
             turn.Reason = string.IsNullOrWhiteSpace(turn.Reason) ? string.Empty : turn.Reason.TrimEnd('\"');
-            turn.Date = turn.Date ?? DateTime.Today.ToString("yyyy-MM-dd");
+            turn.Date ??= DateTime.Today.ToString("yyyy-MM-dd");
 
             // ── Validación de turno duplicado ────────────────────────────────
-            if (!DateOnly.TryParseExact(turn.Date, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out var parsedDate))
+            if (!DateOnly.TryParseExact(turn.Date, "yyyy-MM-dd", null, DateTimeStyles.None, out var parsedDate))
             {
                 logger.LogWarning("Fecha inválida al crear turno: {Date}", turn.Date);
                 return Conflict(new { error = "La fecha ingresada no es válida." });
