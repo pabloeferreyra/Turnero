@@ -26,22 +26,115 @@
                 var p0 = new NpgsqlParameter("p0", date);
                 var p1 = new NpgsqlParameter("p1", id);
 
-                return CallStoredProcedureDTO(
-                    connectionString,
-                    "select * from getturns(@p0, @p1)",
-                    p0, p1
-                );
-            } 
+                var list = ExecuteGetTurns(connectionString, "select * from getturns(@p0, @p1)", p0, p1);
+                return list.AsQueryable();
+            }
             else
             {
                 var p0 = new NpgsqlParameter("p0", date);
-
-                return CallStoredProcedureDTO(
-                    connectionString,
-                    "select * from getturns(@p0)",
-                    p0
-                );
+                var list = ExecuteGetTurns(connectionString, "select * from getturns(@p0)", p0);
+                return list.AsQueryable();
             }
+        }
+
+        private List<TurnDTO> ExecuteGetTurns(string connectionString, string sql, params NpgsqlParameter[] parameters)
+        {
+            var results = new List<TurnDTO>();
+
+            using var connection = new NpgsqlConnection(connectionString);
+            connection.Open();
+
+            using var command = new NpgsqlCommand(sql, connection)
+            {
+                CommandType = CommandType.Text
+            };
+
+            if (parameters != null && parameters.Length > 0)
+                command.Parameters.AddRange(parameters);
+
+            using var reader = command.ExecuteReader();
+
+            // Build a case-insensitive set of column names present in the result set.
+            var columnNames = new HashSet<string>(
+                Enumerable.Range(0, reader.FieldCount).Select(reader.GetName),
+                StringComparer.OrdinalIgnoreCase);
+
+            while (reader.Read())
+            {
+                var dto = new TurnDTO();
+
+                Guid TryGetGuid(string name)
+                {
+                    try
+                    {
+                        if (!columnNames.Contains(name) || reader[name] == DBNull.Value) return Guid.Empty;
+                        return reader.GetGuid(reader.GetOrdinal(name));
+                    }
+                    catch
+                    {
+                        try { return Guid.Parse(reader[name].ToString()); } catch { return Guid.Empty; }
+                    }
+                }
+
+                string? TryGetString(string name)
+                {
+                    try
+                    {
+                        if (!columnNames.Contains(name) || reader[name] == DBNull.Value) return null;
+                        return reader[name].ToString();
+                    }
+                    catch { return null; }
+                }
+
+                long? TryGetLong(string name)
+                {
+                    try
+                    {
+                        if (!columnNames.Contains(name) || reader[name] == DBNull.Value) return null;
+                        return Convert.ToInt64(reader[name]);
+                    }
+                    catch { return null; }
+                }
+
+                // Map commonly expected columns (defensive, case-insensitive)
+                dto.Id = TryGetGuid("Id");
+                dto.Name = TryGetString("Name");
+                dto.Dni = TryGetLong("Dni");
+                dto.MedicId = TryGetGuid("MedicId");
+                dto.MedicName = TryGetString("MedicName");
+
+                // Date may come as date/datetime/string — normalize to yyyy-MM-dd
+                if (columnNames.Contains("Date") && reader["Date"] != DBNull.Value)
+                {
+                    try
+                    {
+                        var dateVal = reader["Date"];
+                        if (dateVal is DateTime dt) dto.Date = dt.ToString("yyyy-MM-dd");
+                        else dto.Date = dateVal.ToString();
+                    }
+                    catch { dto.Date = TryGetString("Date"); }
+                }
+
+                // Time: ensure string presentation (e.g., "10:00")
+                if (columnNames.Contains("Time") && reader["Time"] != DBNull.Value)
+                {
+                    try
+                    {
+                        var timeVal = reader["Time"];
+                        dto.Time = timeVal is TimeSpan ts ? ts.ToString(@"hh\:mm") : timeVal.ToString();
+                    }
+                    catch { dto.Time = TryGetString("Time"); }
+                }
+
+                dto.TimeId = TryGetGuid("TimeId");
+                dto.SocialWork = TryGetString("SocialWork");
+                dto.Reason = TryGetString("Reason");
+                dto.Accessed = false;
+
+                results.Add(dto);
+            }
+
+            return results;
         }
     }
 

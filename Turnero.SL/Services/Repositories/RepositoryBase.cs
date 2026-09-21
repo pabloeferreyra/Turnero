@@ -160,9 +160,37 @@ public abstract class RepositoryBase<T>(ApplicationDbContext context, IMemoryCac
 
             foreach (var property in properties)
             {
-                if (columnNames.Contains(property.Name) && reader[property.Name] != DBNull.Value)
+                if (!columnNames.Contains(property.Name) || reader[property.Name] == DBNull.Value)
+                    continue;
+
+                var value = reader[property.Name];
+                var propType = property.PropertyType;
+                var targetType = Nullable.GetUnderlyingType(propType) ?? propType;
+
+                // If types are compatible, assign directly
+                if (targetType.IsAssignableFrom(value.GetType()))
                 {
-                    property.SetValue(instance, reader[property.Name]);
+                    property.SetValue(instance, value);
+                    continue;
+                }
+
+                // If target is a complex reference (e.g. navigation property like TimeTurn)
+                // and the reader returned a scalar (e.g. the Time string), skip assignment
+                if (targetType.IsClass && targetType != typeof(string))
+                {
+                    continue;
+                }
+
+                // Try to convert simple types (int, Guid, DateTime, string, etc.)
+                try
+                {
+                    var converted = Convert.ChangeType(value, targetType);
+                    property.SetValue(instance, converted);
+                }
+                catch
+                {
+                    // If conversion fails, skip assigning this property
+                    continue;
                 }
             }
 
