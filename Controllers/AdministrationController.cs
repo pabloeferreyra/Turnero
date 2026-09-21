@@ -4,10 +4,30 @@
 public class AdministrationController(RoleManager<IdentityRole> roleManager,
                                 UserManager<IdentityUser> userManager,
                                 ApplicationDbContext dbContext,
-                                ILogger<AdministrationController> logger) : TurneroBaseController
+                                ILogger<AdministrationController> logger,
+                                IFirebaseService firebaseService) : TurneroBaseController
 {
 
     public ILogger<AdministrationController> Logger { get; } = logger;
+
+    private IFirebaseService FirebaseService { get; } = firebaseService;
+
+    private async Task<bool> UserHasRoleAsync(IdentityUser user, string roleName)
+    {
+        string? firebaseRole = null;
+        try
+        {
+            firebaseRole = await FirebaseService.GetRoleAsync(user.Id);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Could not read Firebase role for user {UserId}; using local role mirror.", user.Id);
+        }
+
+        return string.IsNullOrWhiteSpace(firebaseRole)
+            ? await userManager.IsInRoleAsync(user, roleName)
+            : string.Equals(firebaseRole, roleName, StringComparison.OrdinalIgnoreCase);
+    }
 
     [HttpGet]
     public async Task<IActionResult> ManageUserClaims(string userId)
@@ -132,10 +152,12 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
 
         try
         {
+            var firebaseUserId = user.Id;
             var result = await userManager.DeleteAsync(user);
 
             if (result.Succeeded)
             {
+                await FirebaseService.DeleteUserAsync(firebaseUserId);
                 return RedirectToAction(nameof(ListUsers));
             }
 
@@ -167,6 +189,12 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
 
             if (result.Succeeded)
             {
+                var users = await userManager.Users.ToListAsync();
+                foreach (var user in users)
+                {
+                    var roles = await userManager.GetRolesAsync(user);
+                    await FirebaseService.SetRoleAsync(user.Id, roles.FirstOrDefault());
+                }
                 return RedirectToAction(nameof(ListRoles));
             }
 
@@ -212,9 +240,10 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
             RoleName = role.Name
         };
 
-        foreach (var user in userManager.Users)
+        var usersInRole = await userManager.Users.ToListAsync();
+        foreach (var user in usersInRole)
         {
-            if (await userManager.IsInRoleAsync(user, role.Name))
+            if (await UserHasRoleAsync(user, role.Name))
             {
                 model.Users.Add(user.UserName);
             }
@@ -233,11 +262,24 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
 
         try
         {
+            var users = await userManager.Users.ToListAsync();
+            var usersInRole = new List<IdentityUser>();
+            foreach (var user in users)
+            {
+            if (await UserHasRoleAsync(user, role.Name))
+                {
+                    usersInRole.Add(user);
+                }
+            }
             role.Name = model.RoleName;
             var result = await roleManager.UpdateAsync(role);
 
             if (result.Succeeded)
             {
+                foreach (var user in usersInRole)
+                {
+                    await FirebaseService.SetRoleAsync(user.Id, role.Name);
+                }
                 return RedirectToAction(nameof(ListRoles));
             }
 
@@ -292,43 +334,6 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
             });
             overallHealthy = false;
         }
-
-        // Container Memory
-        var memInfo = ContainerMemoryMonitor.ReadMemoryInfo();
-        var memDegraded = false;
-        if (memInfo.HasValue)
-        {
-            var usageMb = memInfo.Value.CurrentBytes / (1024.0 * 1024.0);
-            var limitMb = memInfo.Value.LimitBytes / (1024.0 * 1024.0);
-            var percentage = memInfo.Value.Percentage;
-            memDegraded = percentage >= 0.95;
-            if (memDegraded) overallHealthy = false;
-
-            ViewBag.MemoryUsageMb = usageMb;
-            ViewBag.MemoryLimitMb = limitMb;
-            ViewBag.MemoryPercentage = percentage * 100;
-            ViewBag.MemoryStatus = memDegraded ? "degraded" : "healthy";
-
-            checks.Add(new HealthCheckResult
-            {
-                Name = "Memoria",
-                Status = memDegraded ? "degraded" : "healthy",
-                Icon = "bi-memory-stick",
-                Description = $"{usageMb:F0} MB / {limitMb:F0} MB ({percentage * 100:F1}%)"
-            });
-        }
-        else
-        {
-            ViewBag.MemoryStatus = "unknown";
-            checks.Add(new HealthCheckResult
-            {
-                Name = "Memoria",
-                Status = "unknown",
-                Icon = "bi-memory-stick",
-                Description = "No disponible (fuera del contenedor)"
-            });
-        }
-
         ViewBag.OverallStatus = overallHealthy ? "healthy" : "unhealthy";
         ViewBag.CheckedAt = DateTime.Now;
         return View(checks);
@@ -344,14 +349,15 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
 
         var model = new List<UserRoleViewModel>();
 
-        foreach (var user in userManager.Users)
+        var users = await userManager.Users.ToListAsync();
+        foreach (var user in users)
         {
             var userRoleViewModel = new UserRoleViewModel
             {
                 UserId = user.Id,
                 UserName = user.UserName
             };
-            if (await userManager.IsInRoleAsync(user, role.Name))
+                if (await UserHasRoleAsync(user, role.Name))
             {
                 userRoleViewModel.IsSelected = true;
             }
@@ -375,14 +381,28 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
         foreach (var userRole in model)
         {
             var user = await userManager.FindByIdAsync(userRole.UserId);
-
-            if (userRole.IsSelected && !(await userManager.IsInRoleAsync(user, role.Name)))
+            if (user == null)
             {
-                await userManager.AddToRoleAsync(user, role.Name);
+                continue;
             }
-            else if (!userRole.IsSelected && await userManager.IsInRoleAsync(user, role.Name))
+
+            var hasRole = await UserHasRoleAsync(user, role.Name);
+
+            if (userRole.IsSelected)
+            {
+                var currentRoles = await userManager.GetRolesAsync(user);
+                if (currentRoles.Count != 1 || !string.Equals(currentRoles[0], role.Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    await userManager.RemoveFromRolesAsync(user, currentRoles);
+                    await userManager.AddToRoleAsync(user, role.Name);
+                }
+                await FirebaseService.SetRoleAsync(user.Id, role.Name);
+            }
+            else if (!userRole.IsSelected && hasRole)
             {
                 await userManager.RemoveFromRoleAsync(user, role.Name);
+                var remainingRole = (await userManager.GetRolesAsync(user)).FirstOrDefault();
+                await FirebaseService.SetRoleAsync(user.Id, remainingRole);
             }
         }
         return RedirectToAction(nameof(EditRole), new { Id = roleId });

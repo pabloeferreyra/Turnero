@@ -10,6 +10,7 @@ public class InsertMedicServices(LoggerService logger, IMedicRepository medicRep
         try
         {
             await _medicRepository.NewMedic(medic);
+            _medicRepository.InvalidateCachedMedics();
         }
         catch (Exception ex)
         {

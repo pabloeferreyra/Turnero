@@ -29,7 +29,12 @@
 
  
     <div class="row">
-        <div class="col-md-1 col-sm-12 btn-group" role="group">
+        <div class="col-md-3 col-sm-12 btn-group" role="group">
+            <a href="@Url.Action("Pdf", "Patients", new { id = Model.Id })"
+               target="_blank"
+               class="btn btn-sm btn-secondary me-1">
+                <i class="fa-solid fa-file-pdf"></i> Descargar
+            </a>
             <button data-open-modal
                     data-modal-id="GlobalModal"
                     data-url="@edModalUrl"

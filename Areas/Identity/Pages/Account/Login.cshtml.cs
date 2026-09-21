@@ -3,9 +3,12 @@
 [AllowAnonymous]
 public class LoginModel(SignInManager<IdentityUser> signInManager,
     ILogger<LoginModel> logger,
-    UserManager<IdentityUser> userManager, IFirebaseService firebaseService) : PageModel
+    UserManager<IdentityUser> userManager,
+    RoleManager<IdentityRole> roleManager,
+    IFirebaseService firebaseService) : PageModel
 {
     private readonly UserManager<IdentityUser> _userManager = userManager;
+    private readonly RoleManager<IdentityRole> _roleManager = roleManager;
     private readonly SignInManager<IdentityUser> _signInManager = signInManager;
     private readonly ILogger<LoginModel> _logger = logger;
     private readonly IFirebaseService _firebaseService = firebaseService;
@@ -59,16 +62,93 @@ public class LoginModel(SignInManager<IdentityUser> signInManager,
             // This doesn't count login failures towards account lockout
             // To enable password failures to trigger account lockout, set lockoutOnFailure: true
             Input.RememberMe = true;
-            UserLoginRequestDTO userLogin = new() { Email = $"{Input.User}@consultorios.com", Password = Input.Password };
+            UserLoginRequestDTO userLogin = new()
+            {
+                Email = Input.User.Contains('@') ? Input.User : $"{Input.User}@consultorios.com",
+                Password = Input.Password
+            };
             var firebaseRes = await _firebaseService.LoginAsync(userLogin);
-            if (firebaseRes.LocalId != null)
+            if (!string.IsNullOrWhiteSpace(firebaseRes.LocalId) && !string.IsNullOrWhiteSpace(firebaseRes.IdToken))
             {
                 _logger.LogInformation("User logged in.");
                 var user = await _userManager.FindByIdAsync(firebaseRes.LocalId);
 
-                await _signInManager.SignInAsync(user, Input.RememberMe);
+                var decodedToken = await FirebaseAuth.DefaultInstance.VerifyIdTokenAsync(firebaseRes.IdToken);
+                var role = decodedToken.Claims.TryGetValue("role", out var roleClaim)
+                    ? roleClaim?.ToString()
+                    : null;
+                var hasFirebaseRole = !string.IsNullOrWhiteSpace(role);
 
-                if (await _userManager.IsInRoleAsync(user, "Admin"))
+                if (user == null)
+                {
+                    role ??= RolesConstants.Medico;
+                    user = new IdentityUser
+                    {
+                        Id = firebaseRes.LocalId,
+                        UserName = firebaseRes.DisplayName ?? userLogin.Email,
+                        Email = firebaseRes.Email ?? userLogin.Email
+                    };
+
+                    var createResult = await _userManager.CreateAsync(user);
+                    if (!createResult.Succeeded)
+                    {
+                        foreach (var error in createResult.Errors)
+                        {
+                            ModelState.AddModelError(string.Empty, error.Description);
+                        }
+                        return Page();
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(role))
+                {
+                    role = (await _userManager.GetRolesAsync(user)).FirstOrDefault();
+                    role ??= RolesConstants.Medico;
+                }
+
+                if (!await _roleManager.RoleExistsAsync(role))
+                {
+                    await _roleManager.CreateAsync(new IdentityRole(role));
+                }
+
+                if (!await _userManager.IsInRoleAsync(user, role))
+                {
+                    var roleResult = await _userManager.AddToRoleAsync(user, role);
+                    if (!roleResult.Succeeded)
+                    {
+                        foreach (var error in roleResult.Errors)
+                        {
+                            ModelState.AddModelError(string.Empty, error.Description);
+                        }
+                        return Page();
+                    }
+                }
+
+                if (!hasFirebaseRole)
+                {
+                    await _firebaseService.SetRoleAsync(user.Id, role);
+                }
+
+                var claims = new List<Claim>
+                {
+                    new(ClaimTypes.NameIdentifier, user.Id),
+                    new(ClaimTypes.Name, user.UserName ?? user.Email ?? user.Id),
+                    new(ClaimTypes.Email, user.Email ?? string.Empty)
+                };
+                if (!string.IsNullOrWhiteSpace(role))
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, role));
+                }
+
+                var principal = new ClaimsPrincipal(new ClaimsIdentity(
+                    claims,
+                    IdentityConstants.ApplicationScheme,
+                    ClaimTypes.Name,
+                    ClaimTypes.Role));
+                await HttpContext.SignInAsync(IdentityConstants.ApplicationScheme, principal,
+                    new AuthenticationProperties { IsPersistent = Input.RememberMe });
+
+                if (string.Equals(role, RolesConstants.Admin, StringComparison.OrdinalIgnoreCase))
                 {
                     returnUrl = Url.Content("~/");
                 }

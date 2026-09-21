@@ -11,4 +11,5 @@ public interface IMedicRepository
     void DeleteMedic(Medic medic);
     Task UpdateMedic(Medic medic);
     Task<List<MedicDto>> GetCachedMedics();
+    void InvalidateCachedMedics();
 }

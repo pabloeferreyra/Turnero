@@ -25,15 +25,21 @@ public class TurnsController(UserManager<IdentityUser> userManager,
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> InitializeTurns()
     {
-        string isMedic = await CheckMedic();
+        var medicId = await CheckMedic();
+        var isMedic = User.IsInRole(RolesConstants.Medico);
         var (draw, pageSize, skip) = DataTablesHelper.GetDataTableParams(Request);
 
-        var medic = isMedic ?? Request.Form["Columns[5][search][value]"].FirstOrDefault();
+        var requestedMedic = Request.Form["Columns[5][search][value]"].FirstOrDefault();
+        var medic = isMedic ? medicId : requestedMedic;
         var dateTurnStr = Request.Form["Columns[6][search][value]"].FirstOrDefault();
         DateOnly dateTurn = DateOnly.TryParse(dateTurnStr, out var dt) ? dt : DateOnly.FromDateTime(DateTime.Today);
 
         List<TurnDTO> data;
-        if (!string.IsNullOrEmpty(medic))
+        if (isMedic && string.IsNullOrEmpty(medicId))
+        {
+            data = [];
+        }
+        else if (!string.IsNullOrEmpty(medic))
         {
             data = [.. getTurnDTO.GetTurnsDtoByDateAndId(dateTurn, Guid.Parse(medic))];
         }
@@ -48,7 +54,7 @@ public class TurnsController(UserManager<IdentityUser> userManager,
 
         foreach (var t in data)
         {
-            t.IsMedic = isMedic != null;
+            t.IsMedic = isMedic;
         }
         logger.LogInformation("InitializeTurns called with draw={Draw}, pageSize={PageSize}, skip={Skip}, medic={Medic}, dateTurn={DateTurn}. Returning {Count} records.", draw, pageSize, skip, medic, dateTurn, data.Count);
         return Ok(new { draw, recordsFiltered = recordsTotal, recordsTotal, data });
@@ -126,6 +132,13 @@ public class TurnsController(UserManager<IdentityUser> userManager,
             {
                 logger.LogWarning("Intento de crear turno sin Horario seleccionado.");
                 return Conflict(new { error = "Debe seleccionar un horario." });
+            }
+
+            var selectedMedic = await getMedics.GetMedicById(turn.MedicId);
+            if (selectedMedic.Id == Guid.Empty)
+            {
+                logger.LogWarning("Intento de crear turno con médico inexistente: {MedicId}", turn.MedicId);
+                return Conflict(new { error = "El médico seleccionado ya no existe." });
             }
 
             // ── Normalizar datos ───────────────────────────────────────────
@@ -268,11 +281,15 @@ public class TurnsController(UserManager<IdentityUser> userManager,
     [Authorize(Roles = RolesConstants.Admin + ", " + RolesConstants.Ingreso)]
     private async Task<List<TurnDTO>> GetFilteredTurns()
     {
-        string isMedic = await CheckMedic();
-        var medic = isMedic ?? Request.Form["Columns[5][search][value]"].FirstOrDefault();
+        var medicId = await CheckMedic();
+        var isMedic = User.IsInRole(RolesConstants.Medico);
+        var requestedMedic = Request.Form["Columns[5][search][value]"].FirstOrDefault();
+        var medic = isMedic ? medicId : requestedMedic;
         var dateTurnStr = Request.Form["Columns[6][search][value]"].FirstOrDefault();
         DateOnly dateTurn = DateOnly.TryParse(dateTurnStr, out var dt) ? dt : DateOnly.FromDateTime(DateTime.Today);
-        return !string.IsNullOrEmpty(medic)
+        return isMedic && string.IsNullOrEmpty(medicId)
+            ? []
+            : !string.IsNullOrEmpty(medic)
             ? [.. getTurnDTO.GetTurnsDtoByDateAndId(dateTurn, Guid.Parse(medic))]
             : [.. getTurnDTO.GetTurnsDtoByDateAndId(dateTurn, null)];
     }

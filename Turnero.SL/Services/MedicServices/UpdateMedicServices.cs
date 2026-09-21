@@ -10,6 +10,7 @@ public class UpdateMedicServices(LoggerService logger, IMedicRepository medicRep
         try
         {
             await _medicRepository.UpdateMedic(medic);
+            _medicRepository.InvalidateCachedMedics();
             return true;
         }
         catch (DbUpdateConcurrencyException ex)
@@ -24,6 +25,7 @@ public class UpdateMedicServices(LoggerService logger, IMedicRepository medicRep
         try
         {
             _medicRepository.DeleteMedic(medic);
+            _medicRepository.InvalidateCachedMedics();
         }
         catch (DbUpdateConcurrencyException ex)
         {

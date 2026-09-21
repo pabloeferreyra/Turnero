@@ -167,6 +167,11 @@ public abstract class RepositoryBase<T>(ApplicationDbContext context, IMemoryCac
                 var propType = property.PropertyType;
                 var targetType = Nullable.GetUnderlyingType(propType) ?? propType;
 
+                if (property.Name is "Medic" or "Time" or "Turns")
+                {
+                    continue;
+                }
+
                 // If types are compatible, assign directly
                 if (targetType.IsAssignableFrom(value.GetType()))
                 {

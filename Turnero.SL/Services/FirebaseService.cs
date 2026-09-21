@@ -1,43 +1,29 @@
 ﻿namespace Turnero.SL.Services;
 
-public class FirebaseService(HttpClient httpClient, IConfiguration configuration, UserManager<IdentityUser> userManager) : IFirebaseService
+public class FirebaseService(
+    HttpClient httpClient,
+    IConfiguration configuration,
+    UserManager<IdentityUser> userManager,
+    RoleManager<IdentityRole> roleManager) : IFirebaseService
 {
+    private const string RoleClaim = "role";
+    private const string DefaultRole = "Medico";
+
     public async Task<UserRecord> RegisterAsync(UserFirebaseDTO usrDto)
     {
-        var userArgs = new UserRecordArgs { DisplayName = usrDto.Name, Email = usrDto.Email, Password = usrDto.Password };
-        var user = await FirebaseAuth.DefaultInstance.CreateUserAsync(userArgs);
-        var tid = await LoginAsync(new UserLoginRequestDTO { Email = usrDto.Email, Password = usrDto.Password });
-        var iUser = new IdentityUser
-        {
-            Id = tid.LocalId ?? string.Empty, // Soluciona CS8601 asegurando que nunca se asigne null
-            UserName = usrDto.Name,
-            Email = usrDto.Email
-        };
-
-        var createResult = await userManager.CreateAsync(iUser);
-        if (!createResult.Succeeded)
-        {
-            throw new Exception();
-        }
-
-        if (iUser.UserName == "Administrador")
-            await userManager.AddToRoleAsync(iUser, "Admin");
-        else if (iUser.UserName.Equals("Ingreso", StringComparison.InvariantCultureIgnoreCase) || iUser.UserName.Equals("IngresoPruebas", StringComparison.InvariantCultureIgnoreCase))
-            await userManager.AddToRoleAsync(iUser, "Ingreso");
-        else
-            await userManager.AddToRoleAsync(iUser, "Medico");
-
-        return user;
+        await RegisterAdminAsync(usrDto);
+        return await FirebaseAuth.DefaultInstance.GetUserByEmailAsync(usrDto.Email);
     }
 
     public async Task<IdentityResult> RegisterAdminAsync(UserFirebaseDTO usrDto)
     {
         var userArgs = new UserRecordArgs { DisplayName = usrDto.Name, Email = usrDto.Email, Password = usrDto.Password };
-        await FirebaseAuth.DefaultInstance.CreateUserAsync(userArgs);
-        var tid = await LoginAsync(new UserLoginRequestDTO { Email = usrDto.Email, Password = usrDto.Password });
+        var firebaseUser = await FirebaseAuth.DefaultInstance.CreateUserAsync(userArgs);
+        await SetRoleAsync(firebaseUser.Uid, DefaultRole);
+
         var user = new IdentityUser
         {
-            Id = tid.LocalId ?? string.Empty, // Soluciona CS8601 asegurando que nunca se asigne null
+            Id = firebaseUser.Uid,
             UserName = usrDto.Name,
             Email = usrDto.Email
         };
@@ -45,12 +31,48 @@ public class FirebaseService(HttpClient httpClient, IConfiguration configuration
         var createResult = await userManager.CreateAsync(user);
         if (!createResult.Succeeded)
         {
-            throw new Exception();
+            await FirebaseAuth.DefaultInstance.DeleteUserAsync(firebaseUser.Uid);
+            return createResult;
         }
 
-        await userManager.AddToRoleAsync(user, usrDto.Role);
+        if (!await roleManager.RoleExistsAsync(DefaultRole))
+        {
+            await roleManager.CreateAsync(new IdentityRole(DefaultRole));
+        }
+
+        var roleResult = await userManager.AddToRoleAsync(user, DefaultRole);
+        if (!roleResult.Succeeded)
+        {
+            await userManager.DeleteAsync(user);
+            await FirebaseAuth.DefaultInstance.DeleteUserAsync(firebaseUser.Uid);
+            return roleResult;
+        }
+
+        var tid = await LoginAsync(new UserLoginRequestDTO { Email = usrDto.Email, Password = usrDto.Password });
         await SendEmailVerificationLinkAsync(tid.IdToken);
         return createResult;
+    }
+
+    public Task SetRoleAsync(string userId, string? role)
+    {
+        var claims = string.IsNullOrWhiteSpace(role)
+            ? new Dictionary<string, object>()
+            : new Dictionary<string, object> { [RoleClaim] = role };
+
+        return FirebaseAuth.DefaultInstance.SetCustomUserClaimsAsync(userId, claims);
+    }
+
+    public async Task<string?> GetRoleAsync(string userId)
+    {
+        var user = await FirebaseAuth.DefaultInstance.GetUserAsync(userId);
+        return user.CustomClaims is not null && user.CustomClaims.TryGetValue(RoleClaim, out var role)
+            ? role?.ToString()
+            : null;
+    }
+
+    public Task DeleteUserAsync(string userId)
+    {
+        return FirebaseAuth.DefaultInstance.DeleteUserAsync(userId);
     }
 
     public async Task<AuthFirebase> LoginAsync(UserLoginRequestDTO usrDto)
@@ -154,6 +176,9 @@ public interface IFirebaseService
 {
     Task<UserRecord> RegisterAsync(UserFirebaseDTO usrDto);
     Task<IdentityResult> RegisterAdminAsync(UserFirebaseDTO usrDto);
+    Task SetRoleAsync(string userId, string? role);
+    Task<string?> GetRoleAsync(string userId);
+    Task DeleteUserAsync(string userId);
     Task<AuthFirebase> LoginAsync(UserLoginRequestDTO usrDto);
     Task<HttpStatusCode> SendPasswordResetLinkAsync(string email);
     Task<HttpStatusCode> UpdatePasswordAsync(UserResetPasswordDTO userReset);

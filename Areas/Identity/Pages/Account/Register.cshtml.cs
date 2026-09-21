@@ -6,20 +6,16 @@
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly ILogger<RegisterModel> _logger;
-        RoleManager<IdentityRole> _roleManager;
-
         private readonly IFirebaseService _firebaseService;
         public RegisterModel(
             UserManager<IdentityUser> userManager,
             SignInManager<IdentityUser> signInManager,
             ILogger<RegisterModel> logger,
-            RoleManager<IdentityRole> roleManager,
             IFirebaseService firebaseService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
-            _roleManager = roleManager;
             _firebaseService = firebaseService;
         }
 
@@ -52,26 +48,21 @@
             [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
             public string ConfirmPassword { get; set; }
 
-            [Required]
-            [Display(Name = "Rol")]
-            public string Name { get; set; }
         }
 
         public async Task OnGetAsync(string returnUrl = null)
         {
-            ViewData["roles"] = _roleManager.Roles.ToList();
             ReturnUrl = returnUrl;
             ExternalLogins = [.. (await _signInManager.GetExternalAuthenticationSchemesAsync())];
         }
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
-            var role = _roleManager.FindByIdAsync(Input.Name).Result;
             ExternalLogins = [.. (await _signInManager.GetExternalAuthenticationSchemesAsync())];
             if (ModelState.IsValid)
             {
-                var user = await _firebaseService.RegisterAdminAsync(new UserFirebaseDTO { Email = $"{Input.UserName}@consultorios.com", Name = Input.UserName, Password = Input.Password, Role = role.Name });
-                if (user != null)
+                var result = await _firebaseService.RegisterAdminAsync(new UserFirebaseDTO { Email = Input.Email, Name = Input.UserName, Password = Input.Password });
+                if (result.Succeeded)
                 {
                     _logger.LogInformation("User created a new account with password.");
 
@@ -81,6 +72,10 @@
                     {
                         return RedirectToAction("ListUsers", "Administration");
                     }
+                }
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
                 }
             }
 

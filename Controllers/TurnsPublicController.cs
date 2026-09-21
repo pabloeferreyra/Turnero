@@ -20,6 +20,11 @@
         public async Task<StatusCodeResult> Create(TurnDTO turn)
         {
             if (!ModelState.IsValid) return this.BadRequest();
+            var selectedMedic = await getMedics.GetMedicById(turn.MedicId);
+            if (selectedMedic.Id == Guid.Empty)
+            {
+                return BadRequest();
+            }
             try
             {
                 turn.Date = DateTime.Today.ToString("dd/MM/yyyy");
@@ -28,7 +33,11 @@
                 turn.TimeId = timeTurns[0].Id;
                 turn.Reason = "Turno espontáneo";
                 var t = turn.Adapt<Turn>();
-                await insertTurns.CreateTurnAsync(t);
+                var created = await insertTurns.CreateTurnAsync(t);
+                if (!created)
+                {
+                    return Conflict();
+                }
                 var medic = await getMedics.GetMedicById(turn.MedicId);
                 await hubContext.Clients.User(medic.UserGuid).SendAsync("UpdateTableDirected", "La tabla se ha actualizado");
 

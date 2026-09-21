@@ -50,4 +50,9 @@ public class MedicRepository(ApplicationDbContext context, IMemoryCache cache) :
     {
         return await GetCachedData("medics", GetListDto);
     }
+
+    public void InvalidateCachedMedics()
+    {
+        _cache.Remove("medics");
+    }
 }

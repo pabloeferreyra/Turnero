@@ -4,7 +4,7 @@
 [ApiController]
 public class FirebaseController(IFirebaseService firebaseService) : ControllerBase
 {
-    [AllowAnonymous]
+    [Authorize(Roles = RolesConstants.Admin)]
     [HttpPost("register")]
     public async Task<ActionResult<UserRecord>> Register([FromBody] UserFirebaseDTO userRegister)
     {
