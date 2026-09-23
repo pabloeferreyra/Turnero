@@ -1,4 +1,4 @@
-﻿@model Allergies
+@model AllergyFormViewModel
 
 <form method="post" id="CreateAllergyForm" autocomplete="off">
 	<input type="hidden" name="__RequestVerificationToken" value="@ViewData["RequestVerificationToken"]" />
@@ -12,7 +12,7 @@
 		</div>
 		<div class="form-group col-12">
 			<label asp-for="Occurrency" class="control-label">Frecuencia</label>
-			<select id="Occurrency" title="Frecuencia" class="form-control form-select" asp-items="@ViewBag.Occurrency"></select>
+			<select id="Occurrency" title="Frecuencia" class="form-control form-select" asp-items="Model.Occurrencies"></select>
 		</div>
 		<div class="form-group col-6">
 			<label asp-for="Begin">Inicio</label>
@@ -53,11 +53,11 @@
 		</div>
 		<div class="form-group col-12">
 			<label asp-for="Severity">Severidad</label>
-			<select id="Severity" title="Severidad" class="form-control form-select" asp-items="@ViewBag.Severity"></select>
+			<select id="Severity" title="Severidad" class="form-control form-select" asp-items="Model.Severities"></select>
 		</div>
 		<div class="form-group col-12">
 			<label asp-for="Type">Tipo</label>
-			<select id="Type" title="Tipo" class="form-control form-select" asp-items="@ViewBag.Type"></select>
+			<select id="Type" title="Tipo" class="form-control form-select" asp-items="Model.Types"></select>
 		</div>
 		<div class="form-group col-12">
 			<label asp-for="Comments">Comentarios</label>

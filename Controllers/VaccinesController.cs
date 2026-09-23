@@ -48,8 +48,10 @@ public class VaccinesController(IGetVaccinesServices get,
         ViewData["PatientId"] = id.Value.ToString();
         var vaccine = new Vaccines { PatientId = id.Value };
         SetAntiforgeryToken();
-        ViewBag.Description = EnumNamesToSelectList<VaccinesEnum>(name => name.Replace("_", " "));
-        return PartialView("_Create", vaccine);
+        return PartialView("_Create", new VaccineFormViewModel(vaccine)
+        {
+            Descriptions = EnumNamesToSelectList<VaccinesEnum>(name => name.Replace("_", " "))
+        });
     }
 
     [HttpPost]
@@ -81,8 +83,10 @@ public class VaccinesController(IGetVaccinesServices get,
         if (vaccine == null)
             return NotFound("Vacuna no encontrada.");
         SetAntiforgeryToken();
-        ViewBag.Description = EnumNamesToSelectList<VaccinesEnum>(name => name.Replace("_", " "));
-        return PartialView("_Create", vaccine);
+        return PartialView("_Create", new VaccineFormViewModel(vaccine)
+        {
+            Descriptions = EnumNamesToSelectList<VaccinesEnum>(name => name.Replace("_", " "))
+        });
     }
 
     [HttpPost]

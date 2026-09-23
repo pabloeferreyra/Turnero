@@ -1,11 +1,12 @@
-﻿@model ParentsData
+@model ParentsDataDetailsViewModel
 @{
-    var patientId = ViewBag.Id ?? "";
+    var patientId = Model.PatientId;
+    var data = Model.Data;
 }
 
 <div class="container mt-2">
 
-    @if (Model == null)
+    @if (data == null)
     {
         <div class="alert alert-info">
             Este paciente no tiene datos familiares cargados todavía.
@@ -22,43 +23,43 @@
         <h5 class="mt-3">Padre</h5>
         <div class="row border p-3 rounded bg-light mb-4">
             <div class="col-md-4"><strong>Nombre:</strong></div>
-            <div class="col-md-8">@Model.FatherName</div>
+            <div class="col-md-8">@data.FatherName</div>
 
             <div class="col-md-4"><strong>Fecha de nacimiento:</strong></div>
-            <div class="col-md-8">@Model.FatherBirthDate.ToString("dd/MM/yyyy")</div>
+            <div class="col-md-8">@data.FatherBirthDate.ToString("dd/MM/yyyy")</div>
 
             <div class="col-md-4"><strong>Grupo sanguíneo:</strong></div>
-            <div class="col-md-8">@Html.DisplayFor(model => model.FatherBloodType)</div>
+            <div class="col-md-8">@Html.DisplayFor(model => data.FatherBloodType)</div>
 
             <div class="col-md-4"><strong>Ocupación:</strong></div>
-            <div class="col-md-8">@Model.FatherWork</div>
+            <div class="col-md-8">@data.FatherWork</div>
         </div>
 
         <h5 class="mt-3">Madre</h5>
         <div class="row border p-3 rounded bg-light mb-4">
             <div class="col-md-4"><strong>Nombre:</strong></div>
-            <div class="col-md-8">@Model.MotherName</div>
+            <div class="col-md-8">@data.MotherName</div>
 
             <div class="col-md-4"><strong>Fecha de nacimiento:</strong></div>
-            <div class="col-md-8">@Model.MotherBirthDate.ToString("dd/MM/yyyy")</div>
+            <div class="col-md-8">@data.MotherBirthDate.ToString("dd/MM/yyyy")</div>
 
             <div class="col-md-4"><strong>Grupo sanguíneo:</strong></div>
-            <div class="col-md-8">@Html.DisplayFor(model => model.MotherBloodType)</div>
+            <div class="col-md-8">@Html.DisplayFor(model => data.MotherBloodType)</div>
 
             <div class="col-md-4"><strong>Ocupación:</strong></div>
-            <div class="col-md-8">@Model.MotherWork</div>
+            <div class="col-md-8">@data.MotherWork</div>
         </div>
 
         <h5 class="mt-3">Hermanos</h5>
         <div class="row border p-3 rounded bg-light mb-4">
             <div class="col-md-4"><strong>Cantidad:</strong></div>
-            <div class="col-md-8">@Model.BrothersCount</div>
+            <div class="col-md-8">@data.BrothersCount</div>
         </div>
 
         <button id="btnEditParentsData"
                 class="btn btn-secondary"
                 data-edit-parent
-                data-id="@Model.Id">
+                data-id="@data.Id">
             Editar datos familiares
         </button>
     }

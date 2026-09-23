@@ -13,11 +13,18 @@ public class TurnsController(UserManager<IdentityUser> userManager,
     [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
     public async Task<IActionResult> Index()
     {
-        ViewBag.MedicId = await CheckMedic();
-        var medics = await GetCachedMedicsAsync();
-        ViewBag.Medics = new SelectList(medics, "Id", "Name");
+        var medicIdTask = CheckMedic();
+        var medicsTask = GetCachedMedicsAsync();
+        await Task.WhenAll(medicIdTask, medicsTask);
 
-        return View(nameof(Index));
+        var model = new TurnsIndexViewModel
+        {
+            Medics = medicsTask.Result,
+            MedicId = medicIdTask.Result,
+            IsMedic = User.IsInRole(RolesConstants.Medico)
+        };
+
+        return View(model);
     }
 
     [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
@@ -60,28 +67,6 @@ public class TurnsController(UserManager<IdentityUser> userManager,
         return Ok(new { draw, recordsFiltered = recordsTotal, recordsTotal, data });
     }
 
-
-
-
-
-    public async Task<List<Turn>> TurnListAsync(DateTime? dateTurn, Guid? medicId)
-    {
-        var user = this.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-        var medic = await getMedics.GetMedicByUserId(user);
-        ViewBag.Date = dateTurn.HasValue ? String.Format("{0:yyyy-MM-dd}", dateTurn) : String.Format("{0:yyyy-MM-dd}", DateTime.Now);
-        ViewBag.IsMedic = medic != null;
-        if (ViewBag.IsMedic)
-        {
-            ViewBag.MedicId = medic.Id;
-            return getTurns.GetTurns(dateTurn, medic.Id);
-        }
-        else
-        {
-            ViewBag.MedicId = null;
-            return getTurns.GetTurns(dateTurn, medicId);
-        }
-    }
-
     [Authorize(Roles = $"{RolesConstants.Ingreso}, {RolesConstants.Medico}")]
     public async Task<IActionResult> Details(Guid? id)
     {
@@ -105,12 +90,17 @@ public class TurnsController(UserManager<IdentityUser> userManager,
     [HttpGet]
     public async Task<IActionResult> Create()
     {
-        var medics = await GetCachedMedicsAsync();
-        var time = await GetCachedTimeTurnsAsync();
-        ViewBag.Medics = new SelectList(medics, "Id", "Name");
-        ViewBag.Time = new SelectList(time, "Id", "Time");
+        var medicsTask = GetCachedMedicsAsync();
+        var timeTask = GetCachedTimeTurnsAsync();
+        await Task.WhenAll(medicsTask, timeTask);
 
-        return PartialView("_Create");
+        var model = new TurnCreateViewModel
+        {
+            Medics = medicsTask.Result,
+            Times = timeTask.Result
+        };
+
+        return PartialView("_Create", model);
     }
 
 
@@ -174,10 +164,9 @@ public class TurnsController(UserManager<IdentityUser> userManager,
             }
 
             // ── Notificar vía SignalR e invalidar caché ─────────────────────
-            var medic = await getMedics.GetMedicById(turn.MedicId);
             var turnMsj = "se agrego un nuevo turno";
 
-            await hubContext.Clients.User(medic.UserGuid).SendAsync("UpdateTableDirected", medic.Name, turnMsj, t.DateTurn.ToShortDateString());
+            await hubContext.Clients.User(selectedMedic.UserGuid).SendAsync("UpdateTableDirected", selectedMedic.Name, turnMsj, t.DateTurn.ToShortDateString());
 
             return Ok(new { message = "Turno creado correctamente." });
         }
@@ -218,7 +207,7 @@ public class TurnsController(UserManager<IdentityUser> userManager,
             updateTurns.Accessed(turn);
         }
         var users = await userManager.GetUsersInRoleAsync(RolesConstants.Ingreso);
-        foreach (var u in users) { await hubContext.Clients.User(u.Id).SendAsync("UpdateTableDirected", "La tabla se ha actualizado"); }
+        await hubContext.Clients.Users(users.Select(u => u.Id)).SendAsync("UpdateTableDirected", "La tabla se ha actualizado");
 
         return Ok();
     }
@@ -237,14 +226,29 @@ public class TurnsController(UserManager<IdentityUser> userManager,
         {
             return NotFoundError("Turn", id.ToString());
         }
+        var medicsTask = GetCachedMedicsAsync();
+        var timeTask = GetCachedTimeTurnsAsync();
+        await Task.WhenAll(medicsTask, timeTask);
 
-        var medics = await GetCachedMedicsAsync();
-        var time = await GetCachedTimeTurnsAsync();
+        var model = new TurnEditViewModel
+        {
+            Id = turn.Id,
+            Name = turn.Name,
+            Dni = turn.Dni,
+            MedicId = turn.MedicId,
+            MedicName = turn.MedicName,
+            Date = turn.Date,
+            Time = turn.Time,
+            TimeId = turn.TimeId,
+            SocialWork = turn.SocialWork,
+            Reason = turn.Reason,
+            Accessed = turn.Accessed,
+            IsMedic = turn.IsMedic,
+            Medics = medicsTask.Result,
+            Times = timeTask.Result
+        };
 
-        ViewBag.Medics = new SelectList(medics, "Id", "Name", turn.MedicId);
-        ViewBag.TimeEdit = new SelectList(time, "Id", "Time", turn.TimeId);
-
-        return PartialView("_Edit", turn);
+        return PartialView("_Edit", model);
     }
 
     [Authorize(Roles = RolesConstants.Ingreso)]
@@ -261,7 +265,7 @@ public class TurnsController(UserManager<IdentityUser> userManager,
 
             updateTurns.Update(t);
             var users = await userManager.GetUsersInRoleAsync(RolesConstants.Ingreso);
-            foreach (var u in users) { await hubContext.Clients.User(u.Id).SendAsync("UpdateTableDirected", "La tabla se ha actualizado"); }
+            await hubContext.Clients.Users(users.Select(u => u.Id)).SendAsync("UpdateTableDirected", "La tabla se ha actualizado");
             return Ok();
         }
         return Conflict();
@@ -273,6 +277,11 @@ public class TurnsController(UserManager<IdentityUser> userManager,
     public async Task<IActionResult> DeleteConfirmed(Guid id)
     {
         var turn = await getTurns.GetTurn(id);
+        if (turn == null)
+        {
+            return NotFoundError("Turn", id.ToString());
+        }
+
         updateTurns.Delete(turn);
         await hubContext.Clients.All.SendAsync("UpdateTable", "La tabla se ha actualizado");
         return Ok();

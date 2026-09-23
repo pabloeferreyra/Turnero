@@ -1,8 +1,5 @@
 ﻿@using Turnero.DAL.Models;
-@model List<UserRoleViewModel>
-@{ 
-    var roleId = ViewBag.roleId;
-}
+@model EditUsersInRoleViewModel
 
 <form method="post">
     <div class="card">
@@ -10,14 +7,14 @@
             <h2>Add or remove users from this role</h2>
         </div>
         <div class="card-body">
-            @for (int i = 0; i < Model.Count; i++)
+            @for (int i = 0; i < Model.Users.Count; i++)
             {
                 <div class="form-check m-1">
-                    <input type="hidden" asp-for="@Model[i].UserId" />
-                    <input type="hidden" asp-for="@Model[i].UserName" />
-                    <input asp-for="@Model[i].IsSelected" class="form-check-input" />
-                    <label class="form-check-label" asp-for="@Model[i].IsSelected">
-                        @Model[i].UserName
+                    <input type="hidden" asp-for="@Model.Users[i].UserId" />
+                    <input type="hidden" asp-for="@Model.Users[i].UserName" />
+                    <input asp-for="@Model.Users[i].IsSelected" class="form-check-input" />
+                    <label class="form-check-label" asp-for="@Model.Users[i].IsSelected">
+                        @Model.Users[i].UserName
                     </label>
                 </div>
             }
@@ -25,7 +22,7 @@
         <div class="card-footer">
             <input type="submit" value="Update" class="btn btn-primary"
                    style="width:auto" />
-            <a asp-action="EditRole" asp-route-id="@roleId" 
+            <a asp-action="EditRole" asp-route-id="@Model.RoleId" 
                class="btn btn-primary" style="width:auto">Cancel</a>
         </div>
     </div>

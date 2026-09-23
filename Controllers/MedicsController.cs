@@ -32,9 +32,9 @@ public class MedicsController(UserManager<IdentityUser> userManager,
     {
         var users = await userManager.GetUsersInRoleAsync("Medico");
 
-        users.Insert(0, new IdentityUser { Id = string.Empty, UserName = "Seleccione..." });
-        ViewBag.User = users;
-        return View();
+        var medicUsers = users.ToList();
+        medicUsers.Insert(0, new IdentityUser { Id = string.Empty, UserName = "Seleccione..." });
+        return View(new MedicCreateViewModel { Users = medicUsers });
     }
 
     [HttpPost]

@@ -376,7 +376,7 @@
     "baseController": {
       "name": "TurneroBaseController : Controller",
       "helpers": [
-        "NotFoundError(entityType, id) -> sets ViewBag.ErrorMessage",
+        "NotFoundError(entityType, id) -> returns Error view with ErrorViewModel",
         "SetAntiforgeryToken() -> stores token in ViewData",
         "CheckMedic() -> returns current user's MedicId or null",
         "EnumToSelectList<TEnum>() -> converts enum to SelectList",

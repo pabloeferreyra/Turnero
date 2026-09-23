@@ -1,4 +1,4 @@
-﻿@model TurnDTO
+﻿@model TurnCreateViewModel
 
 <form method="post" id="CreateForm">
     <div class="modal-body row">
@@ -19,7 +19,7 @@
             <label class="control-label">Medico</label>
             <select asp-for="MedicId" id="medicIdCreate"
                     class="form-control medicId"
-                    asp-items="@ViewBag.Medics">
+                    asp-items="@Model.MedicSelectList">
                 <option value="" selected>== Seleccione un profesional ==</option>
             </select>
         </div>
@@ -33,7 +33,7 @@
             <label class="control-label">Hora</label>
             <select asp-for="TimeId" id="timeTurnCreate"
                     class="form-control"
-                    asp-items="@ViewBag.Time">
+                    asp-items="@Model.TimeSelectList">
                 <option value="" selected>== Seleccione un horario ==</option>
             </select>
             <span id="timeValidation" class="text-danger"></span>

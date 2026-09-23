@@ -1,15 +1,15 @@
-@model List<HealthCheckResult>
+@model HealthViewModel
 @{
     ViewData["Title"] = "Health Check";
-    var overallStatus = ViewBag.OverallStatus as string ?? "unhealthy";
-    var checkedAt = ViewBag.CheckedAt as DateTime? ?? DateTime.UtcNow;
+    var overallStatus = Model.OverallStatus;
+    var checkedAt = Model.CheckedAt;
     var isHealthy = overallStatus == "healthy";
 
     // Memory (passed as doubles from controller)
-    var memUsageMb = ViewBag.MemoryUsageMb as double?;
-    var memLimitMb = ViewBag.MemoryLimitMb as double?;
-    var memPct = ViewBag.MemoryPercentage as double?;
-    var memStatus = ViewBag.MemoryStatus as string ?? "unknown";
+    var memUsageMb = Model.MemoryUsageMb;
+    var memLimitMb = Model.MemoryLimitMb;
+    var memPct = Model.MemoryPercentage;
+    var memStatus = Model.MemoryStatus;
     var hasMemory = memPct.HasValue && memUsageMb.HasValue && memLimitMb.HasValue;
 }
 
@@ -48,8 +48,8 @@
                     : "Hay servicios con problemas")
             </strong>
             <span class="small opacity-75">
-                <span id="healthyCount">@Model?.Count(c => c.Status is "healthy" or "unknown")</span>
-                de <span id="totalServices">@Model?.Count</span> servicios saludables
+                <span id="healthyCount">@Model.Checks.Count(c => c.Status is "healthy" or "unknown")</span>
+                de <span id="totalServices">@Model.Checks.Count</span> servicios saludables
                 &middot; Última verificación: <span id="checkedAtDisplay">@checkedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss")</span>
             </span>
         </div>
@@ -68,7 +68,7 @@
             <div class="row g-3">
                 @if (Model != null)
                 {
-                    @foreach (var check in Model)
+                    @foreach (var check in Model.Checks)
                     {
                         if (check.Name == "Memoria") continue; // rendered separately
                         var isSvcHealthy = check.Status == "healthy";

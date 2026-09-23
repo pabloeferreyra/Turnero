@@ -1,4 +1,4 @@
-﻿@model CongErrors
+@model CongErrorEditViewModel
 
 <form id="CongErrorsEditForm">
     <input type="hidden" asp-for="Id" />
@@ -20,7 +20,7 @@
                 <select asp-for="ResultHypothyroidism"
                         class="form-select"
                         style="width: min-content;"
-                        asp-items="ViewBag.ResultList">
+                        asp-items="Model.Results">
                 </select>
             </div>
 
@@ -37,7 +37,7 @@
                 <select asp-for="ResultPhenylalanine"
                         class="form-select"
                         style="width: min-content;"
-                        asp-items="ViewBag.ResultList">
+                        asp-items="Model.Results">
                 </select>
             </div>
 
@@ -54,7 +54,7 @@
                 <select asp-for="ResultFQP"
                         class="form-select"
                         style="width: min-content;"
-                        asp-items="ViewBag.ResultList">
+                        asp-items="Model.Results">
                 </select>
             </div>
 
@@ -75,7 +75,7 @@
                 <select asp-for="ResultBiotinidase"
                         class="form-select"
                         style="width: min-content;"
-                        asp-items="ViewBag.ResultList">
+                        asp-items="Model.Results">
                 </select>
             </div>
 
@@ -92,7 +92,7 @@
                 <select asp-for="ResultGalactosemia"
                         class="form-select"
                         style="width: min-content;"
-                        asp-items="ViewBag.ResultList">
+                        asp-items="Model.Results">
                 </select>
             </div>
 
@@ -109,7 +109,7 @@
                 <select asp-for="ResultOHP"
                         class="form-select"
                         style="width: min-content;"
-                        asp-items="ViewBag.ResultList">
+                        asp-items="Model.Results">
                 </select>
             </div>
 

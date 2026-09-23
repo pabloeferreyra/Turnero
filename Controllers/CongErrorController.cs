@@ -21,21 +21,14 @@ public class CongErrorController(IGetCongErrorService get,
             return BadRequest("El ID del error congénito es obligatorio.");
         var data = await get.GetCongError(id.Value);
         ViewData["PatientId"] = id.Value.ToString();
-        ViewBag.ResultList = new SelectList(
-            new[]
-            {
-                new { Value = CongErrorsResults.NA, Text = CongErrorsResults.NA },
-                new { Value = CongErrorsResults.Normal, Text = CongErrorsResults.Normal },
-                new { Value = CongErrorsResults.Patological, Text = CongErrorsResults.Patological }
-            },
-            "Value",
-            "Text"
-        );
 
         if (data == null)
             return NotFound();
         SetAntiforgeryToken();
-        return PartialView("_Create", data);
+        return PartialView("_Create", new CongErrorEditViewModel(data)
+        {
+            Results = CongErrorEditViewModel.CreateResultList()
+        });
     }
 
     [HttpPut]

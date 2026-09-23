@@ -1,4 +1,5 @@
-﻿@if (ViewBag.ErrorTitle == null)
+@model ErrorViewModel
+@if (string.IsNullOrEmpty(Model?.ErrorTitle))
 {
     <h3>
         An error occurred while processing your request.
@@ -8,6 +9,6 @@
 }
 else
 {
-    <h1 class="text-danger">@ViewBag.ErrorTitle</h1>
-    <h6 class="text-danger">@ViewBag.ErrorMessage</h6>
+    <h1 class="text-danger">@Model.ErrorTitle</h1>
+    <h6 class="text-danger">@Model.ErrorMessage</h6>
 }

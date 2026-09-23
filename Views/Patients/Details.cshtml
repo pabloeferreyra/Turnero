@@ -1,21 +1,22 @@
-﻿@model Patient
+﻿@model PatientDetailsViewModel
 @{
-    ViewData["Title"] = "Paciente " + Model.Name;
+    var p = Model.Patient;
+    ViewData["Title"] = "Paciente " + Model.Patient.Name;
     string[] methods = ["Index", "Edit", "Create"];
-    string peModalUrl = string.Format("/PersonalBackground/{0}?id={1}", methods[0], Model.Id);
-    string naModalUrl = string.Format("/PerinatalBackground/{0}?id={1}", methods[0], Model.Id);
-    string edModalUrl = string.Format("/Patients/{0}?id={1}", methods[1], Model.Id);
-    string viModalUrl = string.Format("/Visits/{0}?id={1}", methods[2], Model.Id);
-    string viUrl = string.Format("/Visits/{0}?id={1}", methods[0], Model.Id);
-    string alModalUrl = string.Format("/Allergies/{0}?id={1}", methods[2], Model.Id);
-    string alUrl = string.Format("/Allergies/{0}?id={1}", methods[0], Model.Id);
-    string vaModalUrl = string.Format("/Vaccines/{0}?id={1}", methods[2], Model.Id);
-    string vaUrl = string.Format("/Vaccines/{0}?id={1}", methods[0], Model.Id);
-    string pmModalUrl = string.Format("/PermMed/{0}?id={1}", methods[2], Model.Id);
-    string pmUrl = string.Format("/PermMed/{0}?id={1}", methods[0], Model.Id);
-    string pdUrl = string.Format("/ParentsData/{0}?id={1}", methods[0], Model.Id);
-    string gcUrl = string.Format("/GrowthChart/{0}?id={1}", methods[0], Model.Id);
-    string gcModalUrl = string.Format("/GrowthChart/{0}?id={1}", methods[2], Model.Id);
+    string peModalUrl = string.Format("/PersonalBackground/{0}?id={1}", methods[0], p.Id);
+    string naModalUrl = string.Format("/PerinatalBackground/{0}?id={1}", methods[0], p.Id);
+    string edModalUrl = string.Format("/Patients/{0}?id={1}", methods[1], p.Id);
+    string viModalUrl = string.Format("/Visits/{0}?id={1}", methods[2], p.Id);
+    string viUrl = string.Format("/Visits/{0}?id={1}", methods[0], p.Id);
+    string alModalUrl = string.Format("/Allergies/{0}?id={1}", methods[2], p.Id);
+    string alUrl = string.Format("/Allergies/{0}?id={1}", methods[0], p.Id);
+    string vaModalUrl = string.Format("/Vaccines/{0}?id={1}", methods[2], p.Id);
+    string vaUrl = string.Format("/Vaccines/{0}?id={1}", methods[0], p.Id);
+    string pmModalUrl = string.Format("/PermMed/{0}?id={1}", methods[2], p.Id);
+    string pmUrl = string.Format("/PermMed/{0}?id={1}", methods[0], p.Id);
+    string pdUrl = string.Format("/ParentsData/{0}?id={1}", methods[0], p.Id);
+    string gcUrl = string.Format("/GrowthChart/{0}?id={1}", methods[0], p.Id);
+    string gcModalUrl = string.Format("/GrowthChart/{0}?id={1}", methods[2], p.Id);
     string vmModalUrl = string.Format("/Vademecum/Index");
 }
 <script>
@@ -23,14 +24,14 @@
         window.location.reload(true);
     };
 </script>
-<input type="hidden" name="patientId" id="patientId" value="@Model.Id" />
+<input type="hidden" name="patientId" id="patientId" value="@Model.Patient.Id" />
 
 <div class="back container-fluid">
 
  
     <div class="row">
         <div class="col-md-3 col-sm-12 btn-group" role="group">
-            <a href="@Url.Action("Pdf", "Patients", new { id = Model.Id })"
+            <a href="@Url.Action("Pdf", "Patients", new { id = p.Id })"
                target="_blank"
                class="btn btn-sm btn-secondary me-1">
                 <i class="fa-solid fa-file-pdf"></i> Descargar
@@ -82,62 +83,62 @@
     <div class="row">
         <div class="col-12 row">
             <h5 class="col-md-2 col-sm-12">Nombre</h5>
-            <p class="col-md-10 col-sm-12">@Html.DisplayFor(model => model.Name)</p>
+            <p class="col-md-10 col-sm-12">@Html.DisplayFor(model => model.Patient.Name)</p>
         </div>
         <hr />
 
         <div class="col-md-4 col-sm-12 row">
             <h5 class="col-md-3 col-sm-12"><i class="fa-solid fa-id-card"></i> Dni</h5>
-            <p class="col-md-9 col-sm-12">@Html.DisplayFor(model => model.Dni)</p>
+            <p class="col-md-9 col-sm-12">@Html.DisplayFor(model => model.Patient.Dni)</p>
         </div>
 
         <div class="col-md-5 col-sm-12 row">
             <h5 class="col-md-7 col-sm-12"><i class="fa-solid fa-calendar-day"></i> Fecha de Nacimiento</h5>
-            <p class="col-md-5 col-sm-12">@Html.DisplayFor(model => model.BirthDate) - @ViewBag.Age</p>
+            <p class="col-md-5 col-sm-12">@Html.DisplayFor(model => model.Patient.BirthDate) - @Model.Age</p>
         </div>
 
         <div class="col-md-3 col-sm-12 row">
             <h5 class="col-md-10 cool-sm-12"><i class="fa-solid fa-droplet"></i> Grupo sanguineo</h5>
-            <p class="col-md-2 col-sm-12">@Html.DisplayFor(model => model.BloodType)</p>
+            <p class="col-md-2 col-sm-12">@Html.DisplayFor(model => model.Patient.BloodType)</p>
         </div>
 
         <hr />
 
         <div class="col-md-4 col-sm-12 row">
             <h5 class="col-md-4 col-sm-12"><i class="fa-solid fa-phone"></i> Teléfono</h5>
-            <p class="col-md-8 col-sm-12">@Html.DisplayFor(model => model.ContactInfo.Phone)</p>
+            <p class="col-md-8 col-sm-12">@Html.DisplayFor(model => model.Patient.ContactInfo.Phone)</p>
         </div>
 
         <div class="col-md-4 col-sm-12 row">
             <h5 class="col-md-4 col-sm-12"><i class="fa-solid fa-envelope"></i> Email</h5>
-            <p class="col-md-8 col-sm-12">@Html.DisplayTextFor(model => model.ContactInfo.Email)</p>
+            <p class="col-md-8 col-sm-12">@Html.DisplayTextFor(model => model.Patient.ContactInfo.Email)</p>
         </div>
 
         <div class="col-md-4 col-sm-12 row">
             <h5 class="col-md-5 col-sm-12"><i class="fa-solid fa-map-pin"></i> Dirección</h5>
-            <p class="col-md-7 col-sm-12">@Html.DisplayFor(model => model.ContactInfo.Address)</p>
+            <p class="col-md-7 col-sm-12">@Html.DisplayFor(model => model.Patient.ContactInfo.Address)</p>
         </div>
 
         <div class="col-md-4 col-sm-12 row">
             <h5 class="col-md-4 col-sm-12"><i class="fa-solid fa-location-arrow"></i> Ciudad</h5>
-            <p class="col-md-8 col-sm-12">@Html.DisplayFor(model => model.ContactInfo.City)</p>
+            <p class="col-md-8 col-sm-12">@Html.DisplayFor(model => model.Patient.ContactInfo.City)</p>
         </div>
 
         <div class="col-md-4 col-sm-12 row">
             <h5 class="col-md-6 col-sm-12"><i class="fa-solid fa-envelope-open"></i> Código Postal</h5>
-            <p class="col-md-6 col-sm-12">@Html.DisplayFor(model => model.ContactInfo.PostalCode)</p>
+            <p class="col-md-6 col-sm-12">@Html.DisplayFor(model => model.Patient.ContactInfo.PostalCode)</p>
         </div>
 
         <hr />
 
         <div class="col-md-4 col-sm-12 row">
             <h5 class="col-md-5 col-sm-12"><i class="fa-solid fa-hospital"></i> Obra Social</h5>
-            <p class="col-md-7 col-sm-12">@Html.DisplayFor(model => model.SocialWork)</p>
+            <p class="col-md-7 col-sm-12">@Html.DisplayFor(model => model.Patient.SocialWork)</p>
         </div>
 
         <div class="col-md-4 col-sm-12 row">
             <h5 class="col-md-7 col-sm-12"><i class="fa-solid fa-hashtag"></i> Número de Afiliado</h5>
-            <p class="col-md-5 col-sm-12">@Html.DisplayFor(model => model.AffiliateNumber)</p>
+            <p class="col-md-5 col-sm-12">@Html.DisplayFor(model => model.Patient.AffiliateNumber)</p>
         </div>
     </div>
     

@@ -14,7 +14,11 @@ public class ParentsDataController(
         if (id == null)
             return BadRequest("El ID del paciente es obligatorio.");
         var Data = await getParentsData.GetParentsData(id.Value);
-        return PartialView("_Details", Data);
+        return PartialView("_Details", new ParentsDataDetailsViewModel
+        {
+            Data = Data,
+            PatientId = id.Value
+        });
     }
 
     [HttpGet]
@@ -26,9 +30,11 @@ public class ParentsDataController(
         if (data == null)
             return NotFound();
         SetAntiforgeryToken();
-        ViewBag.FatherBloodtype = EnumToSelectList<BloodType>(e => e.GetDisplayName());
-        ViewBag.MotherBloodtype = EnumToSelectList<BloodType>(e => e.GetDisplayName());
-        return PartialView("_Edit", data);
+        return PartialView("_Edit", new ParentsDataEditViewModel(data)
+        {
+            FatherBloodtypes = BloodTypeSelectList.Create(),
+            MotherBloodtypes = BloodTypeSelectList.Create()
+        });
     }
 
     [HttpPut]
@@ -39,7 +45,11 @@ public class ParentsDataController(
         {
             await updateParentsData.UpdateParentsData(data);
             var Data = await getParentsData.GetParentsData(data.Id);
-            return PartialView("_Details", Data);
+            return PartialView("_Details", new ParentsDataDetailsViewModel
+            {
+                Data = Data,
+                PatientId = data.Id
+            });
         }
         catch (Exception ex)
         {

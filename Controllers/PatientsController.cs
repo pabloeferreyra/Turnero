@@ -31,8 +31,10 @@ public class PatientsController(IInsertPatientService insertPatient,
     [HttpGet]
     public IActionResult Create()
     {
-        ViewBag.Bloodtype = EnumToSelectList<BloodType>(e => e.GetDisplayName());
-        return PartialView("_Create");
+        return PartialView("_Create", new PatientFormViewModel
+        {
+            Bloodtypes = BloodTypeSelectList.Create()
+        });
     }
 
     [HttpGet]
@@ -40,16 +42,20 @@ public class PatientsController(IInsertPatientService insertPatient,
     {
         if (id == null)
             return NotFound();
-        var patient = await getPatient.GetPatientById(id.Value);
-        var parents = await getParents.GetParentsData(id.Value);
-        ViewBag.ParentsData = parents;
+        var patientTask = getPatient.GetPatientById(id.Value);
+        var parentsTask = getParents.GetParentsData(id.Value);
+        await Task.WhenAll(patientTask, parentsTask);
+        var patient = patientTask.Result;
         if (patient == null)
         {
             return NotFoundError("Patient", id.ToString());
         }
-        var age = DateCalculations.CalcularEdad(patient.BirthDate);
-        ViewBag.Age = age;
-        return View("Details", patient);
+        var model = new PatientDetailsViewModel
+        {
+            Patient = patient,
+            Age = DateCalculations.CalcularEdad(patient.BirthDate)
+        };
+        return View("Details", model);
     }
 
     [HttpGet]
@@ -275,8 +281,10 @@ public class PatientsController(IInsertPatientService insertPatient,
         {
             return NotFoundError("Patient", id.ToString());
         }
-        ViewBag.Bloodtype = EnumToSelectList<BloodType>(e => e.GetDisplayName());
-        return PartialView("_Edit", patient);
+        return PartialView("_Edit", new PatientFormViewModel(patient)
+        {
+            Bloodtypes = BloodTypeSelectList.Create()
+        });
     }
 
     [HttpPut]

@@ -1,4 +1,4 @@
-﻿@model             Medic
+﻿@model MedicCreateViewModel
 
 @{
     ViewData["Title"] = "Crear Medicos";
@@ -20,7 +20,7 @@
                 <label asp-for="UserGuid" class="control-label"></label>
                 <select asp-for="UserGuid"
                         class="form-control"
-                        asp-items="@(new SelectList(ViewBag.User, "Id", "UserName"))"></select>
+                        asp-items="@(new SelectList(Model.Users, "Id", "UserName"))"></select>
             </div>
         </div>
         <div class="card-footer">

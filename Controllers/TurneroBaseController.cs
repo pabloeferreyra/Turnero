@@ -6,12 +6,15 @@ namespace Turnero.Controllers;
 public abstract class TurneroBaseController : Controller
 {
     /// <summary>
-    /// Sets ViewBag.ErrorMessage for a not-found entity and returns the NotFound view.
+    /// Sets ViewData["ErrorTitle"]-style error info via the ErrorViewModel and returns the Error view.
     /// </summary>
     protected IActionResult NotFoundError(string entityType, string id)
     {
-        ViewBag.ErrorMessage = $"{entityType} with Id = {id} cannot be found";
-        return View("NotFound");
+        return View("Error", new ErrorViewModel
+        {
+            ErrorTitle = $"{entityType} not found",
+            ErrorMessage = $"{entityType} with Id = {id} cannot be found"
+        });
     }
 
     /// <summary>

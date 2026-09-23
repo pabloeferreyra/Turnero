@@ -1,4 +1,4 @@
-﻿@model TurnDTO;
+﻿@model TurnsIndexViewModel;
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
 @{
@@ -17,15 +17,16 @@
             <input id="DateTurn" type="text" class="form-control" placeholder="Selecciona una fecha" />
         </div>
         <div class="col-md-3 col-sm-12">
-            @if(User.IsInRole(RolesConstants.Ingreso))
+            @if (Model.IsMedic)
             {
-            <select id="Medics" title="Medico" class="form-control" asp-items="@ViewBag.Medics">
-                <option value="" selected>== Seleccione un profesional ==</option>
+                <select id="Medics" title="Medico" class="form-control" asp-items="@Model.MedicSelectList" disabled>
+                    <option value="@Model.MedicId" selected>@User.Identity.Name</option>
                 </select>
             }
-            else if (User.IsInRole(RolesConstants.Medico)) {
-                <select id="Medics" title="Medico" class="form-control" asp-items="@ViewBag.Medics" disabled>
-                    <option value="@ViewBag.MedicId" selected>@User.Identity.Name</option>
+            else
+            {
+                <select id="Medics" title="Medico" class="form-control" asp-items="@Model.MedicSelectList">
+                    <option value="" selected>== Seleccione un profesional ==</option>
                 </select>
             }
         </div>

@@ -25,10 +25,12 @@ public class AllergiesController(IInsertAllergiesServices insertAllergies,
         ViewData["PatientId"] = id.ToString();
         var model = new Allergies { PatientId = id.Value };
         SetAntiforgeryToken();
-        ViewBag.Occurrency = EnumToSelectList<Occurrency>();
-        ViewBag.Severity = EnumToSelectList<Severity>();
-        ViewBag.Type = EnumToSelectList<AllergyType>();
-        return PartialView("_Create", model);
+        return PartialView("_Create", new AllergyFormViewModel(model)
+        {
+            Occurrencies = AllergyFormViewModel.OccurrencyList(),
+            Severities = AllergyFormViewModel.SeverityList(),
+            Types = AllergyFormViewModel.TypeList()
+        });
     }
 
     [HttpPost]
@@ -90,10 +92,12 @@ public class AllergiesController(IInsertAllergiesServices insertAllergies,
             return NotFoundError("Allergy", id.ToString());
         }
         SetAntiforgeryToken();
-        ViewBag.Occurrency = EnumToSelectList<Occurrency>();
-        ViewBag.Severity = EnumToSelectList<Severity>();
-        ViewBag.Type = EnumToSelectList<AllergyType>();
-        return PartialView("_Create", allergy);
+        return PartialView("_Create", new AllergyFormViewModel(allergy)
+        {
+            Occurrencies = AllergyFormViewModel.OccurrencyList(),
+            Severities = AllergyFormViewModel.SeverityList(),
+            Types = AllergyFormViewModel.TypeList()
+        });
     }
 
     [HttpPost]

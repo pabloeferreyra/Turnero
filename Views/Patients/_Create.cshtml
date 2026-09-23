@@ -1,4 +1,4 @@
-﻿@model Patient
+﻿@model PatientFormViewModel
 
 <form method="post" id="PatientCreateForm" autocomplete="on">
     @Html.AntiForgeryToken()
@@ -27,7 +27,7 @@
         <div class="form-group col-md-4 col-sm-12">
             <label asp-for="BloodType" class="control-label">Grupo sanguíneo</label>
             <select asp-for="BloodType" class="form-control form-select"
-                    asp-items="ViewBag.Bloodtype"></select>
+                    asp-items="Model.Bloodtypes"></select>
             <span asp-validation-for="BloodType" class="text-danger"></span>
         </div>
 

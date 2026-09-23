@@ -12,14 +12,14 @@ public class DashboardController(IGetDashboardDataService dashboardService) : Tu
         var endDate = DateOnly.FromDateTime(DateTime.Today);
         var startDate = endDate.AddDays(-29);
 
-        ViewBag.StartDate = startDate.ToString("yyyy-MM-dd");
-        ViewBag.EndDate = endDate.ToString("yyyy-MM-dd");
-
-        // Load medics for the dropdown
         var medics = await GetCachedMedicsAsync();
-        ViewBag.Medics = new SelectList(medics, "Id", "Name");
 
-        return View();
+        return View(new DashboardIndexViewModel
+        {
+            StartDate = startDate.ToString("yyyy-MM-dd"),
+            EndDate = endDate.ToString("yyyy-MM-dd"),
+            Medics = medics
+        });
     }
 
     [HttpPost]

@@ -1,4 +1,4 @@
-﻿@model ParentsData
+@model ParentsDataEditViewModel
 
 <form method="post" id="ParentsForm" autocomplete="on">
     @Html.AntiForgeryToken()
@@ -27,7 +27,7 @@
             <label asp-for="FatherBloodType" class="control-label">Tipo de sangre del padre</label>
             <select asp-for="FatherBloodType"
                     class="form-control form-select"
-                    asp-items="ViewBag.FatherBloodtype"
+                    asp-items="Model.FatherBloodtypes"
                     id="FatherBloodType"></select>
             <span asp-validation-for="FatherBloodType" class="text-danger"></span>
         </div>
@@ -58,7 +58,7 @@
             <label asp-for="MotherBloodType" class="control-label">Tipo de sangre de la madre</label>
             <select asp-for="MotherBloodType"
                     class="form-control form-select"
-                    asp-items="ViewBag.MotherBloodtype"
+                    asp-items="Model.MotherBloodtypes"
                     id="MotherBloodType"></select>
             <span asp-validation-for="MotherBloodType" class="text-danger"></span>
         </div>

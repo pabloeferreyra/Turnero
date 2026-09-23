@@ -208,11 +208,13 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
         catch (DbUpdateException ex)
         {
             Logger.LogError("Error deleting role: {Exception}", ex);
-            ViewBag.ErrorTitle = $"{role.Name} role is in use";
-            ViewBag.ErrorMessage = $"{role.Name} role cannot be deleted as there are users " +
-                $"in this role. If you want to delete this role, please remove the users from" +
-                $"the role and then try to delete";
-            return View("Error");
+            return View("Error", new ErrorViewModel
+            {
+                ErrorTitle = $"{role.Name} role is in use",
+                ErrorMessage = $"{role.Name} role cannot be deleted as there are users " +
+                    $"in this role. If you want to delete this role, please remove the users from" +
+                    $"the role and then try to delete"
+            });
         }
     }
 
@@ -334,16 +336,17 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
             });
             overallHealthy = false;
         }
-        ViewBag.OverallStatus = overallHealthy ? "healthy" : "unhealthy";
-        ViewBag.CheckedAt = DateTime.Now;
-        return View(checks);
+        return View(new HealthViewModel
+        {
+            Checks = checks,
+            OverallStatus = overallHealthy ? "healthy" : "unhealthy",
+            CheckedAt = DateTime.Now
+        });
     }
 
     [HttpGet]
     public async Task<IActionResult> EditUsersInRole(string roleId)
     {
-        ViewBag.roleId = roleId;
-
         var role = await roleManager.FindByIdAsync(roleId);
         if (role == null) return NotFoundError("Role", roleId);
 
@@ -368,17 +371,22 @@ public class AdministrationController(RoleManager<IdentityRole> roleManager,
 
             model.Add(userRoleViewModel);
         }
-        return View(model);
+        return View(new EditUsersInRoleViewModel
+        {
+            RoleId = roleId,
+            Users = model
+        });
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> EditUsersInRole(List<UserRoleViewModel> model, string roleId)
+    public async Task<IActionResult> EditUsersInRole(EditUsersInRoleViewModel model)
     {
+        var roleId = model.RoleId;
         var role = await roleManager.FindByIdAsync(roleId);
         if (role == null) return NotFoundError("Role", roleId);
 
-        foreach (var userRole in model)
+        foreach (var userRole in model.Users)
         {
             var user = await userManager.FindByIdAsync(userRole.UserId);
             if (user == null)

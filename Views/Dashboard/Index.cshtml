@@ -1,4 +1,5 @@
-﻿@{
+﻿@model DashboardIndexViewModel
+@{
     ViewData["Title"] = "Dashboard";
 }
 
@@ -21,15 +22,15 @@
             <form id="dashboardFilter" class="row g-3 align-items-end">
                 <div class="col-md-3">
                     <label for="startDate" class="form-label fw-semibold">Fecha inicio</label>
-                    <input type="text" id="startDate" class="form-control" value="@ViewBag.StartDate" />
+                    <input type="text" id="startDate" class="form-control" value="@Model.StartDate" />
                 </div>
                 <div class="col-md-3">
                     <label for="endDate" class="form-label fw-semibold">Fecha fin</label>
-                    <input type="text" id="endDate" class="form-control" value="@ViewBag.EndDate" />
+                    <input type="text" id="endDate" class="form-control" value="@Model.EndDate" />
                 </div>
                 <div class="col-md-3">
                     <label for="medicFilter" class="form-label fw-semibold">Médico</label>
-                    <select id="medicFilter" class="form-control" asp-items="@ViewBag.Medics">
+                    <select id="medicFilter" class="form-control" asp-items="@Model.MedicSelectList">
                         <option value="">Todos los médicos</option>
                     </select>
                 </div>
