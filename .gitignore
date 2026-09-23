@@ -345,4 +345,3 @@ healthchecksdb
 *.db
 appsettings.json
 appsettings.Development.json
-*.slnx

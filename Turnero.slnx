@@ -1,0 +1,14 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/src/">
+    <Project Path="src/Turnero.Application/Turnero.Application.csproj" />
+    <Project Path="src/Turnero.Domain/Turnero.Domain.csproj" />
+    <Project Path="src/Turnero.Infrastructure/Turnero.Infrastructure.csproj" />
+    <Project Path="src/Turnero.Web/Turnero.Web.csproj" />
+  </Folder>
+  <Project Path="Turnero.Test/Turnero.Test.csproj" />
+</Solution>
