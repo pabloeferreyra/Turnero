@@ -1,7 +1,7 @@
 using Moq;
-using Turnero.DAL.Models;
-using Turnero.SL.Services.PermMedServices;
-using Turnero.SL.Services.Repositories;
+using Turnero.Domain.Entities;
+using Turnero.Application.Services.PermMedServices;
+using Turnero.Application.Common.Interfaces;
 using Xunit;
 
 namespace Turnero.Test;

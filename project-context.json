@@ -5,47 +5,44 @@
   "description": "Medical appointment management system (turnero médico). Manages patients, appointments (turns), doctors (medics), clinical history (visits, allergies, vaccines, growth charts, etc.), and user authentication via Firebase + ASP.NET Identity.",
   "company": "PF Software",
   "packageProjectUrl": "turnero.dev.ar",
-
   "architecture": {
-    "pattern": "Clean Architecture (3-layer)",
+    "pattern": "Clean Architecture (4 layers)",
     "layers": [
       {
-        "name": "Turnero.DAL",
+        "name": "src/Turnero.Domain",
         "type": "Class Library",
-        "purpose": "Data Access Layer - Models, DbContext, Migrations",
+        "purpose": "Domain - Entities, enums, constants. Sin dependencias externas (solo EFCore.Relational para atributos como [Precision])"
+      },
+      {
+        "name": "src/Turnero.Application",
+        "type": "Class Library",
+        "purpose": "Application - Casos de uso (services), DTOs, puertos (interfaces de repositorios, IPatientClinicalHistoryService, ISystemHealthService), Mapster config, LoggerService, CachedQueryService, DatabaseOptions",
         "nugetPackages": [
-          "Microsoft.AspNetCore.Identity.EntityFrameworkCore 10.0.11",
-          "Microsoft.EntityFrameworkCore.Design 10.0.11",
+          "Mapster 10.0.12",
+          "Microsoft.Extensions.Caching.Abstractions 10.0.12",
+          "Microsoft.Extensions.Options.ConfigurationExtensions 10.0.12"
+        ]
+      },
+      {
+        "name": "src/Turnero.Infrastructure",
+        "type": "Class Library",
+        "purpose": "Infrastructure - ApplicationDbContext + Migrations, implementaciones de repositorios, adaptadores de puertos (PatientClinicalHistoryService, SystemHealthService), FirebaseService, ContainerMemoryMonitor, registro de Identity",
+        "nugetPackages": [
+          "FirebaseAdmin 3.6.0",
+          "Microsoft.AspNetCore.Identity.EntityFrameworkCore 10.0.12",
           "Npgsql.EntityFrameworkCore.PostgreSQL 10.0.3"
         ]
       },
       {
-        "name": "Turnero.Utilities",
-        "type": "Class Library",
-        "purpose": "Shared utilities - Mapster config, date calculations, constants",
-        "nugetPackages": ["Mapster 10.0.11"]
-      },
-      {
-        "name": "Turnero.SL",
-        "type": "Class Library",
-        "purpose": "Service Layer - Business logic, repositories, caching, Firebase integration",
-        "nugetPackages": [
-          "FirebaseAdmin 3.6.0",
-          "Mapster 10.0.11",
-          "StackExchange.Redis 3.0.17",
-          "Microsoft.Extensions.Hosting.Abstractions 10.0.0"
-        ]
-      },
-      {
-        "name": "Turnero (Web App)",
+        "name": "src/Turnero.Web",
         "type": "ASP.NET Core MVC",
-        "purpose": "Presentation layer - Controllers, Views, SignalR Hubs, JS frontend",
+        "purpose": "Presentation (host/composition root) - Controllers (DI por constructor, sin Service Locator), Views, Razor Pages (Identity), SignalR Hubs, ViewModels (Models/), Helpers, JS frontend. Solo consume Application y los puertos que implementa Infrastructure",
         "nugetPackages": [
           "ClosedXML 0.105.1 (Excel export)",
-          "QuestPDF 2026.7.1 (PDF export)",
-          "Microsoft.AspNetCore.Authentication.JwtBearer 10.0.10",
-          "Microsoft.AspNetCore.Identity.UI 10.0.10",
-          "Microsoft.Extensions.Hosting.WindowsServices 10.0.10",
+          "QuestPDF 2026.9.0 (PDF export)",
+          "Microsoft.AspNetCore.Authentication.JwtBearer 10.0.12",
+          "Microsoft.AspNetCore.Identity.UI 10.0.12",
+          "Microsoft.Extensions.Hosting.WindowsServices 10.0.12",
           "Microsoft.VisualStudio.Azure.Containers.Tools.Targets 1.23.0"
         ]
       },
@@ -62,7 +59,46 @@
       }
     ]
   },
-
+  "dependencyInjection": {
+    "pattern": "Composition Root por capa: cada capa expone un método de extensión IServiceCollection y registra solo sus propios servicios",
+    "entryPoints": {
+      "Program.cs": "Solo invoca builder.Services.AddApplication() y builder.Services.AddInfrastructure(builder.Configuration). No registra servicios individuales de Application ni Infrastructure.",
+      "src/Turnero.Application/DependencyInjection.cs": "AddApplication(): registra todos los casos de uso (IInsert/IGet/IUpdate/IDelete services) como Scoped",
+      "src/Turnero.Infrastructure/DependencyInjection.cs": "AddInfrastructure(config): inicializa Firebase SDK (FirebaseInitializer), registra DatabaseOptions (IOptions), ApplicationDbContext (UseNpgsql), ASP.NET Identity con EF stores, los 14 repositorios (Scoped), los adaptadores de puertos IPatientClinicalHistoryService, ISystemHealthService e IFirebaseAuthService, y ContainerMemoryMonitor como hosted service"
+    },
+    "rules": [
+      "Application no conoce Infrastructure: solo define los puertos (interfaces)",
+      "Infrastructure implementa los puertos de Application y los registra en su propio método DI",
+      "La presentación solo referencia namespaces Turnero.Application.* y las interfaces de puertos; no referencian Turnero.Infrastructure.Data ni .Repositories",
+      "Sin estado estático: la configuración vive en IOptions<DatabaseOptions>"
+    ]
+  },
+  "applicationPorts": {
+    "location": "src/Turnero.Application/Common/Interfaces/",
+    "description": "Puertos de Application implementados por Infrastructure. La presentación los consume vía DI sin conocer la implementación.",
+    "ports": [
+      {
+        "port": "IPatientClinicalHistoryService",
+        "adapter": "PatientClinicalHistoryService (Infrastructure)",
+        "purpose": "Agrega toda la historia clínica del paciente (patient, parents, backgrounds, allergies, vaccines, permMeds, growthCharts, visits, turns) en PatientClinicalHistoryDto con una única llamada. Reemplaza las 12 queries EF que antes hacía PatientsController.Pdf"
+      },
+      {
+        "port": "ISystemHealthService",
+        "adapter": "SystemHealthService (Infrastructure)",
+        "purpose": "Estado de salud del sistema: CanConnectAsync de PostgreSQL + memoria del contenedor (cgroup via ContainerMemoryMonitor). Consumido por AdministrationController.Health y el endpoint /health"
+      },
+      {
+        "port": "ICachedQueryService",
+        "adapter": "CachedQueryService (Application) / repositorios (Infrastructure)",
+        "purpose": "Abstracción cache-aside para consultas frecuentes (medics, timeTurns, etc.)"
+      },
+      {
+        "port": "IFirebaseAuthService",
+        "adapter": "FirebaseAuthService (Infrastructure)",
+        "purpose": "Autenticación Firebase con DTOs propios (RegistrationResultDto, FirebaseSessionDto con claims decodificados). Incluye FirebaseInitializer para arrancar el SDK. La presentación no referencia FirebaseAdmin ni Infrastructure.Identity"
+      }
+    ]
+  },
   "dataFlowDiagrams": {
     "note": "Mermaid diagrams rendered in project-context.html under the 'Flujo de Datos' section. All diagrams use CDN mermaid@11 with custom theme (primary: #0d6efd, secondary: #e9ecef).",
     "diagrams": [
@@ -70,7 +106,14 @@
         "id": 1,
         "title": "Creación de Turno (con Caché + SignalR)",
         "type": "sequenceDiagram",
-        "participants": ["Navegador", "TurnsController", "TurnServices", "Redis Cache", "PostgreSQL", "SignalR Hub"],
+        "participants": [
+          "Navegador",
+          "TurnsController",
+          "TurnServices",
+          "Redis Cache",
+          "PostgreSQL",
+          "SignalR Hub"
+        ],
         "flow": [
           "Browser POST /Turns/Create → TurnsController",
           "TurnsController → TurnServices.InsertTurn(turnDto)",
@@ -88,7 +131,12 @@
         "id": 2,
         "title": "Lectura con Caché Two-Tier",
         "type": "sequenceDiagram",
-        "participants": ["Instancia A (App)", "L1: IMemoryCache", "L2: Redis", "PostgreSQL"],
+        "participants": [
+          "Instancia A (App)",
+          "L1: IMemoryCache",
+          "L2: Redis",
+          "PostgreSQL"
+        ],
         "flow": [
           "App → L1: Get('allergies:{id}')",
           "ALT L1 hit: L1 -->> App: ✅ Datos desde memoria local",
@@ -102,7 +150,13 @@
         "id": 3,
         "title": "Invalidación Cross-Instancia via Pub/Sub",
         "type": "sequenceDiagram",
-        "participants": ["Instancia A (crea/edita dato)", "Redis", "Pub/Sub 'cache:invalidate'", "Instancia B", "L1: IMemoryCache B"],
+        "participants": [
+          "Instancia A (crea/edita dato)",
+          "Redis",
+          "Pub/Sub 'cache:invalidate'",
+          "Instancia B",
+          "L1: IMemoryCache B"
+        ],
         "flow": [
           "Instancia A → Redis: KeyDelete('medics')",
           "Instancia A → Pub/Sub: Publish('cache:invalidate', 'medics')",
@@ -116,7 +170,13 @@
         "id": 4,
         "title": "Autenticación Híbrida (Firebase + Identity)",
         "type": "sequenceDiagram",
-        "participants": ["Usuario", "Login.cshtml", "Firebase Auth", "App Web", "ASP.NET Identity"],
+        "participants": [
+          "Usuario",
+          "Login.cshtml",
+          "Firebase Auth",
+          "App Web",
+          "ASP.NET Identity"
+        ],
         "flow": [
           "Usuario → Login.cshtml: Ingresa credenciales",
           "Login.cshtml → Firebase: POST /signInWithPassword",
@@ -136,7 +196,13 @@
         "id": 5,
         "title": "Dashboard de Administración de Cache",
         "type": "sequenceDiagram",
-        "participants": ["Admin", "AdministrationController", "Redis", "IMemoryCache", "Pub/Sub"],
+        "participants": [
+          "Admin",
+          "AdministrationController",
+          "Redis",
+          "IMemoryCache",
+          "Pub/Sub"
+        ],
         "flow": [
           "Admin → AdministrationController: GET /Administration/CacheStats",
           "AdministrationController → Redis: GetAllKeysAsync() (SCAN cursor)",
@@ -159,39 +225,62 @@
         "subgraphs": [
           {
             "name": "Frontend (Navegador)",
-            "components": ["Vistas Razor (Bootstrap 5 + jQuery)", "JS Modules (signalR.js, turn.js, patients.js...)", "DataTables Server-side"]
+            "components": [
+              "Vistas Razor (Bootstrap 5 + jQuery)",
+              "JS Modules (signalR.js, turn.js, patients.js...)",
+              "DataTables Server-side"
+            ]
           },
           {
             "name": "Web App (ASP.NET Core MVC)",
-            "components": ["18 Controladores MVC", "SignalR Hub (TurnsTableHub)", "Auth (Firebase + Identity + JWT)", "Export Excel/PDF"]
+            "components": [
+              "18 Controladores MVC",
+              "SignalR Hub (TurnsTableHub)",
+              "Auth (Firebase + Identity + JWT)",
+              "Export Excel/PDF"
+            ]
           },
           {
-            "name": "Service Layer (Turnero.SL)",
-            "components": ["Turn Services", "Patient Services", "Clinical Services (Allergies, Vaccines, GrowthChart, PermMed)", "History Services (ParentsData, PersonalBg, PerinatalBg, CongErrors)", "Cross-Cutting (Logger, Firebase, Redis Cache)"]
+            "name": "Application (src/Turnero.Application)",
+            "components": [
+              "Casos de uso (Turn/Patient/Medic/Clinical Services)",
+              "Puertos: interfaces de repositorios + IPatientClinicalHistoryService + ISystemHealthService",
+              "DTOs (MedicDto, TurnDTO, PatientClinicalHistoryDto...)",
+              "Cross-Cutting (LoggerService, Mapster Config, DatabaseOptions)"
+            ]
           },
           {
-            "name": "Redis Cache",
-            "components": ["L1: IMemoryCache (local, ultra-fast)", "L2: Redis (distribuido, JSON)", "Pub/Sub 'cache:invalidate'"]
+            "name": "Infrastructure (src/Turnero.Infrastructure)",
+            "components": [
+              "Repositorios (RepositoryBase + 14 repos)",
+              "Adaptadores de puertos (PatientClinicalHistoryService, SystemHealthService)",
+              "FirebaseService + Redis Cache (L1/L2/Pub-Sub)",
+              "ContainerMemoryMonitor"
+            ]
           },
           {
-            "name": "Data Access (Turnero.DAL)",
-            "components": ["PostgreSQL (ApplicationDbContext)", "13 Modelos de entidad", "Identity Framework (Users + Roles)"]
-          },
-          {
-            "name": "Utilities",
-            "components": ["Mapster Config (Entity ↔ DTO)", "RolesConstants (Admin/Medico/Ingreso)", "DateCalculations (Edad, fechas)"]
+            "name": "Domain (src/Turnero.Domain)",
+            "components": [
+              "Entidades (Patient, Turn, Medic, Visit...)",
+              "Enums (BloodType, Severity, VaccinesEnum...)",
+              "Constantes (RolesConstants, ClaimsStore)"
+            ]
           },
           {
             "name": "Tests (221)",
-            "components": ["Service Tests", "Repository Tests", "Helper Tests"]
+            "components": [
+              "Service Tests",
+              "Repository Tests",
+              "Helper Tests"
+            ]
           }
         ],
         "connections": [
           "Frontend → Web App (HTTP / SignalR)",
-          "Web App → Service Layer (DI)",
-          "Service Layer → Redis Cache (Read/Write)",
-          "Service Layer → DAL (CRUD)",
-          "DAL → PostgreSQL (Npgsql)",
+          "Web App → Application (DI via AddApplication, solo puertos)",
+          "Application → Infrastructure (implementación de puertos, flecha de dependencia invertida)",
+          "Infrastructure → Redis Cache (Read/Write)",
+          "Infrastructure → PostgreSQL (Npgsql / ApplicationDbContext)",
           "L1 → L2 (fallback cuando L1 miss)",
           "L2 → DB (persistencia cuando cache miss)",
           "Pub/Sub → L1 (invalida cross-instancia)"
@@ -205,19 +294,33 @@
         "subgraphs": [
           {
             "name": "Internet",
-            "components": ["Navegador Web (Usuario)", "Firebase Auth (externo)"]
+            "components": [
+              "Navegador Web (Usuario)",
+              "Firebase Auth (externo)"
+            ]
           },
           {
             "name": "Entorno de Desarrollo (Podman Compose)",
-            "components": ["turnero-app (1 contenedor, :8080)", "redis:7-alpine (:6379)", "redis-commander UI (:8081)"]
+            "components": [
+              "turnero-app (1 contenedor, :8080)",
+              "redis:7-alpine (:6379)",
+              "redis-commander UI (:8081)"
+            ]
           },
           {
             "name": "Entorno de Producción (Podman Compose)",
-            "components": ["Ingress Load Balancer (APP_PUBLISHED_PORT:8080)", "Manager Node (Redis, 0.25 CPU/256MB)", "App Replicas (2 instancias, 0.50 CPU/768MB c/u)", "Secretos (.env + firebase.json montados como read-only)"]
+            "components": [
+              "Ingress Load Balancer (APP_PUBLISHED_PORT:8080)",
+              "Manager Node (Redis, 0.25 CPU/256MB)",
+              "App Replicas (2 instancias, 0.50 CPU/768MB c/u)",
+              "Secretos (.env + firebase.json montados como read-only)"
+            ]
           },
           {
             "name": "Servicios Externos",
-            "components": ["PostgreSQL (base de datos externa al cluster)"]
+            "components": [
+              "PostgreSQL (base de datos externa al cluster)"
+            ]
           }
         ],
         "connections": [
@@ -279,21 +382,77 @@
           "Visit }o--|| Medic : realizada por"
         ],
         "entityAttributes": {
-          "Patient": ["guid Id PK", "string Name", "string Dni", "date BirthDate", "string SocialWork", "enum BloodType"],
-          "Medic": ["guid Id PK", "string Name", "string UserGuid FK"],
-          "Turn": ["guid Id PK", "guid MedicId FK", "guid TimeId FK", "date DateTurn", "string Name", "long Dni", "string Reason", "bool Accessed"],
-          "Visit": ["guid Id PK", "guid PatientId FK", "guid MedicId FK", "date VisitDate", "string Diagnosis", "string Treatment"],
-          "ParentsData": ["guid Id PK,FK", "string FatherName", "dateOnly FatherBirthDate", "string MotherName", "int BrothersCount"],
-          "PersonalBackground": ["guid Id PK,FK", "bool Asthma", "bool Diabetes", "bool Surgeries", "string Other"],
-          "PerinatalBackground": ["guid Id PK,FK", "int Feat", "int Delivery", "int Weight", "int GestAge"],
-          "CongErrors": ["guid Id PK,FK", "bool CongHypothyroidism", "bool Phenylalanine", "bool Galactosemia", "string Other"],
-          "ContactInfo": ["guid Id PK", "string Phone", "string Email", "string Address", "guid PatientId FK"]
+          "Patient": [
+            "guid Id PK",
+            "string Name",
+            "string Dni",
+            "date BirthDate",
+            "string SocialWork",
+            "enum BloodType"
+          ],
+          "Medic": [
+            "guid Id PK",
+            "string Name",
+            "string UserGuid FK"
+          ],
+          "Turn": [
+            "guid Id PK",
+            "guid MedicId FK",
+            "guid TimeId FK",
+            "date DateTurn",
+            "string Name",
+            "long Dni",
+            "string Reason",
+            "bool Accessed"
+          ],
+          "Visit": [
+            "guid Id PK",
+            "guid PatientId FK",
+            "guid MedicId FK",
+            "date VisitDate",
+            "string Diagnosis",
+            "string Treatment"
+          ],
+          "ParentsData": [
+            "guid Id PK,FK",
+            "string FatherName",
+            "dateOnly FatherBirthDate",
+            "string MotherName",
+            "int BrothersCount"
+          ],
+          "PersonalBackground": [
+            "guid Id PK,FK",
+            "bool Asthma",
+            "bool Diabetes",
+            "bool Surgeries",
+            "string Other"
+          ],
+          "PerinatalBackground": [
+            "guid Id PK,FK",
+            "int Feat",
+            "int Delivery",
+            "int Weight",
+            "int GestAge"
+          ],
+          "CongErrors": [
+            "guid Id PK,FK",
+            "bool CongHypothyroidism",
+            "bool Phenylalanine",
+            "bool Galactosemia",
+            "string Other"
+          ],
+          "ContactInfo": [
+            "guid Id PK",
+            "string Phone",
+            "string Email",
+            "string Address",
+            "guid PatientId FK"
+          ]
         },
         "description": "Diagrama ER completo con las 15 entidades del modelo (13 de negocio + ContactInfo + IdentityUser). Patient como entidad central con 10 relaciones: 4 1:1 con PK compartido (ParentsData, PersonalBackground, PerinatalBackground, CongErrors) y 6 1:N (Visit, Allergies, Vaccines, GrowthChart, PermMed, ContactInfo). Turn se relaciona con Medic y TimeTurn pero NO directamente con Patient (usa Name/Dni desnormalizados). IdentityUser se asocia opcionalmente con Medic via UserGuid."
       }
     ]
   },
-
   "database": {
     "provider": "PostgreSQL (Npgsql)",
     "dbContext": "ApplicationDbContext (inherits IdentityDbContext)",
@@ -302,195 +461,889 @@
       "IdentityEntity": "IdentityUser (ASP.NET Core Identity)",
       "patient": {
         "model": "Patient : BaseEntity",
-        "properties": ["Id (Guid)", "Name", "Dni", "BirthDate (date)", "SocialWork", "AffiliateNumber", "BloodType (enum)", "ContactInfo (1:1)"],
-        "childEntities": ["Turn (1:N)", "Visit (1:N)", "Parent = ParentsData (1:1)", "PersonalBackground (1:1)", "PerinatalBackground (1:1)", "Vaccines (1:N)", "Allergies (1:N)", "PermMed (1:N)", "GrowthChart (1:N)", "CongErrors (1:1)"],
+        "properties": [
+          "Id (Guid)",
+          "Name",
+          "Dni",
+          "BirthDate (date)",
+          "SocialWork",
+          "AffiliateNumber",
+          "BloodType (enum)",
+          "ContactInfo (1:1)"
+        ],
+        "childEntities": [
+          "Turn (1:N)",
+          "Visit (1:N)",
+          "Parent = ParentsData (1:1)",
+          "PersonalBackground (1:1)",
+          "PerinatalBackground (1:1)",
+          "Vaccines (1:N)",
+          "Allergies (1:N)",
+          "PermMed (1:N)",
+          "GrowthChart (1:N)",
+          "CongErrors (1:1)"
+        ],
         "dto": "PatientDTO"
       },
       "medic": {
         "model": "Medic",
-        "properties": ["Id (Guid)", "Name", "UserGuid (links to IdentityUser)"],
+        "properties": [
+          "Id (Guid)",
+          "Name",
+          "UserGuid (links to IdentityUser)"
+        ],
         "dto": "MedicDto"
       },
       "turn": {
         "model": "Turn (appointment)",
-        "properties": ["Id (Guid)", "Name", "Dni", "MedicId (FK)", "DateTurn (date)", "TimeId (FK -> TimeTurn)", "SocialWork", "Reason", "Accessed (bool)"],
+        "properties": [
+          "Id (Guid)",
+          "Name",
+          "Dni",
+          "MedicId (FK)",
+          "DateTurn (date)",
+          "TimeId (FK -> TimeTurn)",
+          "SocialWork",
+          "Reason",
+          "Accessed (bool)"
+        ],
         "dto": "TurnDTO (flattened with Time string, MedicName string, Date string)"
       },
       "timeTurn": {
         "model": "TimeTurn (time slots)",
-        "properties": ["Id (Guid)", "Time (string like '08:00')"]
+        "properties": [
+          "Id (Guid)",
+          "Time (string like '08:00')"
+        ]
       },
       "visit": {
         "model": "Visit : BaseEntity",
-        "properties": ["Id (Guid)", "VisitDate (date)", "Reason", "Diagnosis", "Treatment", "PatientId (FK)", "MedicId (FK)", "EvolutionNotes", "LabResults", "OtherStudies", "Observations"],
+        "properties": [
+          "Id (Guid)",
+          "VisitDate (date)",
+          "Reason",
+          "Diagnosis",
+          "Treatment",
+          "PatientId (FK)",
+          "MedicId (FK)",
+          "EvolutionNotes",
+          "LabResults",
+          "OtherStudies",
+          "Observations"
+        ],
         "dto": "VisitDTO"
       },
       "allergies": {
         "model": "Allergies : BaseEntity",
-        "properties": ["Id (Guid)", "Name", "PatientId (FK)", "Begin (DateOnly)", "End (DateOnly?)", "Description", "Severity (enum)", "Type (enum AllergyType)", "Occurrency (enum)", "Comments"]
+        "properties": [
+          "Id (Guid)",
+          "Name",
+          "PatientId (FK)",
+          "Begin (DateOnly)",
+          "End (DateOnly?)",
+          "Description",
+          "Severity (enum)",
+          "Type (enum AllergyType)",
+          "Occurrency (enum)",
+          "Comments"
+        ]
       },
       "vaccines": {
         "model": "Vaccines : BaseEntity",
-        "properties": ["Id (Guid)", "Description", "DateApplied (DateOnly?)", "PatientId (FK)"],
+        "properties": [
+          "Id (Guid)",
+          "Description",
+          "DateApplied (DateOnly?)",
+          "PatientId (FK)"
+        ],
         "dto": "VaccinesDto (adds OtherDescription field)"
       },
       "growthChart": {
         "model": "GrowthChart : BaseEntity",
-        "properties": ["Id (Guid)", "Age (decimal)", "Time (string)", "Weight (decimal)", "WPerc", "Height (decimal)", "HPerc", "HeadCircumference (decimal)", "HCPerc", "Bmi (decimal)", "PatientId (FK)"]
+        "properties": [
+          "Id (Guid)",
+          "Age (decimal)",
+          "Time (string)",
+          "Weight (decimal)",
+          "WPerc",
+          "Height (decimal)",
+          "HPerc",
+          "HeadCircumference (decimal)",
+          "HCPerc",
+          "Bmi (decimal)",
+          "PatientId (FK)"
+        ]
       },
       "permMed": {
         "model": "PermMed : BaseEntity (permanent medications)",
-        "properties": ["Id (Guid)", "Description", "PatientId (FK)"]
+        "properties": [
+          "Id (Guid)",
+          "Description",
+          "PatientId (FK)"
+        ]
       },
       "parentsData": {
         "model": "ParentsData : PatientFKEntity (shared PK with Patient)",
-        "properties": ["Id (Guid = PatientId)", "FatherName", "FatherBirthDate (DateOnly)", "FatherBloodType (enum)", "FatherWork", "MotherName", "MotherBirthDate (DateOnly)", "MotherBloodType (enum)", "MotherWork", "BrothersCount (int)"]
+        "properties": [
+          "Id (Guid = PatientId)",
+          "FatherName",
+          "FatherBirthDate (DateOnly)",
+          "FatherBloodType (enum)",
+          "FatherWork",
+          "MotherName",
+          "MotherBirthDate (DateOnly)",
+          "MotherBloodType (enum)",
+          "MotherWork",
+          "BrothersCount (int)"
+        ]
       },
       "personalBackground": {
         "model": "PersonalBackground : PatientFKEntity (shared PK)",
-        "properties": ["Id (Guid = PatientId)", "Asthma (bool)", "Allergy (bool)", "Diabetes (bool)", "Surgeries (bool)", "Other (string)", ... 12+ bool medical history flags]
+        "properties": [
+          "Id (Guid = PatientId)",
+          "Asthma (bool)",
+          "Allergy (bool)",
+          "Diabetes (bool)",
+          "Surgeries (bool)",
+          "Other (string)"
+        ]
       },
       "perinatalBackground": {
         "model": "PerinatalBackground : PatientFKEntity (shared PK)",
-        "properties": ["Id (Guid = PatientId)", "Feat (int)", "Delivery (int)", "Cesarean (int)", "Abort (int)", "Weight (int)", "Height (int)", "CefPer (int)", "Apgar1 (int)", "Apgar5 (int)", "GestAge (int)", "Pathologies (string)", "CongErrors (string)"]
+        "properties": [
+          "Id (Guid = PatientId)",
+          "Feat (int)",
+          "Delivery (int)",
+          "Cesarean (int)",
+          "Abort (int)",
+          "Weight (int)",
+          "Height (int)",
+          "CefPer (int)",
+          "Apgar1 (int)",
+          "Apgar5 (int)",
+          "GestAge (int)",
+          "Pathologies (string)",
+          "CongErrors (string)"
+        ]
       },
       "congErrors": {
         "model": "CongErrors : PatientFKEntity (shared PK)",
-        "properties": ["Id (Guid = PatientId)", "CongHypothyroidism (bool)", "ResultHypothyroidism", "Phenylalanine (bool)", "ResultPhenylalanine", "FQP (bool)", "ResultFQP", "Biotinidase (bool)", "ResultBiotinidase", "Galactosemia (bool)", "ResultGalactosemia", "OHP (bool)", "ResultOHP", "Other (string)"]
+        "properties": [
+          "Id (Guid = PatientId)",
+          "CongHypothyroidism (bool)",
+          "ResultHypothyroidism",
+          "Phenylalanine (bool)",
+          "ResultPhenylalanine",
+          "FQP (bool)",
+          "ResultFQP",
+          "Biotinidase (bool)",
+          "ResultBiotinidase",
+          "Galactosemia (bool)",
+          "ResultGalactosemia",
+          "OHP (bool)",
+          "ResultOHP",
+          "Other (string)"
+        ]
       },
       "contactInfo": {
         "model": "ContactInfo : BaseEntity",
-        "properties": ["Id (Guid)", "Phone", "Email", "Address", "City", "PostalCode", "PatientId (FK)"]
+        "properties": [
+          "Id (Guid)",
+          "Phone",
+          "Email",
+          "Address",
+          "City",
+          "PostalCode",
+          "PatientId (FK)"
+        ]
       }
     },
     "enums": [
-      "BloodType", "Severity (Ninguna-Fatal)", "AllergyType", "Occurrency", "VaccinesEnum (BCG, Sabin, HepatitisB, ...)"
+      "BloodType",
+      "Severity (Ninguna-Fatal)",
+      "AllergyType",
+      "Occurrency",
+      "VaccinesEnum (BCG, Sabin, HepatitisB, ...)"
     ],
     "baseClasses": {
       "BaseEntity": "abstract class with Id (Guid, DatabaseGeneratedOption.Identity)",
       "PatientFKEntity": "class with [Key] Id (Guid, shared PK with Patient via FK)"
     }
   },
-
   "controllers": {
     "baseController": {
       "name": "TurneroBaseController : Controller",
+      "constructor": "(IGetMedicsServices getMedics, IGetTimeTurnsServices getTimeTurns, IAntiforgery antiforgery) - primary constructor; cada controller derivado encadena : base(getMedics, getTimeTurns, antiforgery). Sin Service Locator: no se resuelve nada desde HttpContext.RequestServices",
       "helpers": [
         "NotFoundError(entityType, id) -> returns Error view with ErrorViewModel",
         "SetAntiforgeryToken() -> stores token in ViewData",
         "CheckMedic() -> returns current user's MedicId or null",
         "EnumToSelectList<TEnum>() -> converts enum to SelectList",
         "EnumNamesToSelectList<TEnum>() -> converts enum names to SelectList",
-        "GetCachedMedicsAsync() -> cached medics list",
-        "GetCachedTimeTurnsAsync() -> cached time turns list",
-        "GetCachedPatientsAsync() -> cached patients list",
-        "InvalidateCacheAsync(cacheKey) -> clears Redis + memory + Pub/Sub"
+        "GetCachedMedicsAsync() -> cached medics list (via IGetMedicsServices)",
+        "GetCachedTimeTurnsAsync() -> cached time turns list (via IGetTimeTurnsServices)"
       ]
     },
     "controllers": [
-      { "name": "HomeController", "route": "/", "auth": "Authenticated", "actions": ["Index (dashboard with today's turn counts)"], "dependencies": ["IGetTurnsServices"] },
-      { "name": "TurnsController", "route": "/Turns", "auth": "Ingreso, Medico", "dependencies": ["IInsertTurnsServices", "IGetTurnsServices", "IGetTurnDTOServices", "IUpdateTurnsServices", "IGetMedicsServices", "IHubContext<TurnsTableHub>"], "actions": ["Index", "InitializeTurns (DataTables JSON)", "TurnListAsync", "Details", "Create (GET/POST)", "Accessed", "Edit (GET/PUT)", "Delete", "CheckTurn", "ExportExcel", "ExportPdf"] },
-      { "name": "TurnsPublicController", "route": "/TurnsPublic", "auth": "Anonymous", "dependencies": ["IInsertTurnsServices", "IGetMedicsServices", "IHubContext<TurnsTableHub>"], "actions": ["Index", "Create (spontaneous turn)"] },
-      { "name": "PatientsController", "route": "/Patients", "auth": "Medico", "dependencies": ["IInsertPatientService", "IGetPatientService", "IGetParentsDataService", "IUpdatePatientService"], "actions": ["Index", "InitializePatients", "Create (GET/POST)", "Details", "Edit (GET/PUT)", "Delete"] },
-      { "name": "MedicsController", "route": "/Medics", "auth": "Admin", "dependencies": ["UserManager", "IGetMedicsServices", "IInsertMedicServices", "IUpdateMedicServices"], "actions": ["Index", "Details", "Create (GET/POST)", "Edit (GET/POST)", "Delete/DeleteConfirmed"] },
-      { "name": "TimeTurnController", "route": "/TimeTurn", "auth": "Admin", "dependencies": ["IGetTimeTurnsServices", "IInsertTimeTurnServices", "IDeleteTimeTurnServices"], "actions": ["Index", "Create (GET/POST)", "Delete/DeleteConfirmed"] },
-
-      { "name": "AdministrationController", "route": "/Administration", "auth": "Admin", "dependencies": ["RoleManager", "UserManager", "RedisCacheService", "IMemoryCache", "ILogger"], "actions": ["ListUsers", "EditUser", "DeleteUser", "ManageUserClaims", "ListRoles", "CreateRole", "EditRole", "DeleteRole", "EditUsersInRole", "CacheStats (GET)", "ClearCache (POST)"] },
-
-      { "name": "VisitsController", "route": "/Visits", "auth": "Medico", "dependencies": ["IGetVisitService", "IInsertVisitService"], "actions": ["Details", "Create (GET/POST)", "Index", "InitializeVisits"] },
-      { "name": "AllergiesController", "route": "/Allergies", "auth": "Medico", "dependencies": ["IInsertAllergiesServices", "IUpdateAllergiesServices", "IDeleteAllergiesServices", "IGetAllergiesServices"], "actions": ["Details", "Create (GET/POST)", "Index", "InitializeAllergies", "Edit (GET/POST)", "Delete"] },
-      { "name": "VaccinesController", "route": "/Vaccines", "auth": "Medico", "dependencies": ["IGetVaccinesServices", "IUpdateVaccinesServices", "IInsertVaccinesServices", "IDeleteVacinesServices"], "actions": ["Index", "InitializeVaccines", "Create (GET/POST)", "Edit (GET/POST)", "Delete"] },
-      { "name": "GrowthChartController", "route": "/GrowthChart", "auth": "Medico", "dependencies": ["IGetGrowthChartService", "IInsertGrowthChartService", "IUpdateGrowthChartService", "IDeleteGrowthChartService"], "actions": ["Index", "Initialize", "Create (GET/POST)", "Edit (GET/POST)", "Delete"] },
-      { "name": "PermMedController", "route": "/PermMed", "auth": "Medico", "dependencies": ["IGetPermMedService", "IInsertPermMedService", "IDeletePermMedService"], "actions": ["Index", "Initialize", "Create (GET/POST)", "Delete"] },
-      { "name": "ParentsDataController", "route": "/ParentsData", "auth": "Medico", "dependencies": ["IUpdateParentsDataService", "IDeleteParentsDataService", "IGetParentsDataService"], "actions": ["Index", "Edit (GET/PUT)", "Delete"] },
-      { "name": "PersonalBackgroundController", "route": "/PersonalBackground", "auth": "Medico", "dependencies": ["IGetPersonalBackgroundService", "IUpdatePersonalBackgroundService"], "actions": ["Index", "Edit (GET/PUT)"] },
-      { "name": "PerinatalBackgroundController", "route": "/PerinatalBackground", "auth": "Medico", "dependencies": ["IGetPerinatalBackgroundService", "IUpdatePerinatalBackgroundService"], "actions": ["Index", "Edit (GET/PUT)"] },
-      { "name": "CongErrorController", "route": "/CongError", "auth": "Medico", "dependencies": ["IGetCongErrorService", "IUpdateCongErrorService"], "actions": ["Index", "Edit (GET/PUT)"] },
-      { "name": "FirebaseController", "route": "/api/auth", "auth": "Anonymous", "purpose": "Firebase authentication endpoints (login, register, reset password)" },
-      { "name": "VademecumController", "route": "/Vademecum", "purpose": "Drug/vademecum search" }
+      {
+        "name": "HomeController",
+        "route": "/",
+        "auth": "Authenticated",
+        "actions": [
+          "Index (dashboard with today's turn counts)"
+        ],
+        "dependencies": [
+          "IGetTurnsServices"
+        ]
+      },
+      {
+        "name": "TurnsController",
+        "route": "/Turns",
+        "auth": "Ingreso, Medico",
+        "dependencies": [
+          "IInsertTurnsServices",
+          "IGetTurnsServices",
+          "IGetTurnDTOServices",
+          "IUpdateTurnsServices",
+          "IGetMedicsServices",
+          "IHubContext<TurnsTableHub>"
+        ],
+        "actions": [
+          "Index",
+          "InitializeTurns (DataTables JSON)",
+          "TurnListAsync",
+          "Details",
+          "Create (GET/POST)",
+          "Accessed",
+          "Edit (GET/PUT)",
+          "Delete",
+          "CheckTurn",
+          "ExportExcel",
+          "ExportPdf"
+        ]
+      },
+      {
+        "name": "TurnsPublicController",
+        "route": "/TurnsPublic",
+        "auth": "Anonymous",
+        "dependencies": [
+          "IInsertTurnsServices",
+          "IGetMedicsServices",
+          "IHubContext<TurnsTableHub>"
+        ],
+        "actions": [
+          "Index",
+          "Create (spontaneous turn)"
+        ]
+      },
+      {
+        "name": "PatientsController",
+        "route": "/Patients",
+        "auth": "Medico",
+        "dependencies": [
+          "IInsertPatientService",
+          "IGetPatientService",
+          "IGetParentsDataService",
+          "IUpdatePatientService"
+        ],
+        "actions": [
+          "Index",
+          "InitializePatients",
+          "Create (GET/POST)",
+          "Details",
+          "Edit (GET/PUT)",
+          "Delete"
+        ]
+      },
+      {
+        "name": "MedicsController",
+        "route": "/Medics",
+        "auth": "Admin",
+        "dependencies": [
+          "UserManager",
+          "IGetMedicsServices",
+          "IInsertMedicServices",
+          "IUpdateMedicServices"
+        ],
+        "actions": [
+          "Index",
+          "Details",
+          "Create (GET/POST)",
+          "Edit (GET/POST)",
+          "Delete/DeleteConfirmed"
+        ]
+      },
+      {
+        "name": "TimeTurnController",
+        "route": "/TimeTurn",
+        "auth": "Admin",
+        "dependencies": [
+          "IGetTimeTurnsServices",
+          "IInsertTimeTurnServices",
+          "IDeleteTimeTurnServices"
+        ],
+        "actions": [
+          "Index",
+          "Create (GET/POST)",
+          "Delete/DeleteConfirmed"
+        ]
+      },
+      {
+        "name": "AdministrationController",
+        "route": "/Administration",
+        "auth": "Admin",
+        "dependencies": [
+          "RoleManager",
+          "UserManager",
+          "RedisCacheService",
+          "IMemoryCache",
+          "ILogger"
+        ],
+        "actions": [
+          "ListUsers",
+          "EditUser",
+          "DeleteUser",
+          "ManageUserClaims",
+          "ListRoles",
+          "CreateRole",
+          "EditRole",
+          "DeleteRole",
+          "EditUsersInRole",
+          "CacheStats (GET)",
+          "ClearCache (POST)"
+        ]
+      },
+      {
+        "name": "VisitsController",
+        "route": "/Visits",
+        "auth": "Medico",
+        "dependencies": [
+          "IGetVisitService",
+          "IInsertVisitService"
+        ],
+        "actions": [
+          "Details",
+          "Create (GET/POST)",
+          "Index",
+          "InitializeVisits"
+        ]
+      },
+      {
+        "name": "AllergiesController",
+        "route": "/Allergies",
+        "auth": "Medico",
+        "dependencies": [
+          "IInsertAllergiesServices",
+          "IUpdateAllergiesServices",
+          "IDeleteAllergiesServices",
+          "IGetAllergiesServices"
+        ],
+        "actions": [
+          "Details",
+          "Create (GET/POST)",
+          "Index",
+          "InitializeAllergies",
+          "Edit (GET/POST)",
+          "Delete"
+        ]
+      },
+      {
+        "name": "VaccinesController",
+        "route": "/Vaccines",
+        "auth": "Medico",
+        "dependencies": [
+          "IGetVaccinesServices",
+          "IUpdateVaccinesServices",
+          "IInsertVaccinesServices",
+          "IDeleteVacinesServices"
+        ],
+        "actions": [
+          "Index",
+          "InitializeVaccines",
+          "Create (GET/POST)",
+          "Edit (GET/POST)",
+          "Delete"
+        ]
+      },
+      {
+        "name": "GrowthChartController",
+        "route": "/GrowthChart",
+        "auth": "Medico",
+        "dependencies": [
+          "IGetGrowthChartService",
+          "IInsertGrowthChartService",
+          "IUpdateGrowthChartService",
+          "IDeleteGrowthChartService"
+        ],
+        "actions": [
+          "Index",
+          "Initialize",
+          "Create (GET/POST)",
+          "Edit (GET/POST)",
+          "Delete"
+        ]
+      },
+      {
+        "name": "PermMedController",
+        "route": "/PermMed",
+        "auth": "Medico",
+        "dependencies": [
+          "IGetPermMedService",
+          "IInsertPermMedService",
+          "IDeletePermMedService"
+        ],
+        "actions": [
+          "Index",
+          "Initialize",
+          "Create (GET/POST)",
+          "Delete"
+        ]
+      },
+      {
+        "name": "ParentsDataController",
+        "route": "/ParentsData",
+        "auth": "Medico",
+        "dependencies": [
+          "IUpdateParentsDataService",
+          "IDeleteParentsDataService",
+          "IGetParentsDataService"
+        ],
+        "actions": [
+          "Index",
+          "Edit (GET/PUT)",
+          "Delete"
+        ]
+      },
+      {
+        "name": "PersonalBackgroundController",
+        "route": "/PersonalBackground",
+        "auth": "Medico",
+        "dependencies": [
+          "IGetPersonalBackgroundService",
+          "IUpdatePersonalBackgroundService"
+        ],
+        "actions": [
+          "Index",
+          "Edit (GET/PUT)"
+        ]
+      },
+      {
+        "name": "PerinatalBackgroundController",
+        "route": "/PerinatalBackground",
+        "auth": "Medico",
+        "dependencies": [
+          "IGetPerinatalBackgroundService",
+          "IUpdatePerinatalBackgroundService"
+        ],
+        "actions": [
+          "Index",
+          "Edit (GET/PUT)"
+        ]
+      },
+      {
+        "name": "CongErrorController",
+        "route": "/CongError",
+        "auth": "Medico",
+        "dependencies": [
+          "IGetCongErrorService",
+          "IUpdateCongErrorService"
+        ],
+        "actions": [
+          "Index",
+          "Edit (GET/PUT)"
+        ]
+      },
+      {
+        "name": "FirebaseController",
+        "route": "/api/auth",
+        "auth": "Anonymous",
+        "purpose": "Firebase authentication endpoints (login, register, reset password)"
+      },
+      {
+        "name": "VademecumController",
+        "route": "/Vademecum",
+        "purpose": "Drug/vademecum search"
+      }
     ]
   },
-
   "services": {
     "serviceLayer": {
-      "pattern": "Each feature has its own folder with interface + implementation, e.g. /Turnero.SL/Services/TurnsServices/",
-      "registration": "All registered via builder.Services.AddScoped<IInterface, Implementation>() in Program.cs"
+      "pattern": "Cada feature tiene su carpeta con interfaz + implementación en src/Turnero.Application/Services/<Feature>Services/ (ej. Services/TurnsServices/)",
+      "registration": "Registrados por AddApplication() (src/Turnero.Application/DependencyInjection.cs); Program.cs solo invoca builder.Services.AddApplication()"
     },
     "serviceGroups": {
       "Turns": {
-        "folder": "Turnero.SL/Services/TurnsServices/",
+        "folder": "src/Turnero.Application/Services/TurnsServices/",
         "services": [
-          { "interface": "IGetTurnsServices", "implementation": "GetTurnsServices", "deps": ["LoggerService", "ITurnRepository", "RedisCacheService", "IMemoryCache"], "description": "Get turns by date/medic (cached with Redis+MemoryCache two-tier), GetTurn by id, GetTurnDTO, Exists, CheckTurn" },
-          { "interface": "IInsertTurnsServices", "implementation": "InsertTurnsServices", "deps": ["LoggerService", "ITurnRepository"] },
-          { "interface": "IUpdateTurnsServices", "implementation": "UpdateTurnsServices", "deps": ["LoggerService", "ITurnRepository"] },
-          { "interface": "IGetTurnDTOServices", "implementation": "GetTurnDTOServices", "deps": ["ITurnDTORepository", "RedisCacheService", "IMemoryCache"], "description": "Returns IQueryable<TurnDTO> with two-tier cache" },
-          { "interface": "IGetTimeTurnsServices", "implementation": "GetTimeTurnsServices", "deps": ["LoggerService", "ITimeTurnRepository"] },
-          { "interface": "IInsertTimeTurnServices", "implementation": "InsertTimeTurnServices", "deps": ["LoggerService", "ITimeTurnRepository"] },
-          { "interface": "IDeleteTimeTurnServices", "implementation": "DeleteTimeTurnServices", "deps": ["LoggerService", "ITimeTurnRepository"] }
+          {
+            "interface": "IGetTurnsServices",
+            "implementation": "GetTurnsServices",
+            "deps": [
+              "LoggerService",
+              "ITurnRepository",
+              "RedisCacheService",
+              "IMemoryCache"
+            ],
+            "description": "Get turns by date/medic (cached with Redis+MemoryCache two-tier), GetTurn by id, GetTurnDTO, Exists, CheckTurn"
+          },
+          {
+            "interface": "IInsertTurnsServices",
+            "implementation": "InsertTurnsServices",
+            "deps": [
+              "LoggerService",
+              "ITurnRepository"
+            ]
+          },
+          {
+            "interface": "IUpdateTurnsServices",
+            "implementation": "UpdateTurnsServices",
+            "deps": [
+              "LoggerService",
+              "ITurnRepository"
+            ]
+          },
+          {
+            "interface": "IGetTurnDTOServices",
+            "implementation": "GetTurnDTOServices",
+            "deps": [
+              "ITurnDTORepository",
+              "RedisCacheService",
+              "IMemoryCache"
+            ],
+            "description": "Returns IQueryable<TurnDTO> with two-tier cache"
+          },
+          {
+            "interface": "IGetTimeTurnsServices",
+            "implementation": "GetTimeTurnsServices",
+            "deps": [
+              "LoggerService",
+              "ITimeTurnRepository"
+            ]
+          },
+          {
+            "interface": "IInsertTimeTurnServices",
+            "implementation": "InsertTimeTurnServices",
+            "deps": [
+              "LoggerService",
+              "ITimeTurnRepository"
+            ]
+          },
+          {
+            "interface": "IDeleteTimeTurnServices",
+            "implementation": "DeleteTimeTurnServices",
+            "deps": [
+              "LoggerService",
+              "ITimeTurnRepository"
+            ]
+          }
         ]
       },
       "Patients": {
-        "folder": "Turnero.SL/Services/PatientServices/",
+        "folder": "src/Turnero.Application/Services/PatientServices/",
         "services": [
-          { "interface": "IGetPatientService", "implementation": "GetPatientService", "deps": ["LoggerService", "IPatientRepository"], "description": "GetPatients, GetCachedPatients (two-tier), GetAllPatients (IQueryable), GetPatientById, SearchPatients" },
-          { "interface": "IInsertPatientService", "implementation": "InsertPatientService", "deps": ["LoggerService", "IPatientRepository"] },
-          { "interface": "IUpdatePatientService", "implementation": "UpdatePatientService", "deps": ["LoggerService", "IPatientRepository"] }
+          {
+            "interface": "IGetPatientService",
+            "implementation": "GetPatientService",
+            "deps": [
+              "LoggerService",
+              "IPatientRepository"
+            ],
+            "description": "GetPatients, GetCachedPatients (two-tier), GetAllPatients (IQueryable), GetPatientById, SearchPatients"
+          },
+          {
+            "interface": "IInsertPatientService",
+            "implementation": "InsertPatientService",
+            "deps": [
+              "LoggerService",
+              "IPatientRepository"
+            ]
+          },
+          {
+            "interface": "IUpdatePatientService",
+            "implementation": "UpdatePatientService",
+            "deps": [
+              "LoggerService",
+              "IPatientRepository"
+            ]
+          }
         ]
       },
       "Medics": {
-        "folder": "Turnero.SL/Services/MedicServices/",
+        "folder": "src/Turnero.Application/Services/MedicServices/",
         "services": [
-          { "interface": "IGetMedicsServices", "implementation": "GetMedicsServices", "deps": ["LoggerService", "IMedicRepository"] },
-          { "interface": "IInsertMedicServices", "implementation": "InsertMedicServices", "deps": ["LoggerService", "IMedicRepository"] },
-          { "interface": "IUpdateMedicServices", "implementation": "UpdateMedicServices", "deps": ["LoggerService", "IMedicRepository"] }
+          {
+            "interface": "IGetMedicsServices",
+            "implementation": "GetMedicsServices",
+            "deps": [
+              "LoggerService",
+              "IMedicRepository"
+            ]
+          },
+          {
+            "interface": "IInsertMedicServices",
+            "implementation": "InsertMedicServices",
+            "deps": [
+              "LoggerService",
+              "IMedicRepository"
+            ]
+          },
+          {
+            "interface": "IUpdateMedicServices",
+            "implementation": "UpdateMedicServices",
+            "deps": [
+              "LoggerService",
+              "IMedicRepository"
+            ]
+          }
         ]
       },
       "Clinical": {
         "services": [
-          { "interface": "IGetVisitService", "implementation": "GetVisitService", "deps": ["LoggerService", "IVisitRepository"] },
-          { "interface": "IInsertVisitService", "implementation": "InsertVisitService", "deps": ["LoggerService", "IVisitRepository"] },
-          { "interface": "IGetAllergiesServices", "implementation": "GetAllergiesServices", "deps": ["IAllergiesRepository", "LoggerService"] },
-          { "interface": "IInsertAllergiesServices", "implementation": "InsertAllergiesServices", "deps": ["IAllergiesRepository", "LoggerService"] },
-          { "interface": "IUpdateAllergiesServices", "implementation": "UpdateAllergiesServices", "deps": ["IAllergiesRepository", "LoggerService"] },
-          { "interface": "IDeleteAllergiesServices", "implementation": "DeleteAllergiesServices", "deps": ["IAllergiesRepository", "LoggerService"] },
-          { "interface": "IGetVaccinesServices", "implementation": "GetVaccinesServices", "deps": ["LoggerService", "IVaccinesRepository"] },
-          { "interface": "IInsertVaccinesServices", "implementation": "InsertVaccinesServices", "deps": ["LoggerService", "IVaccinesRepository"] },
-          { "interface": "IUpdateVaccinesServices", "implementation": "UpdateVaccinesServices", "deps": ["LoggerService", "IVaccinesRepository"] },
-          { "interface": "IDeleteVacinesServices", "implementation": "DeleteVacinesServices", "deps": ["LoggerService", "IVaccinesRepository"] },
-          { "interface": "IGetGrowthChartService", "implementation": "GetGrowthChartService", "deps": ["IGrowthChartRepository"] },
-          { "interface": "IInsertGrowthChartService", "implementation": "InsertGrowthChartService", "deps": ["IGrowthChartRepository"] },
-          { "interface": "IUpdateGrowthChartService", "implementation": "UpdateGrowthChartService", "deps": ["IGrowthChartRepository"] },
-          { "interface": "IDeleteGrowthChartService", "implementation": "DeleteGrowthChartService", "deps": ["IGrowthChartRepository"] },
-          { "interface": "IGetPermMedService", "implementation": "GetPermMedService", "deps": ["IPermMedRepository"] },
-          { "interface": "IInsertPermMedService", "implementation": "InsertPermMedService", "deps": ["IPermMedRepository"] },
-          { "interface": "IDeletePermMedService", "implementation": "DeletePermMedService", "deps": ["IPermMedRepository"] },
-          { "interface": "IGetParentsDataService", "implementation": "GetParentsDataService", "deps": ["IParentsDataRepository", "RedisCacheService", "IMemoryCache"] },
-          { "interface": "IUpdateParentsDataService", "implementation": "UpdateParentsDataService", "deps": ["LoggerService", "IParentsDataRepository"] },
-          { "interface": "IDeleteParentsDataService", "implementation": "DeleteParentsDataService", "deps": ["IParentsDataRepository"] },
-          { "interface": "IGetPersonalBackgroundService", "implementation": "GetPersonalBackgroundService", "deps": ["LoggerService", "IPersonalBackgroundRepository", "RedisCacheService", "IMemoryCache"] },
-          { "interface": "IUpdatePersonalBackgroundService", "implementation": "UpdatePersonalBackgroundService", "deps": ["LoggerService", "IPersonalBackgroundRepository"] },
-          { "interface": "IGetPerinatalBackgroundService", "implementation": "GetPerinatalBackgroundService", "deps": ["LoggerService", "IPerinatalBackgroundRepository", "RedisCacheService", "IMemoryCache"] },
-          { "interface": "IUpdatePerinatalBackgroundService", "implementation": "UpdatePerinatalBackgroundService", "deps": ["LoggerService", "IPerinatalBackgroundRepository"] },
-          { "interface": "IGetCongErrorService", "implementation": "GetCongErrorService", "deps": ["LoggerService", "ICongErrorsRepository", "RedisCacheService", "IMemoryCache"] },
-          { "interface": "IUpdateCongErrorService", "implementation": "UpdateCongErrorService", "deps": ["LoggerService", "ICongErrorsRepository"] }
+          {
+            "interface": "IGetVisitService",
+            "implementation": "GetVisitService",
+            "deps": [
+              "LoggerService",
+              "IVisitRepository"
+            ]
+          },
+          {
+            "interface": "IInsertVisitService",
+            "implementation": "InsertVisitService",
+            "deps": [
+              "LoggerService",
+              "IVisitRepository"
+            ]
+          },
+          {
+            "interface": "IGetAllergiesServices",
+            "implementation": "GetAllergiesServices",
+            "deps": [
+              "IAllergiesRepository",
+              "LoggerService"
+            ]
+          },
+          {
+            "interface": "IInsertAllergiesServices",
+            "implementation": "InsertAllergiesServices",
+            "deps": [
+              "IAllergiesRepository",
+              "LoggerService"
+            ]
+          },
+          {
+            "interface": "IUpdateAllergiesServices",
+            "implementation": "UpdateAllergiesServices",
+            "deps": [
+              "IAllergiesRepository",
+              "LoggerService"
+            ]
+          },
+          {
+            "interface": "IDeleteAllergiesServices",
+            "implementation": "DeleteAllergiesServices",
+            "deps": [
+              "IAllergiesRepository",
+              "LoggerService"
+            ]
+          },
+          {
+            "interface": "IGetVaccinesServices",
+            "implementation": "GetVaccinesServices",
+            "deps": [
+              "LoggerService",
+              "IVaccinesRepository"
+            ]
+          },
+          {
+            "interface": "IInsertVaccinesServices",
+            "implementation": "InsertVaccinesServices",
+            "deps": [
+              "LoggerService",
+              "IVaccinesRepository"
+            ]
+          },
+          {
+            "interface": "IUpdateVaccinesServices",
+            "implementation": "UpdateVaccinesServices",
+            "deps": [
+              "LoggerService",
+              "IVaccinesRepository"
+            ]
+          },
+          {
+            "interface": "IDeleteVacinesServices",
+            "implementation": "DeleteVacinesServices",
+            "deps": [
+              "LoggerService",
+              "IVaccinesRepository"
+            ]
+          },
+          {
+            "interface": "IGetGrowthChartService",
+            "implementation": "GetGrowthChartService",
+            "deps": [
+              "IGrowthChartRepository"
+            ]
+          },
+          {
+            "interface": "IInsertGrowthChartService",
+            "implementation": "InsertGrowthChartService",
+            "deps": [
+              "IGrowthChartRepository"
+            ]
+          },
+          {
+            "interface": "IUpdateGrowthChartService",
+            "implementation": "UpdateGrowthChartService",
+            "deps": [
+              "IGrowthChartRepository"
+            ]
+          },
+          {
+            "interface": "IDeleteGrowthChartService",
+            "implementation": "DeleteGrowthChartService",
+            "deps": [
+              "IGrowthChartRepository"
+            ]
+          },
+          {
+            "interface": "IGetPermMedService",
+            "implementation": "GetPermMedService",
+            "deps": [
+              "IPermMedRepository"
+            ]
+          },
+          {
+            "interface": "IInsertPermMedService",
+            "implementation": "InsertPermMedService",
+            "deps": [
+              "IPermMedRepository"
+            ]
+          },
+          {
+            "interface": "IDeletePermMedService",
+            "implementation": "DeletePermMedService",
+            "deps": [
+              "IPermMedRepository"
+            ]
+          },
+          {
+            "interface": "IGetParentsDataService",
+            "implementation": "GetParentsDataService",
+            "deps": [
+              "IParentsDataRepository",
+              "RedisCacheService",
+              "IMemoryCache"
+            ]
+          },
+          {
+            "interface": "IUpdateParentsDataService",
+            "implementation": "UpdateParentsDataService",
+            "deps": [
+              "LoggerService",
+              "IParentsDataRepository"
+            ]
+          },
+          {
+            "interface": "IDeleteParentsDataService",
+            "implementation": "DeleteParentsDataService",
+            "deps": [
+              "IParentsDataRepository"
+            ]
+          },
+          {
+            "interface": "IGetPersonalBackgroundService",
+            "implementation": "GetPersonalBackgroundService",
+            "deps": [
+              "LoggerService",
+              "IPersonalBackgroundRepository",
+              "RedisCacheService",
+              "IMemoryCache"
+            ]
+          },
+          {
+            "interface": "IUpdatePersonalBackgroundService",
+            "implementation": "UpdatePersonalBackgroundService",
+            "deps": [
+              "LoggerService",
+              "IPersonalBackgroundRepository"
+            ]
+          },
+          {
+            "interface": "IGetPerinatalBackgroundService",
+            "implementation": "GetPerinatalBackgroundService",
+            "deps": [
+              "LoggerService",
+              "IPerinatalBackgroundRepository",
+              "RedisCacheService",
+              "IMemoryCache"
+            ]
+          },
+          {
+            "interface": "IUpdatePerinatalBackgroundService",
+            "implementation": "UpdatePerinatalBackgroundService",
+            "deps": [
+              "LoggerService",
+              "IPerinatalBackgroundRepository"
+            ]
+          },
+          {
+            "interface": "IGetCongErrorService",
+            "implementation": "GetCongErrorService",
+            "deps": [
+              "LoggerService",
+              "ICongErrorsRepository",
+              "RedisCacheService",
+              "IMemoryCache"
+            ]
+          },
+          {
+            "interface": "IUpdateCongErrorService",
+            "implementation": "UpdateCongErrorService",
+            "deps": [
+              "LoggerService",
+              "ICongErrorsRepository"
+            ]
+          }
         ]
       },
       "CrossCutting": {
         "services": [
-          { "name": "LoggerService", "lifetime": "Singleton", "description": "File-based logger (AppLogs.log). Method: Log(message), LogAsync(message)" },
-          { "name": "FirebaseService", "lifetime": "Scoped (via HttpClient factory)", "interface": "IFirebaseService", "description": "Firebase Auth integration: Register, Login, Password Reset, Email Verification" },
-          { "name": "RedisConnectionService", "lifetime": "Singleton", "description": "Manages StackExchange.Redis ConnectionMultiplexer. AbortOnConnectFail=false, configurable timeouts" },
-          { "name": "RedisCacheService", "lifetime": "Scoped", "description": "Two-tier cache operations: Get/Set/Remove/Publish sync+async. Tracks hit/miss stats. Methods virtual for testability." },
-          { "name": "CacheInvalidationHostedService", "lifetime": "HostedService (Singleton)", "description": "Subscribes to Redis Pub/Sub 'cache:invalidate' channel. Clears local IMemoryCache on cross-instance invalidation messages." }
+          {
+            "name": "LoggerService",
+            "lifetime": "Singleton",
+            "description": "File-based logger (AppLogs.log). Method: Log(message), LogAsync(message)"
+          },
+          {
+            "name": "FirebaseService",
+            "lifetime": "Scoped (via HttpClient factory)",
+            "interface": "IFirebaseService",
+            "description": "Firebase Auth integration: Register, Login, Password Reset, Email Verification"
+          },
+          {
+            "name": "RedisConnectionService",
+            "lifetime": "Singleton",
+            "description": "Manages StackExchange.Redis ConnectionMultiplexer. AbortOnConnectFail=false, configurable timeouts"
+          },
+          {
+            "name": "RedisCacheService",
+            "lifetime": "Scoped",
+            "description": "Two-tier cache operations: Get/Set/Remove/Publish sync+async. Tracks hit/miss stats. Methods virtual for testability."
+          },
+          {
+            "name": "CacheInvalidationHostedService",
+            "lifetime": "HostedService (Singleton)",
+            "description": "Subscribes to Redis Pub/Sub 'cache:invalidate' channel. Clears local IMemoryCache on cross-instance invalidation messages."
+          }
         ]
       }
     }
   },
-
   "repositories": {
     "baseRepository": {
       "name": "RepositoryBase<T> : IRepositoryBase<T>",
-      "constructor": "(ApplicationDbContext context, IMemoryCache cache, RedisCacheService redisCache)",
+      "constructor": "(ApplicationDbContext context, IMemoryCache cache, IOptions<DatabaseOptions> databaseOptions)",
       "methods": [
         "FindAll() -> IQueryable<T> (AsNoTracking)",
         "FindByCondition(Expression) -> IQueryable<T>",
@@ -512,45 +1365,176 @@
       "note": "Custom repository interfaces do NOT extend IRepositoryBase<T>. They define only the specific methods needed."
     },
     "repositories": [
-      { "entity": "Medic", "repo": "MedicRepository", "interface": "IMedicRepository", "cachedMethod": "GetCachedMedics() -> key 'medics'" },
-      { "entity": "TimeTurn", "repo": "TimeTurnRepository", "interface": "ITimeTurnRepository", "cachedMethod": "GetCachedTimes() -> key 'timeTurns'" },
-      { "entity": "Turn", "repo": "TurnsRepository", "interface": "ITurnRepository", "note": "Uses CallStoredProcedure('GetTurns', params) for list queries" },
-      { "entity": "TurnDTO", "repo": "TurnDTORepository", "interface": "ITurnDTORepository", "note": "Uses CallStoredProcedureDTO only (TurnDTO is not a DbSet). FindAll/FindByCondition throw NotSupportedException." },
-      { "entity": "Patient", "repo": "PatientRepository", "interface": "IPatientRepository", "cachedMethod": "GetCachedPatients() -> key 'patients'" },
-      { "entity": "Allergies", "repo": "AllergiesRepository", "interface": "IAllergiesRepository", "cachedMethod": "GetCachedAllergiesByPatient(id) -> key 'allergies:{patientId}'" },
-      { "entity": "Vaccines", "repo": "VaccinesRepository", "interface": "IVaccinesRepository", "cachedMethod": "GetCachedByPatientId(id) -> key 'vaccines:{patientId}'" },
-      { "entity": "GrowthChart", "repo": "GrowthChartRepository", "interface": "IGrowthChartRepository", "cachedMethod": "GetCachedByPatientId(id) -> key 'growthCharts:{patientId}'" },
-      { "entity": "PermMed", "repo": "PermMedRepository", "interface": "IPermMedRepository", "cachedMethod": "GetCachedByPatientId(id) -> key 'permMed:{patientId}'" },
-      { "entity": "ParentsData", "repo": "ParentsDataRepository", "interface": "IParentsDataRepository", "note": "Single entity (shared PK). Cached via service layer with Redis+MemoryCache" },
-      { "entity": "PersonalBackground", "repo": "PersonalBackgroundRepository", "interface": "IPersonalBackgroundRepository", "note": "Single entity (shared PK). Cached via service layer" },
-      { "entity": "PerinatalBackground", "repo": "PerinatalBackgroundRepositroy", "interface": "IPerinatalBackgroundRepository", "note": "Single entity (shared PK). Cached via service layer" },
-      { "entity": "CongErrors", "repo": "CongErrorsRepository", "interface": "ICongErrorsRepository", "note": "Single entity (shared PK). Cached via service layer" },
-      { "entity": "Visit", "repo": "VisitRepository", "interface": "IVisitRepository", "note": "No caching (returns IQueryable<VisitDTO> for DataTables)" }
+      {
+        "entity": "Medic",
+        "repo": "MedicRepository",
+        "interface": "IMedicRepository",
+        "cachedMethod": "GetCachedMedics() -> key 'medics'"
+      },
+      {
+        "entity": "TimeTurn",
+        "repo": "TimeTurnRepository",
+        "interface": "ITimeTurnRepository",
+        "cachedMethod": "GetCachedTimes() -> key 'timeTurns'"
+      },
+      {
+        "entity": "Turn",
+        "repo": "TurnsRepository",
+        "interface": "ITurnRepository",
+        "note": "Uses CallStoredProcedure('GetTurns', params) for list queries"
+      },
+      {
+        "entity": "TurnDTO",
+        "repo": "TurnDTORepository",
+        "interface": "ITurnDTORepository",
+        "note": "Uses CallStoredProcedureDTO only (TurnDTO is not a DbSet). FindAll/FindByCondition throw NotSupportedException."
+      },
+      {
+        "entity": "Patient",
+        "repo": "PatientRepository",
+        "interface": "IPatientRepository",
+        "cachedMethod": "GetCachedPatients() -> key 'patients'"
+      },
+      {
+        "entity": "Allergies",
+        "repo": "AllergiesRepository",
+        "interface": "IAllergiesRepository",
+        "cachedMethod": "GetCachedAllergiesByPatient(id) -> key 'allergies:{patientId}'"
+      },
+      {
+        "entity": "Vaccines",
+        "repo": "VaccinesRepository",
+        "interface": "IVaccinesRepository",
+        "cachedMethod": "GetCachedByPatientId(id) -> key 'vaccines:{patientId}'"
+      },
+      {
+        "entity": "GrowthChart",
+        "repo": "GrowthChartRepository",
+        "interface": "IGrowthChartRepository",
+        "cachedMethod": "GetCachedByPatientId(id) -> key 'growthCharts:{patientId}'"
+      },
+      {
+        "entity": "PermMed",
+        "repo": "PermMedRepository",
+        "interface": "IPermMedRepository",
+        "cachedMethod": "GetCachedByPatientId(id) -> key 'permMed:{patientId}'"
+      },
+      {
+        "entity": "ParentsData",
+        "repo": "ParentsDataRepository",
+        "interface": "IParentsDataRepository",
+        "note": "Single entity (shared PK). Cached via service layer with Redis+MemoryCache"
+      },
+      {
+        "entity": "PersonalBackground",
+        "repo": "PersonalBackgroundRepository",
+        "interface": "IPersonalBackgroundRepository",
+        "note": "Single entity (shared PK). Cached via service layer"
+      },
+      {
+        "entity": "PerinatalBackground",
+        "repo": "PerinatalBackgroundRepositroy",
+        "interface": "IPerinatalBackgroundRepository",
+        "note": "Single entity (shared PK). Cached via service layer"
+      },
+      {
+        "entity": "CongErrors",
+        "repo": "CongErrorsRepository",
+        "interface": "ICongErrorsRepository",
+        "note": "Single entity (shared PK). Cached via service layer"
+      },
+      {
+        "entity": "Visit",
+        "repo": "VisitRepository",
+        "interface": "IVisitRepository",
+        "note": "No caching (returns IQueryable<VisitDTO> for DataTables)"
+      }
     ]
   },
-
   "cachingSystem": {
     "type": "Two-tier distributed cache",
     "tiers": {
-      "L1": { "name": "IMemoryCache", "location": "In-process per instance", "speed": "Ultra-fast, no serialization", "scope": "Local to each app instance" },
-      "L2": { "name": "Redis (StackExchange.Redis 3.0.17)", "location": "External Redis server", "serialization": "JSON (System.Text.Json, camelCase)", "scope": "Shared across all instances" }
+      "L1": {
+        "name": "IMemoryCache",
+        "location": "In-process per instance",
+        "speed": "Ultra-fast, no serialization",
+        "scope": "Local to each app instance"
+      },
+      "L2": {
+        "name": "Redis (StackExchange.Redis 3.0.17)",
+        "location": "External Redis server",
+        "serialization": "JSON (System.Text.Json, camelCase)",
+        "scope": "Shared across all instances"
+      }
     },
     "fallback": "If Redis unavailable, app operates with IMemoryCache only (graceful degradation via AbortOnConnectFail=false)",
     "crossInstanceInvalidation": "Redis Pub/Sub channel 'cache:invalidate'. When an instance clears a key, it publishes the key name. All other instances receive the message and clear their local IMemoryCache.",
     "cacheKeys": {
-      "medics": { "ttl_redis": "1 hour", "ttl_memory": "No expiry (explicit invalidation)", "type": "reference data" },
-      "timeTurns": { "ttl_redis": "1 hour", "ttl_memory": "No expiry (explicit invalidation)", "type": "reference data" },
-      "patients": { "ttl_redis": "10 min", "ttl_memory": "No expiry (explicit invalidation)", "type": "reference data" },
-      "turns:{date}:{medicId}": { "ttl_redis": "2 min", "ttl_memory": "30 sec", "type": "turn queries (DTO)" },
-      "turnsList:{date}:{medicId}": { "ttl_redis": "2 min", "ttl_memory": "30 sec", "type": "turn queries (entity)" },
-      "allergies:{patientId}": { "ttl_redis": "10 min", "ttl_memory": "No expiry (explicit invalidation)", "type": "patient clinical data" },
-      "vaccines:{patientId}": { "ttl_redis": "10 min", "ttl_memory": "No expiry (explicit invalidation)", "type": "patient clinical data" },
-      "growthCharts:{patientId}": { "ttl_redis": "10 min", "ttl_memory": "No expiry (explicit invalidation)", "type": "patient clinical data" },
-      "permMed:{patientId}": { "ttl_redis": "10 min", "ttl_memory": "No expiry (explicit invalidation)", "type": "patient clinical data" },
-      "parentsData:{id}": { "ttl_redis": "10 min", "ttl_memory": "No expiry (explicit invalidation)", "type": "patient single entity" },
-      "personalBackground:{id}": { "ttl_redis": "10 min", "ttl_memory": "No expiry (explicit invalidation)", "type": "patient single entity" },
-      "perinatalBackground:{id}": { "ttl_redis": "10 min", "ttl_memory": "No expiry (explicit invalidation)", "type": "patient single entity" },
-      "congErrors:{id}": { "ttl_redis": "10 min", "ttl_memory": "No expiry (explicit invalidation)", "type": "patient single entity" }
+      "medics": {
+        "ttl_redis": "1 hour",
+        "ttl_memory": "No expiry (explicit invalidation)",
+        "type": "reference data"
+      },
+      "timeTurns": {
+        "ttl_redis": "1 hour",
+        "ttl_memory": "No expiry (explicit invalidation)",
+        "type": "reference data"
+      },
+      "patients": {
+        "ttl_redis": "10 min",
+        "ttl_memory": "No expiry (explicit invalidation)",
+        "type": "reference data"
+      },
+      "turns:{date}:{medicId}": {
+        "ttl_redis": "2 min",
+        "ttl_memory": "30 sec",
+        "type": "turn queries (DTO)"
+      },
+      "turnsList:{date}:{medicId}": {
+        "ttl_redis": "2 min",
+        "ttl_memory": "30 sec",
+        "type": "turn queries (entity)"
+      },
+      "allergies:{patientId}": {
+        "ttl_redis": "10 min",
+        "ttl_memory": "No expiry (explicit invalidation)",
+        "type": "patient clinical data"
+      },
+      "vaccines:{patientId}": {
+        "ttl_redis": "10 min",
+        "ttl_memory": "No expiry (explicit invalidation)",
+        "type": "patient clinical data"
+      },
+      "growthCharts:{patientId}": {
+        "ttl_redis": "10 min",
+        "ttl_memory": "No expiry (explicit invalidation)",
+        "type": "patient clinical data"
+      },
+      "permMed:{patientId}": {
+        "ttl_redis": "10 min",
+        "ttl_memory": "No expiry (explicit invalidation)",
+        "type": "patient clinical data"
+      },
+      "parentsData:{id}": {
+        "ttl_redis": "10 min",
+        "ttl_memory": "No expiry (explicit invalidation)",
+        "type": "patient single entity"
+      },
+      "personalBackground:{id}": {
+        "ttl_redis": "10 min",
+        "ttl_memory": "No expiry (explicit invalidation)",
+        "type": "patient single entity"
+      },
+      "perinatalBackground:{id}": {
+        "ttl_redis": "10 min",
+        "ttl_memory": "No expiry (explicit invalidation)",
+        "type": "patient single entity"
+      },
+      "congErrors:{id}": {
+        "ttl_redis": "10 min",
+        "ttl_memory": "No expiry (explicit invalidation)",
+        "type": "patient single entity"
+      }
     },
     "hitMissTracking": {
       "storage": "ConcurrentDictionary<string, CacheStats> in RedisCacheService (in-memory, resets on app restart)",
@@ -559,32 +1543,63 @@
     },
     "statsEndpoint": {
       "controller": "AdministrationController",
-      "actions": ["CacheStats (GET) - scans all Redis keys via SCAN, returns table with TTL/size/hits/misses", "ClearCache (POST) - removes specific key from Redis + local memory + publishes invalidation"],
+      "actions": [
+        "CacheStats (GET) - scans all Redis keys via SCAN, returns table with TTL/size/hits/misses",
+        "ClearCache (POST) - removes specific key from Redis + local memory + publishes invalidation"
+      ],
       "view": "Views/Administration/CacheStats.cshtml",
       "navLink": "Administrar dropdown -> Cache"
     },
     "warmup": {
-      "location": "Program.cs startup",
-      "loadedKeys": ["medics", "timeTurns", "patients"],
+      "location": "Program.cs startup (via CreateScope)",
+      "loadedKeys": [
+        "medics (via IGetMedicsServices.GetCachedMedics)",
+        "timeTurns (via IGetTimeTurnsServices.GetCachedTimes)"
+      ],
       "failureBehavior": "Logs warning, continues with DB fallback"
     }
   },
-
   "authentication": {
-    "providers": ["ASP.NET Core Identity (local)", "Firebase Authentication (external)"],
-    "roles": ["Admin", "Medico", "Ingreso"],
-    "cookieConfig": { "HttpOnly": true, "ExpireTimeSpan": "1 day", "SlidingExpiration": true },
-    "jwtConfig": { "scheme": "JwtBearer", "authority": "configurable", "audience": "configurable" },
-    "firebaseConfig": { "credentialsPath": "Firebase:CredentialsPath env var", "service": "FirebaseService" }
+    "providers": [
+      "ASP.NET Core Identity (local)",
+      "Firebase Authentication (external)"
+    ],
+    "roles": [
+      "Admin",
+      "Medico",
+      "Ingreso"
+    ],
+    "cookieConfig": {
+      "HttpOnly": true,
+      "ExpireTimeSpan": "1 day",
+      "SlidingExpiration": true
+    },
+    "jwtConfig": {
+      "scheme": "JwtBearer",
+      "authority": "configurable",
+      "audience": "configurable"
+    },
+    "firebaseConfig": {
+      "credentialsPath": "Firebase:CredentialsPath env var",
+      "service": "FirebaseService"
+    }
   },
-
   "frontend": {
     "cssFramework": "Bootstrap 5.3",
     "icons": "Bootstrap Icons + Font Awesome 7",
-    "jsLibraries": ["jQuery 3.7.1", "SweetAlert2 11.23", "Flatpickr (datepicker)", "PDFMake (PDF export)", "JSZip + SheetJS (Excel export)"],
+    "jsLibraries": [
+      "jQuery 3.7.1",
+      "SweetAlert2 11.23",
+      "Flatpickr (datepicker)",
+      "PDFMake (PDF export)",
+      "JSZip + SheetJS (Excel export)"
+    ],
     "signalR": {
       "hub": "TurnsTableHub at /TurnsTableHub",
-      "events": ["UpdateTableDirected(user, message, date) -> directed to specific user", "UpdateTable(message) -> broadcast to all"]
+      "events": [
+        "UpdateTableDirected(user, message, date) -> directed to specific user",
+        "UpdateTable(message) -> broadcast to all"
+      ]
     },
     "dataTables": {
       "pattern": "Server-side processing via [Controller]/Initialize[Entity] endpoints",
@@ -592,12 +1607,24 @@
     },
     "views": {
       "layout": "Views/Shared/_Layout.cshtml",
-      "shared": ["_LoginPartial", "_ValidationScriptsPartial", "Error"],
+      "shared": [
+        "_LoginPartial",
+        "_ValidationScriptsPartial",
+        "Error"
+      ],
       "partialViewPattern": "Most entity views are partials loaded via AJAX modals (_Create, _Edit, _Details, _Table)",
-      "adminViews": ["ListUsers", "EditUser", "ManageUserClaims", "ListRoles", "CreateRole", "EditRole", "EditUsersInRole", "CacheStats"]
+      "adminViews": [
+        "ListUsers",
+        "EditUser",
+        "ManageUserClaims",
+        "ListRoles",
+        "CreateRole",
+        "EditRole",
+        "EditUsersInRole",
+        "CacheStats"
+      ]
     }
   },
-
   "realTime": {
     "hub": "TurnsTableHub (SignalR)",
     "notifications": {
@@ -607,7 +1634,6 @@
       "onTurnDeleted": "Broadcast to all: 'La tabla se ha actualizado'"
     }
   },
-
   "helpers": {
     "DataTablesHelper": {
       "namespace": "Turnero.Helpers",
@@ -628,18 +1654,31 @@
     },
     "RolesConstants": {
       "namespace": "Turnero.Utilities.Utilities",
-      "values": { "Ingreso": "Ingreso", "Medico": "Medico", "Admin": "Admin" }
+      "values": {
+        "Ingreso": "Ingreso",
+        "Medico": "Medico",
+        "Admin": "Admin"
+      }
     },
     "MapsterConfig": {
       "namespace": "Turnero.Utilities.Utilities",
       "method": "RegisterMappings()",
-      "mappings": ["Patient -> PatientDTO", "Medic -> MedicDto", "Turn -> TurnDTO", "TurnDTO -> Turn", "Visit -> VisitDTO"]
+      "mappings": [
+        "Patient -> PatientDTO",
+        "Medic -> MedicDto",
+        "Turn -> TurnDTO",
+        "TurnDTO -> Turn",
+        "Visit -> VisitDTO"
+      ]
     }
   },
-
   "deployment": {
     "podman": {
-      "composeFiles": ["docker-compose.yml", "docker-compose.prod.yml", "docker-stack.tls.yml"],
+      "composeFiles": [
+        "docker-compose.yml",
+        "docker-compose.prod.yml",
+        "docker-stack.tls.yml"
+      ],
       "appImage": "Multi-stage Dockerfile (sdk:10.0 build -> aspnet:10.0 final)",
       "redis": "redis:7-alpine with healthcheck and persistent volume"
     },
@@ -649,9 +1688,13 @@
       "firebase": "Firebase__CredentialsPath or GOOGLE_APPLICATION_CREDENTIALS",
       "auth": "Authentication__ValidIssuer, Authentication__Audience, Authentication__TokenUri, Authentication__TokenCode, Authentication__TokenReset"
     },
-    "scripts": ["scripts/deploy.sh", "scripts/deploy-remote.ps1", "scripts/start-dev.ps1", "scripts/start-dev.sh"]
+    "scripts": [
+      "scripts/deploy.sh",
+      "scripts/deploy-remote.ps1",
+      "scripts/start-dev.ps1",
+      "scripts/start-dev.sh"
+    ]
   },
-
   "tests": {
     "framework": "xUnit + Moq",
     "testCount": 221,

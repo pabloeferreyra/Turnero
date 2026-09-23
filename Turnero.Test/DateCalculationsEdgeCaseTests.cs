@@ -1,4 +1,4 @@
-using Turnero.Utilities.Utilities;
+using Turnero.Application.Common;
 using Xunit;
 
 namespace Turnero.Test;

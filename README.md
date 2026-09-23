@@ -19,6 +19,27 @@ Here're some of the project's best features:
 *   PWA
 *   Desktop Notifications
 
+<h2>🏛️ Clean Architecture</h2>
+
+El proyecto sigue Clean Architecture con 4 capas:
+
+| Proyecto | Rol | Puede depender de |
+|---|---|---|
+| `src/Turnero.Domain` | Entidades, enums y constantes del negocio | (nada) |
+| `src/Turnero.Application` | Casos de uso, DTOs, interfaces de repositorios, mapeo (Mapster), logging | Domain |
+| `src/Turnero.Infrastructure` | EF Core (`ApplicationDbContext`), migraciones, repositorios, Firebase, monitoreo | Application |
+| `src/Turnero.Web` | Presentación MVC + Razor Pages, SignalR, ViewModels (host/composition root) | Application + Infrastructure |
+
+Reglas clave:
+
+*   Las dependencias apuntan **hacia adentro**: Presentation → Application → Domain. Infrastructure implementa las abstracciones de Application.
+*   **Registro de dependencias por capa**: `Program.cs` solo invoca `builder.Services.AddApplication()` y `builder.Services.AddInfrastructure(builder.Configuration)`. Cada capa registra sus propios servicios en su `DependencyInjection.cs` (Composition Root por capa).
+*   **Puertos de Application**: los controllers consumen abstracciones (`IRepository` interfaces, `IPatientClinicalHistoryService`, `ISystemHealthService`, `IFirebaseAuthService`) que Infrastructure implementa. Ninguna vista o controller referencia EF Core, `ApplicationDbContext`, repositorios concretos ni el SDK de Firebase.
+*   **Inyección por constructor sin Service Locator**: `TurneroBaseController` recibe sus dependencias por constructor primario y cada controller derivado las encadena con `: base(...)`. No se resuelve nada desde `HttpContext.RequestServices`.
+*   La configuración se inyecta con `IOptions<DatabaseOptions>` (sin estado estático global). Identity (usuarios/roles) se registra en `AddInfrastructure` porque su persistencia EF es infraestructura.
+*   Los ViewModels de MVC viven en `Models/` del proyecto Web, no en el dominio.
+*   Tests en `Turnero.Test/` (xUnit + Moq) sobre Application e Infrastructure.
+
   
   
 <h2>💻 Built with</h2>
@@ -78,7 +99,7 @@ $env:ConnectionStrings__LocalConnection = "Host=localhost;Port=5432;Database=tur
 $env:Firebase__CredentialsPath = "C:\secrets\firebase.json"
 $env:Authentication__ValidIssuer = "https://securetoken.google.com/your-project"
 $env:Authentication__Audience = "your-project"
-dotnet run
+dotnet run --project src/Turnero.Web
 ```
 
 Bash (Linux/macOS):
@@ -88,7 +109,7 @@ export ConnectionStrings__LocalConnection="Host=localhost;Port=5432;Database=tur
 export Firebase__CredentialsPath="/run/secrets/firebase.json"
 export Authentication__ValidIssuer="https://securetoken.google.com/your-project"
 export Authentication__Audience="your-project"
-dotnet run
+dotnet run --project src/Turnero.Web
 ```
 
 Note:

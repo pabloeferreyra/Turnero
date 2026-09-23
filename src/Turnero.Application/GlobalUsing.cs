@@ -1,0 +1,29 @@
+// Application: casos de uso. Abstracciones de caching/config del host,
+// mapeo con Mapster y referencias a Domain. Sin EF/Npgsql/ASP.NET.
+global using System.ComponentModel.DataAnnotations;
+global using System.Globalization;
+global using System.Linq.Expressions;
+global using System.Net;
+global using System.Text.Json.Serialization;
+global using Mapster;
+global using Microsoft.Extensions.Caching.Memory;
+global using Microsoft.Extensions.Options;
+global using Turnero.Domain.Common;
+global using Turnero.Domain.Constants;
+global using Turnero.Domain.Entities;
+global using Turnero.Domain.Enums;
+global using Turnero.Application.Common;
+global using Turnero.Application.Common.Interfaces;
+global using Turnero.Application.DTOs;
+global using Turnero.Application.Services.AllergiesServices;
+global using Turnero.Application.Services.CongErrorServices;
+global using Turnero.Application.Services.GrowthChartServices;
+global using Turnero.Application.Services.MedicServices;
+global using Turnero.Application.Services.ParentsDataServices;
+global using Turnero.Application.Services.PatientServices;
+global using Turnero.Application.Services.PermMedServices;
+global using Turnero.Application.Services.PerinatalBackgroundServices;
+global using Turnero.Application.Services.PersonalBackgroundServices;
+global using Turnero.Application.Services.TurnsServices;
+global using Turnero.Application.Services.VaccinesServices;
+global using Turnero.Application.Services.VisitServices;

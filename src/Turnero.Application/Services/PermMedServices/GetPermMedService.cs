@@ -1,0 +1,19 @@
+﻿namespace Turnero.Application.Services.PermMedServices;
+
+public class GetPermMedService(IPermMedRepository permMedRepository) : IGetPermMedService
+{
+    public async Task<List<PermMed>> Get(Guid patientId)
+    {
+        return await permMedRepository.GetByPatientId(patientId);
+    }
+
+    public async Task<PermMed?> GetById(Guid id)
+    {
+        return await permMedRepository.GetById(id);
+    }
+}
+public interface IGetPermMedService
+{
+    Task<List<PermMed>> Get(Guid patientId);
+    Task<PermMed?> GetById(Guid id);
+}

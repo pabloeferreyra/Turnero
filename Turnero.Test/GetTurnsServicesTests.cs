@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Moq;
-using Turnero.DAL.Models;
-using Turnero.SL.Services;
-using Turnero.SL.Services.Repositories;
-using Turnero.SL.Services.TurnsServices;
+using Turnero.Domain.Entities;
+using Turnero.Application.Common;
+using Turnero.Application.Common.Interfaces;
+using Turnero.Application.Services.TurnsServices;
 using Xunit;
 
 namespace Turnero.Test;

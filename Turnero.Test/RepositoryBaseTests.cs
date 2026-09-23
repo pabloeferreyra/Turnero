@@ -1,6 +1,6 @@
 ﻿using Moq;
 using System.Linq.Expressions;
-using Turnero.SL.Services.Repositories;
+using Turnero.Application.Common.Interfaces;
 using Xunit;
 
 namespace Turnero.Test

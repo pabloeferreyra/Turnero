@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Turnero.csproj" />
+    <ProjectReference Include="..\src\Turnero.Web\Turnero.Web.csproj" />
   </ItemGroup>
 
 </Project>

@@ -27,4 +27,4 @@ if [ "${WAIT_FOR_POSTGRES:-false}" = "true" ] && [ -n "${ConnectionStrings__Post
 fi
 
 # ── Execute the application ───────────────────────────────────────
-exec ./Turnero "$@"
+exec ./Turnero.Web "$@"

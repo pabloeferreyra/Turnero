@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Turnero.Controllers;
-using Turnero.DAL.Models;
+using Turnero.Web.Controllers;
+using Turnero.Domain.Entities;
 using Xunit;
 
 namespace Turnero.Test;
@@ -9,9 +9,17 @@ public class TurneroBaseControllerTests
 {
     /// <summary>
     /// Concrete implementation of the abstract TurneroBaseController for testing.
+    /// Las dependencias son solo de DI (no se usan en los métodos estáticos probados).
     /// </summary>
     private class TestableTurneroController : TurneroBaseController
     {
+        public TestableTurneroController() : base(
+            Mock.Of<IGetMedicsServices>(),
+            Mock.Of<IGetTimeTurnsServices>(),
+            Mock.Of<IAntiforgery>())
+        {
+        }
+
         // Expose protected static methods for testing
         public static List<SelectListItem> PublicEnumToSelectList<TEnum>(
             Func<TEnum, string>? textSelector = null) where TEnum : struct, Enum

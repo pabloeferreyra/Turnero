@@ -1,8 +1,8 @@
 using Moq;
-using Turnero.DAL.Models;
-using Turnero.SL.Services;
-using Turnero.SL.Services.Repositories;
-using Turnero.SL.Services.VisitServices;
+using Turnero.Domain.Entities;
+using Turnero.Application.Common;
+using Turnero.Application.Common.Interfaces;
+using Turnero.Application.Services.VisitServices;
 using Xunit;
 
 namespace Turnero.Test;

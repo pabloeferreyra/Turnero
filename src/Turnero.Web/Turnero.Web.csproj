@@ -1,0 +1,98 @@
+ <Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <UserSecretsId>aspnet-Turnero-1D8EA02B-D124-439A-B5F8-DE2044EFFABA</UserSecretsId>
+	  <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
+    <CopyRefAssembliesToPublishDirectory>false</CopyRefAssembliesToPublishDirectory>
+    <IsTransformWebConfigDisabled>true</IsTransformWebConfigDisabled>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <Version>3.0.1</Version>
+    <AssemblyVersion>3.0.1</AssemblyVersion>
+	  <Deterministic>False</Deterministic>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <IsPackable>true</IsPackable>
+    <Nullable>annotations</Nullable>
+    <SignAssembly>False</SignAssembly>
+	<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+	<GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+  </PropertyGroup>
+
+	<PropertyGroup>
+		<PublishReadyToRun>true</PublishReadyToRun>
+		<GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+		<Title>Turnero</Title>
+		<Company>PF Software</Company>
+		<Copyright>2023 - PF Software</Copyright>
+		<PackageProjectUrl>turnero.dev.ar</PackageProjectUrl>
+		<IncludeSymbols>True</IncludeSymbols>
+		<GenerateDocumentationFile>False</GenerateDocumentationFile>
+		<ProduceReferenceAssembly>False</ProduceReferenceAssembly>
+		<ErrorReport>send</ErrorReport>
+	</PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>False</Optimize>
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- src/Turnero.Web es el único proyecto que compila fuentes en su carpeta -->
+    <Compile Remove="Turnero.Test\**" />
+    <Content Remove="Turnero.Test\**" />
+    <EmbeddedResource Remove="Turnero.Test\**" />
+    <None Remove="Turnero.Test\**" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <PlatformTarget>x64</PlatformTarget>
+    <Optimize>False</Optimize>
+  </PropertyGroup>
+
+<ItemGroup>
+    <PackageReference Include="ClosedXML" Version="0.105.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.12" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="10.0.12" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="10.0.12" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.12" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.23.0" />
+    <PackageReference Include="QuestPDF" Version="2026.9.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Turnero.Domain\Turnero.Domain.csproj" />
+    <ProjectReference Include="..\Turnero.Application\Turnero.Application.csproj" />
+    <ProjectReference Include="..\Turnero.Infrastructure\Turnero.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <!-- Dynamically generate AssemblyInformationalVersion with Git commit hash -->
+  <Target Name="GenerateAssemblyInfoVersion" BeforeTargets="CoreCompile" Condition="'$(DesignTimeBuild)' != 'true'">
+    <Exec Command="git rev-parse HEAD" ConsoleToMSBuild="true" StandardOutputImportance="low" IgnoreExitCode="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitHash" />
+    </Exec>
+    <PropertyGroup>
+      <GitSuffix Condition="'$(GitCommitHash)' != ''">+$(GitCommitHash)</GitSuffix>
+      <FullInformationalVersion>$(Version)$(GitSuffix)</FullInformationalVersion>
+    </PropertyGroup>
+    <WriteLinesToFile
+      File="$(IntermediateOutputPath)AssemblyInfo.g.cs"
+      Lines="// &lt;auto-generated&gt;&#xd;&#xa;// Git commit: $(GitCommitHash)&#xd;&#xa;// &lt;/auto-generated&gt;&#xd;&#xa;[assembly: System.Reflection.AssemblyInformationalVersionAttribute(&quot;$(FullInformationalVersion)&quot;)]"
+      Overwrite="true" />
+    <ItemGroup>
+      <Compile Remove="$(IntermediateOutputPath)AssemblyInfo.g.cs" />
+      <Compile Include="$(IntermediateOutputPath)AssemblyInfo.g.cs" />
+    </ItemGroup>
+  </Target>
+
+</Project>
