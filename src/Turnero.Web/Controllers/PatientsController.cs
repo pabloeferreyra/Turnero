@@ -45,10 +45,8 @@ public class PatientsController(IInsertPatientService insertPatient,
     {
         if (id == null)
             return NotFound();
-        var patientTask = getPatient.GetPatientById(id.Value);
-        var parentsTask = getParents.GetParentsData(id.Value);
-        await Task.WhenAll(patientTask, parentsTask);
-        var patient = patientTask.Result;
+        var patient = await getPatient.GetPatientById(id.Value);
+        var parents = await getParents.GetParentsData(id.Value);
         if (patient == null)
         {
             return NotFoundError("Patient", id.ToString());
@@ -56,6 +54,7 @@ public class PatientsController(IInsertPatientService insertPatient,
         var model = new PatientDetailsViewModel
         {
             Patient = patient,
+            Parents = parents,
             Age = DateCalculations.CalcularEdad(patient.BirthDate)
         };
         return View("Details", model);
