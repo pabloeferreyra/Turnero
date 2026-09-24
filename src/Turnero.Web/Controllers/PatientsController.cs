@@ -46,7 +46,6 @@ public class PatientsController(IInsertPatientService insertPatient,
         if (id == null)
             return NotFound();
         var patient = await getPatient.GetPatientById(id.Value);
-        var parents = await getParents.GetParentsData(id.Value);
         if (patient == null)
         {
             return NotFoundError("Patient", id.ToString());
@@ -54,7 +53,6 @@ public class PatientsController(IInsertPatientService insertPatient,
         var model = new PatientDetailsViewModel
         {
             Patient = patient,
-            Parents = parents,
             Age = DateCalculations.CalcularEdad(patient.BirthDate)
         };
         return View("Details", model);
