@@ -58,6 +58,10 @@ public class ChangePasswordModel(
         var changePasswordResult = await firebaseService.UpdatePasswordAsync(new UserResetPasswordDTO { Email = user.Email, OldPassword = Input.OldPassword, NewPassword = Input.NewPassword });
         if (changePasswordResult != System.Net.HttpStatusCode.OK)
         {
+            var message = changePasswordResult == System.Net.HttpStatusCode.Unauthorized
+                ? "La contraseña actual es incorrecta."
+                : "No se pudo cambiar la contraseña. Intente nuevamente.";
+            ModelState.AddModelError(string.Empty, message);
             return Page();
         }
 
