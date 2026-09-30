@@ -96,6 +96,16 @@
                     catch { return null; }
                 }
 
+                bool TryGetBool(string name)
+                {
+                    try
+                    {
+                        if (!columnNames.Contains(name) || reader[name] == DBNull.Value) return false;
+                        return Convert.ToBoolean(reader[name]);
+                    }
+                    catch { return false; }
+                }
+
                 // Map commonly expected columns (defensive, case-insensitive)
                 dto.Id = TryGetGuid("Id");
                 dto.Name = TryGetString("Name");
@@ -129,7 +139,7 @@
                 dto.TimeId = TryGetGuid("TimeId");
                 dto.SocialWork = TryGetString("SocialWork");
                 dto.Reason = TryGetString("Reason");
-                dto.Accessed = false;
+                dto.Accessed = TryGetBool("Accessed");
 
                 results.Add(dto);
             }

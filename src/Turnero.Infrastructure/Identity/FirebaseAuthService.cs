@@ -141,15 +141,26 @@ public class FirebaseAuthService(
 
     public async Task<HttpStatusCode> UpdatePasswordAsync(UserResetPasswordDTO userReset)
     {
+        if (string.IsNullOrWhiteSpace(userReset.Email) || string.IsNullOrWhiteSpace(userReset.OldPassword))
+        {
+            return HttpStatusCode.BadRequest;
+        }
+
         try
         {
+            // Reautentica con la contraseña actual: si es incorrecta, Firebase no devuelve idToken.
+            var session = await LoginAsync(new UserLoginRequestDTO { Email = userReset.Email, Password = userReset.OldPassword });
+            if (string.IsNullOrWhiteSpace(session.IdToken))
+            {
+                return HttpStatusCode.Unauthorized;
+            }
+
             using var client = new HttpClient();
-            var idToken = await userManager.FindByEmailAsync(userReset.Email);
             var requestUri = configuration["Authentication:TokenReset"];
 
             var payload = new
             {
-                idToken.Id,
+                idToken = session.IdToken,
                 password = userReset.NewPassword,
                 returnSecureToken = true
             };
