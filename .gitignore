@@ -31,3 +31,4 @@ artifacts/
 .env.*
 !.env.example
 FakesAssemblies/
+$RECYCLE.BIN/*
