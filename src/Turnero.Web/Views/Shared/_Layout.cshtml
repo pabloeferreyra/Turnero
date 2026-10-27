@@ -108,6 +108,9 @@
 
                         <div class="navbar-collapse collapse" id="navbarNavAltMarkup" style="">
                             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="MercadoPagoSubscriptions" asp-action="Index">Suscripciones</a>
+                                </li>
                                 @if ((User.IsInRole(RolesConstants.Ingreso) || User.IsInRole(RolesConstants.Medico)))
                                 {
                                     <li class="nav-item">

@@ -10,6 +10,22 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         builder.Entity<Turn>()
             .Property(b => b.DateTurn)
             .HasColumnType("date");
+        builder.Entity<ApplicationSubscription>(entity =>
+        {
+            entity.Property(subscription => subscription.Amount).HasPrecision(18, 2);
+            entity.Property(subscription => subscription.UserId).HasMaxLength(450);
+            entity.Property(subscription => subscription.ExternalReference).HasMaxLength(64).IsRequired();
+            entity.Property(subscription => subscription.MercadoPagoId).HasMaxLength(128);
+            entity.Property(subscription => subscription.Status).HasMaxLength(32).IsRequired();
+            entity.Property(subscription => subscription.CurrencyId).HasMaxLength(3).IsRequired();
+            entity.Property(subscription => subscription.CheckoutUrl).HasMaxLength(2048);
+            entity.HasIndex(subscription => subscription.ExternalReference).IsUnique();
+            entity.HasIndex(subscription => subscription.MercadoPagoId).IsUnique();
+            entity.HasIndex(subscription => subscription.UserId);
+            entity.HasIndex(subscription => subscription.UserId)
+                .IsUnique()
+                .HasFilter("\"Status\" IN ('creating', 'creation_unknown', 'pending', 'authorized', 'paused')");
+        });
         builder.Entity<Patient>()
             .Property(p => p.BirthDate)
             .HasColumnType("date");
@@ -106,4 +122,5 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<PermMed> PermMeds { get; set; }
     public DbSet<GrowthChart> GrowthCharts { get; set; }
     public DbSet<CongErrors> CongErrors { get; set; }
+    public DbSet<ApplicationSubscription> ApplicationSubscriptions { get; set; }
 }

@@ -1,0 +1,81 @@
+@model MercadoPagoSubscriptionsViewModel
+@using System.Globalization
+
+@{
+    ViewData["Title"] = "Suscripciones";
+}
+
+<div class="container py-4">
+    <h1 class="h3 mb-3">Suscripción mensual</h1>
+
+    @if (TempData["Message"] is string message)
+    {
+        <div class="alert alert-info" role="status">@message</div>
+    }
+
+    <p>Precio: <strong>@Model.MonthlyAmount.ToString("N2", CultureInfo.GetCultureInfo("es-AR")) @Model.CurrencyId por mes</strong></p>
+
+    @if (Model.CanCreate)
+    {
+        <form asp-action="Create" method="post" class="mb-4">
+            <button type="submit" class="btn btn-primary">Crear suscripción</button>
+        </form>
+    }
+    else
+    {
+        <p class="text-muted">Ya hay una suscripción en curso o autorizada para tu cuenta.</p>
+    }
+
+    @if (Model.Subscriptions.Count == 0)
+    {
+        <p class="text-muted">Todavía no hay suscripciones registradas.</p>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-striped align-middle">
+                <thead>
+                    <tr>
+                        @if (Model.IsAdmin)
+                        {
+                            <th>Usuario</th>
+                        }
+                        <th>Importe</th>
+                        <th>Estado</th>
+                        <th>Alta</th>
+                        <th>Actualización</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var subscription in Model.Subscriptions)
+                    {
+                        <tr>
+                            @if (Model.IsAdmin)
+                            {
+                                <td>@subscription.UserEmail</td>
+                            }
+                            <td>@subscription.Amount.ToString("N2", CultureInfo.GetCultureInfo("es-AR")) @subscription.CurrencyId</td>
+                            <td>@subscription.Status</td>
+                            <td>@subscription.CreatedAt.ToLocalTime().ToString("g", CultureInfo.GetCultureInfo("es-AR"))</td>
+                            <td>@subscription.UpdatedAt.ToLocalTime().ToString("g", CultureInfo.GetCultureInfo("es-AR"))</td>
+                            <td class="d-flex gap-2">
+                                @if (!string.IsNullOrWhiteSpace(subscription.CheckoutUrl))
+                                {
+                                    <a class="btn btn-sm btn-outline-primary" href="@subscription.CheckoutUrl">Continuar checkout</a>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(subscription.MercadoPagoId))
+                                {
+                                    <form asp-action="Refresh" method="post">
+                                        <input type="hidden" name="id" value="@subscription.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary">Consultar Mercado Pago</button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

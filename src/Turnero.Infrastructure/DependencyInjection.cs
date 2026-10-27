@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Turnero.Infrastructure.Identity;
+using Turnero.Infrastructure.MercadoPago;
 
 namespace Turnero.Infrastructure;
 
@@ -23,6 +24,12 @@ public static class DependencyInjection
         services.Configure<DatabaseOptions>(options =>
         {
             options.PostgresConnection = connectionString;
+        });
+
+        services.Configure<MercadoPagoOptions>(configuration.GetSection("MercadoPago"));
+        services.AddHttpClient<MercadoPagoSubscriptionService>(client =>
+        {
+            client.BaseAddress = new Uri("https://api.mercadopago.com/");
         });
 
         services.AddDbContext<ApplicationDbContext>(options =>
