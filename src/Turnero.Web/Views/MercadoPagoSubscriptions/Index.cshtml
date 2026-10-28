@@ -4,7 +4,6 @@
 @{
     ViewData["Title"] = "Suscripciones";
 }
-
 <div class="back container py-4">
     <h1 class="h3 mb-3">Suscripción mensual</h1>
 
@@ -41,7 +40,7 @@
             <table class="table table-striped align-middle">
                 <thead>
                     <tr>
-                        @if (Model.IsAdmin)
+                        @if (Model.CanViewAllSubscriptions)
                         {
                             <th>Usuario</th>
                         }
@@ -56,7 +55,7 @@
                     @foreach (var subscription in Model.Subscriptions)
                     {
                         <tr>
-                            @if (Model.IsAdmin)
+                            @if (Model.CanViewAllSubscriptions)
                             {
                                 <td>@subscription.UserEmail</td>
                             }
@@ -65,7 +64,8 @@
                             <td>@subscription.CreatedAt.ToLocalTime().ToString("g", CultureInfo.GetCultureInfo("es-AR"))</td>
                             <td>@subscription.UpdatedAt.ToLocalTime().ToString("g", CultureInfo.GetCultureInfo("es-AR"))</td>
                             <td class="d-flex gap-2">
-                                @if (!string.IsNullOrWhiteSpace(subscription.CheckoutUrl))
+                               
+                                @if (string.IsNullOrWhiteSpace(subscription.MercadoPagoId))
                                 {
                                     <a class="btn btn-sm btn-outline-primary" href="@subscription.CheckoutUrl">Continuar checkout</a>
                                 }

@@ -17,10 +17,10 @@ public class MercadoPagoSubscriptionsController(
 
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
     {
-        var isAdmin = User.IsInRole(RolesConstants.Admin);
+        var canViewAllSubscriptions = await CanViewAllSubscriptionsAsync();
         var currentUserId = userManager.GetUserId(User);
         var query = db.ApplicationSubscriptions.AsNoTracking();
-        if (!isAdmin)
+        if (!canViewAllSubscriptions)
         {
             query = query.Where(subscription => subscription.UserId == currentUserId);
         }
@@ -30,7 +30,7 @@ public class MercadoPagoSubscriptionsController(
             .ToListAsync(cancellationToken);
 
         var userIds = subscriptions.Select(subscription => subscription.UserId).Distinct().ToArray();
-        var userEmails = isAdmin
+        var userEmails = canViewAllSubscriptions
             ? await userManager.Users
                 .Where(user => userIds.Contains(user.Id))
                 .ToDictionaryAsync(user => user.Id, user => user.Email ?? string.Empty, cancellationToken)
@@ -49,12 +49,12 @@ public class MercadoPagoSubscriptionsController(
         {
             MonthlyAmount = settings.MonthlyAmount,
             CurrencyId = settings.CurrencyId,
-            IsAdmin = isAdmin,
+            CanViewAllSubscriptions = canViewAllSubscriptions,
             CanCreate = !hasOpenSubscription,
             Subscriptions = subscriptions.Select(subscription => new MercadoPagoSubscriptionRowViewModel
             {
                 Id = subscription.Id,
-                UserEmail = isAdmin ? userEmails.GetValueOrDefault(subscription.UserId) : null,
+                UserEmail = canViewAllSubscriptions ? userEmails.GetValueOrDefault(subscription.UserId) : null,
                 Status = subscription.Status,
                 MercadoPagoId = subscription.MercadoPagoId,
                 CheckoutUrl = subscription.CheckoutUrl,
@@ -210,7 +210,7 @@ public class MercadoPagoSubscriptionsController(
             .SingleOrDefaultAsync(
                 record => record.ExternalReference == externalReference,
                 cancellationToken);
-        if (subscription is null || !CanManage(subscription))
+        if (subscription is null || !await CanManageAsync(subscription))
         {
             return NotFound();
         }
@@ -233,7 +233,7 @@ public class MercadoPagoSubscriptionsController(
     {
         var subscription = await db.ApplicationSubscriptions
             .SingleOrDefaultAsync(record => record.Id == id, cancellationToken);
-        if (subscription is null || !CanManage(subscription))
+        if (subscription is null || !await CanManageAsync(subscription))
         {
             return NotFound();
         }
@@ -341,8 +341,22 @@ public class MercadoPagoSubscriptionsController(
         return Ok();
     }
 
-    private bool CanManage(ApplicationSubscription subscription) =>
-        User.IsInRole(RolesConstants.Admin)
+    private async Task<bool> CanViewAllSubscriptionsAsync()
+    {
+        if (User.IsInRole(RolesConstants.Admin))
+        {
+            return true;
+        }
+
+        var user = await userManager.GetUserAsync(User);
+        return string.Equals(
+            user?.Email,
+            settings.SubscriptionViewerEmail,
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    private async Task<bool> CanManageAsync(ApplicationSubscription subscription) =>
+        await CanViewAllSubscriptionsAsync()
         || string.Equals(
             subscription.UserId,
             userManager.GetUserId(User),

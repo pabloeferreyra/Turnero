@@ -4,7 +4,7 @@ public sealed class MercadoPagoSubscriptionsViewModel
 {
     public decimal MonthlyAmount { get; init; }
     public string CurrencyId { get; init; } = "ARS";
-    public bool IsAdmin { get; init; }
+    public bool CanViewAllSubscriptions { get; init; }
     public bool CanCreate { get; init; }
     public IReadOnlyList<MercadoPagoSubscriptionRowViewModel> Subscriptions { get; init; } = [];
 }
