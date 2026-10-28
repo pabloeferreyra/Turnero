@@ -7,5 +7,4 @@ public sealed class MercadoPagoOptions
     public string PublicBaseUrl { get; set; } = string.Empty;
     public decimal MonthlyAmount { get; set; }
     public string CurrencyId { get; set; } = "ARS";
-    public string? TestPayerEmail { get; set; }
 }

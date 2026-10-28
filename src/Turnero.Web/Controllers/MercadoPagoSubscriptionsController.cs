@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Net.Http;
 using System.Text.Json;
 using Turnero.Infrastructure.Data;
@@ -10,7 +11,6 @@ public class MercadoPagoSubscriptionsController(
     UserManager<IdentityUser> userManager,
     MercadoPagoSubscriptionService mercadoPago,
     IOptions<MercadoPagoOptions> options,
-    IHostEnvironment environment,
     ILogger<MercadoPagoSubscriptionsController> logger) : Controller
 {
     private readonly MercadoPagoOptions settings = options.Value;
@@ -70,12 +70,20 @@ public class MercadoPagoSubscriptionsController(
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(CancellationToken cancellationToken)
+    public async Task<IActionResult> Create(string? payerEmail, CancellationToken cancellationToken)
     {
         var user = await userManager.GetUserAsync(User);
-        if (user is null || string.IsNullOrWhiteSpace(user.Email))
+        if (user is null)
         {
-            return BadRequest("La cuenta autenticada debe tener un correo electrónico.");
+            return BadRequest("No se pudo identificar la cuenta autenticada.");
+        }
+
+        payerEmail = payerEmail?.Trim();
+        if (string.IsNullOrWhiteSpace(payerEmail)
+            || !new EmailAddressAttribute().IsValid(payerEmail))
+        {
+            TempData["Message"] = "Ingresa un correo electrónico válido asociado a tu cuenta de Mercado Pago.";
+            return RedirectToAction(nameof(Index));
         }
 
         try
@@ -136,11 +144,6 @@ public class MercadoPagoSubscriptionsController(
             TempData["Message"] = "Ya existe una suscripción en curso o autorizada para esta cuenta.";
             return RedirectToAction(nameof(Index));
         }
-
-        var payerEmail = environment.IsDevelopment()
-            && !string.IsNullOrWhiteSpace(settings.TestPayerEmail)
-                ? settings.TestPayerEmail
-                : user.Email;
 
         try
         {

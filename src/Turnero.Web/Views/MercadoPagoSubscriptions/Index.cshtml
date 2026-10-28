@@ -5,7 +5,7 @@
     ViewData["Title"] = "Suscripciones";
 }
 
-<div class="container py-4">
+<div class="back container py-4">
     <h1 class="h3 mb-3">Suscripción mensual</h1>
 
     @if (TempData["Message"] is string message)
@@ -18,6 +18,11 @@
     @if (Model.CanCreate)
     {
         <form asp-action="Create" method="post" class="mb-4">
+            <div class="mb-3">
+                <label for="payerEmail" class="form-label">Correo de tu cuenta de Mercado Pago</label>
+                <input id="payerEmail" name="payerEmail" type="email" class="form-control"
+                       autocomplete="email" required />
+            </div>
             <button type="submit" class="btn btn-primary">Crear suscripción</button>
         </form>
     }
