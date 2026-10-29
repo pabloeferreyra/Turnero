@@ -92,6 +92,10 @@ Authentication variables used by the app:
 *   Authentication__TokenCode
 *   Authentication__TokenReset
 
+Mercado Pago:
+
+*   `MercadoPago__SubscriptionViewerEmail` (optional; email allowed to view all subscriptions)
+
 PowerShell (Windows):
 
 ```powershell
