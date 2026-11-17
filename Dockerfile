@@ -13,7 +13,11 @@ RUN dotnet publish "src/Turnero.Web/Turnero.Web.csproj" -c Release -r linux-musl
 FROM mcr.microsoft.com/dotnet/runtime-deps:10.0-alpine AS final
 WORKDIR /app
 
-# curl en Alpine via apk pesa ~2 MB (vs ~40 MB en Ubuntu), indispensable para healthchecks
+RUN apk add --no-cache \
+    curl \
+    netcat-openbsd \
+    krb5-libs
+
 # nc (netcat) se usa en wait-for-it.sh para sondear conexiones TCP
 RUN apk add --no-cache curl netcat-openbsd
 
