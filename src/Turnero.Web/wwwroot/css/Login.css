@@ -1,5 +1,5 @@
 ﻿body {
-    background: #2c698d !important;
+    background: var(--turnero-login-bg, #2c698d) !important;
 }
 
 a#help {
@@ -20,15 +20,17 @@ a#help:hover {
     max-width: 380px;
     padding: 15px 35px 45px;
     margin: 0 auto;
-    background-color: #fff;
-    border: 1px solid rgba(0,0,0,0.1);
+    background-color: var(--turnero-card-bg, #fff);
+    border: 1px solid var(--turnero-border, rgba(0,0,0,0.1));
+    color: var(--turnero-text, #272643);
 }
 
 .back {
     padding: 15px 30px 45px;
     margin: 0 auto;
-    background-color: #fff;
-    border: 1px solid rgba(0,0,0,0.1);
+    background-color: var(--turnero-card-bg, #fff);
+    border: 1px solid var(--turnero-border, rgba(0,0,0,0.1));
+    color: var(--turnero-text, #272643);
 }
 
 .form-signin-heading,

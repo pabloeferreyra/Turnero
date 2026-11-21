@@ -1,6 +1,7 @@
 ﻿.table-group-header th {
-    background: #e3f6f5;
-    border-bottom: 2px solid #bae8e8;
+    background: var(--turnero-surface, #e3f6f5);
+    border-bottom: 2px solid var(--turnero-border, #bae8e8);
+    color: var(--turnero-text, #272643);
     font-weight: 600;
     text-align: center;
 }
@@ -24,12 +25,12 @@ a.navbar-brand {
 }
 
 a {
-    color: #2c698d;
+    color: var(--turnero-link, #2c698d);
     text-decoration: none;
     transition: color var(--turnero-transition, 0.2s ease-in-out);
 }
     a:hover {
-        color: #1e4a63;
+        color: var(--turnero-link-hover, #1e4a63);
     }
 
 .Red {
@@ -51,7 +52,7 @@ input[type="password"] {
 }
 
 .btn-link, .btn-link:hover {
-    color: #272643 !important;
+    color: var(--turnero-text, #272643) !important;
 }
 
 .btn-danger {
@@ -82,10 +83,10 @@ html {
 }
 
 .border-top {
-  border-top: 1px solid #e5e5e5;
+  border-top: 1px solid var(--turnero-border, #e5e5e5);
 }
 .border-bottom {
-  border-bottom: 1px solid #e5e5e5;
+  border-bottom: 1px solid var(--turnero-border, #e5e5e5);
 }
 
 .box-shadow {
@@ -180,7 +181,7 @@ body {
 .timeline {
     position: relative;
     margin-left: 20px;
-    border-left: 3px solid rgba(44, 105, 141, 0.2);
+    border-left: 3px solid color-mix(in srgb, var(--turnero-primary-text, #2c698d), transparent 80%);
     padding-left: 20px;
 }
 
@@ -204,10 +205,10 @@ body {
 }
 
 .timeline-card {
-    background: #e3f6f5;
+    background: var(--turnero-surface, #e3f6f5);
     border-radius: 6px;
     padding: 15px;
-    border: 1px solid #bae8e8;
+    border: 1px solid var(--turnero-border, #bae8e8);
     transition: box-shadow var(--turnero-transition, 0.2s ease-in-out),
                 transform var(--turnero-transition, 0.2s ease-in-out);
 }
@@ -231,7 +232,7 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(255,255,255,0.6);
+    background: color-mix(in srgb, var(--turnero-body-bg, #fff), transparent 35%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -242,8 +243,8 @@ body {
 .tab-loading-spinner {
     width: 36px;
     height: 36px;
-    border: 4px solid #bae8e8;
-    border-top-color: #2c698d;
+    border: 4px solid var(--turnero-border, #bae8e8);
+    border-top-color: var(--turnero-primary-text, #2c698d);
     border-radius: 50%;
     animation: spin .8s linear infinite;
 }

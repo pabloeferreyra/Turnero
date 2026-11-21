@@ -597,7 +597,7 @@ AppUtils.initFlatpickr = function (selector, opts) {
         dateFormat: "Y-m-d",
         locale: "es",
         allowInput: true,
-        disableMobile: false,
+        disableMobile: opts?.disableMobile === true,
         altInput: true,
         altFormat: "d/m/Y"
     };
@@ -616,7 +616,10 @@ AppUtils.initFlatpickr = function (selector, opts) {
         ];
     }
 
-    // 👉 SOLO si se pide explícitamente
+    if (opts?.defaultDate) {
+        base.defaultDate = opts.defaultDate;
+    }
+
     if (opts?.defaultToday === true) {
         base.defaultDate = new Date();
     }

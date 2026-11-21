@@ -90,7 +90,7 @@
             const tbody = document.querySelector("#turns-body");
             if (tbody) {
                 tbody.innerHTML =
-                    '<tr><td colspan="9" class="text-danger text-center">Error cargando turnos.</td></tr>';
+                    '<tr><td colspan="10" class="text-danger text-center">Error cargando turnos.</td></tr>';
             }
         }
     }
@@ -108,7 +108,7 @@
         tbody.innerHTML = "";
 
         if (!rows.length) {
-            tbody.innerHTML = '<tr><td colspan="9" class="text-center">No hay turnos</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="10" class="text-center">No hay turnos</td></tr>';
             return;
         }
 
@@ -135,6 +135,24 @@
                 actions = `<button data-id="${d.id}" class="btn btn-primary btn-sm me-1 btn-access">Ingreso</button>`;
             }
 
+            const phone = String(d.phone ?? "");
+            const validPhone = /^[1-9]\d{9}$/.test(phone);
+            let confirmation;
+            if (validPhone && d.date && d.time) {
+                const url = new URL(`https://wa.me/549${phone}`);
+                url.searchParams.set("text", `Hola, ¿podés confirmar tu turno del ${d.date} a las ${d.time}? Gracias.`);
+                confirmation = `
+                    <a href="${escapeHTML(url.href)}" target="_blank" rel="noopener noreferrer"
+                       class="btn btn-outline-success btn-sm" aria-label="Solicitar confirmación por WhatsApp (abre una nueva pestaña)">
+                        <i class="bi bi-whatsapp" aria-hidden="true"></i> WhatsApp
+                    </a>
+                `;
+            } else {
+                confirmation = `
+                    <button type="button" class="btn btn-outline-success btn-sm" disabled>WhatsApp</button>
+                `;
+            }
+
             tbody.insertAdjacentHTML("beforeend", `
                 <tr>
                     <td${colClass}>${escapeHTML(d.name)}</td>
@@ -146,6 +164,7 @@
                     <td${colClass}>${escapeHTML(d.date)}</td>
                     <td${colClass}>${escapeHTML(d.time)}</td>
                     <td${colClass}>${actions}</td>
+                    <td${colClass}>${confirmation}</td>
                 </tr>
             `);
         });
@@ -194,10 +213,11 @@
     // EDIT TURN
     // ======================================================
     function initEditTurn() {
+        const dateInput = document.querySelector("#DateTurnEdit");
 
         AppUtils.initFlatpickr("#DateTurnEdit", {
-            minToday: true,
-            blockSundays: true
+            blockSundays: true,
+            defaultDate: dateInput?.value
         });
 
         const btn = document.querySelector("#btnEditarTurno");
@@ -220,7 +240,6 @@
             reloadTurns?.();
         }, { once: true });
     }
-
 
     // ======================================================
     // MODAL UPDATED LISTENER — decide CREATE o EDIT automáticamente

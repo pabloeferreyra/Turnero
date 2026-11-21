@@ -10,6 +10,23 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         builder.Entity<Turn>()
             .Property(b => b.DateTurn)
             .HasColumnType("date");
+        builder.Entity<Turn>()
+            .HasIndex(turn => new { turn.MedicId, turn.DateTurn, turn.TimeId })
+            .HasDatabaseName(TurnSlotConflictException.ConstraintName);
+        builder.Entity<MedicAvailability>(entity =>
+        {
+            entity.HasOne(availability => availability.Medic)
+                .WithMany()
+                .HasForeignKey(availability => availability.MedicId);
+            entity.HasOne(availability => availability.TimeFrom)
+                .WithMany()
+                .HasForeignKey(availability => availability.TimeFromId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(availability => availability.TimeTo)
+                .WithMany()
+                .HasForeignKey(availability => availability.TimeToId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
         builder.Entity<ApplicationSubscription>(entity =>
         {
             entity.Property(subscription => subscription.Amount).HasPrecision(18, 2);
@@ -110,6 +127,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<Turn> Turns { get; set; }
     public DbSet<Medic> Medics { get; set; }
+    public DbSet<MedicAvailability> MedicAvailabilities { get; set; }
     public DbSet<TimeTurn> TimeTurns { get; set; }
     public DbSet<Patient> Patients { get; set; }
     public DbSet<ContactInfo> ContactInfo { get; set; }

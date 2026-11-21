@@ -17,7 +17,7 @@ namespace Turnero.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.12")
+                .HasAnnotation("ProductVersion", "10.0.15")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -482,6 +482,41 @@ namespace Turnero.Infrastructure.Migrations
                     b.ToTable("Medics");
                 });
 
+            modelBuilder.Entity("Turnero.Domain.Entities.MedicAvailability", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly>("DateFrom")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly>("DateTo")
+                        .HasColumnType("date");
+
+                    b.Property<int>("Day")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("MedicId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TimeFromId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TimeToId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MedicId");
+
+                    b.HasIndex("TimeFromId");
+
+                    b.HasIndex("TimeToId");
+
+                    b.ToTable("MedicAvailabilities");
+                });
+
             modelBuilder.Entity("Turnero.Domain.Entities.ParentsData", b =>
                 {
                     b.Property<Guid>("Id")
@@ -782,6 +817,9 @@ namespace Turnero.Infrastructure.Migrations
                     b.Property<Guid?>("PatientId")
                         .HasColumnType("uuid");
 
+                    b.Property<long?>("Phone")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("Reason")
                         .HasColumnType("text");
 
@@ -793,11 +831,12 @@ namespace Turnero.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MedicId");
-
                     b.HasIndex("PatientId");
 
                     b.HasIndex("TimeId");
+
+                    b.HasIndex("MedicId", "DateTurn", "TimeId")
+                        .HasDatabaseName("IX_Turns_MedicId_DateTurn_TimeId");
 
                     b.ToTable("Turns");
                 });
@@ -981,6 +1020,33 @@ namespace Turnero.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Patient");
+                });
+
+            modelBuilder.Entity("Turnero.Domain.Entities.MedicAvailability", b =>
+                {
+                    b.HasOne("Turnero.Domain.Entities.Medic", "Medic")
+                        .WithMany()
+                        .HasForeignKey("MedicId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Turnero.Domain.Entities.TimeTurn", "TimeFrom")
+                        .WithMany()
+                        .HasForeignKey("TimeFromId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Turnero.Domain.Entities.TimeTurn", "TimeTo")
+                        .WithMany()
+                        .HasForeignKey("TimeToId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Medic");
+
+                    b.Navigation("TimeFrom");
+
+                    b.Navigation("TimeTo");
                 });
 
             modelBuilder.Entity("Turnero.Domain.Entities.ParentsData", b =>

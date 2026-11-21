@@ -61,6 +61,13 @@ public class TurnsRepository(ApplicationDbContext context, IMemoryCache cache, I
         return FindByCondition(e => e.MedicId == medicId && e.DateTurn.Date == date && e.TimeId == timeTurn).Any();
     }
 
+    public async Task<List<Guid>> GetBookedTimeIds(Guid medicId, DateTime date)
+    {
+        return await FindByCondition(e => e.MedicId == medicId && e.DateTurn == date)
+            .Select(e => e.TimeId)
+            .ToListAsync();
+    }
+
     public void DeleteTurn(Turn turn)
     {
         Delete(turn);
@@ -77,7 +84,18 @@ public class TurnsRepository(ApplicationDbContext context, IMemoryCache cache, I
         turn.Medic = null;
         turn.Time = null;
         turn.DateTurn = turn.DateTurn.ToUniversalTime();
-        await CreateAsync(turn);
+        try
+        {
+            await CreateAsync(turn);
+        }
+        catch (DbUpdateException exception) when (exception.InnerException is PostgresException
+        {
+            SqlState: PostgresErrorCodes.UniqueViolation,
+            ConstraintName: TurnSlotConflictException.ConstraintName
+        })
+        {
+            throw new TurnSlotConflictException();
+        }
     }
 
     public List<Turn> GetTurnsByDateRange(DateTime startDate, DateTime endDate, Guid? medicId = null)

@@ -1,4 +1,6 @@
 
+using System.Threading.RateLimiting;
+
 var builder = WebApplication.CreateBuilder(args);
 
 MapsterConfig.RegisterMappings();
@@ -131,6 +133,39 @@ builder.Services.AddAuthorizationBuilder()
     .AddPolicy("DeleteRolePolicy", policy => policy.RequireClaim("Delete Role"));
 #endregion
 
+#region CORS
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy => policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+    options.AddPolicy("PublicTurnClient", policy =>
+        policy.WithOrigins(builder.Configuration.GetSection("PublicTurnClient:AllowedOrigins").Get<string[]>() ?? [])
+            .WithMethods("GET", "POST")
+            .WithHeaders("Content-Type"));
+});
+#endregion
+
+#region Rate Limiting
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("PublicTurnCreation", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                AutoReplenishment = true,
+                PermitLimit = 5,
+                QueueLimit = 0,
+                Window = TimeSpan.FromMinutes(1)
+            }));
+    options.OnRejected = (context, _) =>
+    {
+        context.HttpContext.Response.Headers.RetryAfter = "60";
+        return ValueTask.CompletedTask;
+    };
+});
+#endregion
+
 #region Session Configuration
 builder.Services.AddSession(options =>
 {
@@ -261,13 +296,9 @@ app.UseStaticFiles(new StaticFileOptions
 app.UseStaticFiles(); // Default static files
 
 app.UseRouting();
+app.UseCors();
+app.UseRateLimiter();
 app.UseSession();
-
-// CORS should be before Authentication/Authorization
-app.UseCors(policy => policy
-    .AllowAnyOrigin()
-    .AllowAnyMethod()
-    .AllowAnyHeader());
 
 app.UseAuthentication();
 app.UseAuthorization();

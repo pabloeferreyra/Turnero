@@ -12,6 +12,7 @@ public static class DependencyInjection
     {
         // Turns
         services.AddScoped<IInsertTurnsServices, InsertTurnsServices>();
+        services.AddScoped<IPublicTurnBookingService, PublicTurnBookingService>();
         services.AddScoped<IUpdateTurnsServices, UpdateTurnsServices>();
         services.AddScoped<IGetTurnsServices, GetTurnsServices>();
         services.AddScoped<IGetTurnDTOServices, GetTurnDTOServices>();

@@ -47,8 +47,67 @@ public class TurnEditViewModel : TurnDTO
 public class TurnPublicIndexViewModel : TurnDTO
 {
     public List<MedicDto>? Medics { get; set; }
+    public List<TimeTurn>? Times { get; set; }
 
     public SelectList MedicSelectList => new(Medics ?? [], "Id", "Name");
+    public SelectList TimeSelectList => new(Times ?? [], "Id", "Time");
+}
+
+/// <summary>
+/// Turns/Availability: availability schedule form and dropdown data.
+/// </summary>
+public class TurnAvailabilityViewModel
+{
+    [Required, Display(Name = "Médico")]
+    public Guid? MedicId { get; set; }
+
+    [Required, Display(Name = "Desde")]
+    public DateOnly? DateFrom { get; set; }
+
+    [Required, Display(Name = "Hasta")]
+    public DateOnly? DateTo { get; set; }
+
+    public List<TurnAvailabilityDayViewModel> Days { get; set; } = CreateWeek();
+    public List<MedicDto> Medics { get; set; } = [];
+    public List<TimeTurn> Times { get; set; } = [];
+
+    public SelectList MedicSelectList => new(Medics, "Id", "Name");
+    public SelectList TimeSelectList => new(Times, "Id", "Time");
+
+    private static List<TurnAvailabilityDayViewModel> CreateWeek()
+    {
+        return
+        [
+            new(DayOfWeek.Monday, "Lunes"),
+            new(DayOfWeek.Tuesday, "Martes"),
+            new(DayOfWeek.Wednesday, "Miércoles"),
+            new(DayOfWeek.Thursday, "Jueves"),
+            new(DayOfWeek.Friday, "Viernes"),
+            new(DayOfWeek.Saturday, "Sábado"),
+            new(DayOfWeek.Sunday, "Domingo", true)
+        ];
+    }
+}
+
+public class TurnAvailabilityDayViewModel
+{
+    public TurnAvailabilityDayViewModel()
+    {
+    }
+
+    public TurnAvailabilityDayViewModel(DayOfWeek day, string name, bool isUnavailable = false)
+    {
+        Day = day;
+        Name = name;
+        IsUnavailable = isUnavailable;
+    }
+
+    public DayOfWeek Day { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public Guid? AvailabilityId { get; set; }
+    public bool IsUnavailable { get; set; }
+    public Guid? TimeFromId { get; set; }
+    public Guid? TimeToId { get; set; }
 }
 
 /// <summary>

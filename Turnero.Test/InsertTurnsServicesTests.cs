@@ -65,4 +65,15 @@ public class InsertTurnsServicesTests
         _loggerMock.Verify(logger => logger.Log(It.IsAny<string>()), Times.Once);
         Assert.False(result);
     }
+
+    [Fact]
+    public async Task CreateTurnAsync_ShouldPropagateSlotConflict()
+    {
+        _turnRepositoryMock
+            .Setup(repo => repo.CreateTurn(It.IsAny<Turn>()))
+            .ThrowsAsync(new TurnSlotConflictException());
+
+        await Assert.ThrowsAsync<TurnSlotConflictException>(
+            () => _insertTurnsServices.CreateTurnAsync(turn));
+    }
 }

@@ -289,7 +289,7 @@ public class PatientsController(IInsertPatientService insertPatient,
     }
 
     [HttpDelete, ActionName("Delete")]
-    [Authorize(Roles = RolesConstants.Admin + ", " + RolesConstants.Medico)]
+    [Authorize(Roles = $"{RolesConstants.Admin}, {RolesConstants.Medico}")]
     [ValidateAntiForgeryToken]
     public async Task<StatusCodeResult> DeletePatient(Guid id)
     {

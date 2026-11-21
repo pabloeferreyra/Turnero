@@ -14,7 +14,7 @@ public class TurnsController(UserManager<IdentityUser> userManager,
     // Nota: getMedics se captura acá y en la base; la base lo expone como GetMedics.
     private IGetMedicsServices MedicsServices { get; } = getMedics;
 
-    [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
+    [Authorize(Roles = $"{RolesConstants.Ingreso}, {RolesConstants.Medico}")]
     public async Task<IActionResult> Index()
     {
         var medicIdTask = CheckMedic();
@@ -31,7 +31,7 @@ public class TurnsController(UserManager<IdentityUser> userManager,
         return View(model);
     }
 
-    [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
+    [Authorize(Roles = $"{RolesConstants.Ingreso}, {RolesConstants.Medico}")]
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> InitializeTurns()
@@ -108,7 +108,7 @@ public class TurnsController(UserManager<IdentityUser> userManager,
     }
 
 
-    [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
+    [Authorize(Roles = $"{RolesConstants.Ingreso}, {RolesConstants.Medico}")]
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(TurnDTO turn)
@@ -275,7 +275,7 @@ public class TurnsController(UserManager<IdentityUser> userManager,
         return Conflict();
     }
 
-    [Authorize(Roles = RolesConstants.Admin + ", " + RolesConstants.Ingreso)]
+    [Authorize(Roles = $"{RolesConstants.Admin}, {RolesConstants.Ingreso}")]
     [HttpDelete, ActionName("Delete")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(Guid id)
@@ -291,7 +291,7 @@ public class TurnsController(UserManager<IdentityUser> userManager,
         return Ok();
     }
 
-    [Authorize(Roles = RolesConstants.Admin + ", " + RolesConstants.Ingreso)]
+    [Authorize(Roles = $"{RolesConstants.Admin}, {RolesConstants.Ingreso}")]
     private async Task<List<TurnDTO>> GetFilteredTurns()
     {
         var medicId = await CheckMedic();
@@ -311,7 +311,7 @@ public class TurnsController(UserManager<IdentityUser> userManager,
     public bool CheckTurn(Guid medicId, DateTime date, Guid timeTurn)
     {
         return getTurns.CheckTurn(medicId, date, timeTurn);
-    }    [Authorize(Roles = RolesConstants.Ingreso + ", " + RolesConstants.Medico)]
+    }    [Authorize(Roles = $"{RolesConstants.Ingreso}, {RolesConstants.Medico}")]
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ExportExcel()
@@ -400,5 +400,194 @@ public class TurnsController(UserManager<IdentityUser> userManager,
         }).GeneratePdf();
 
         return File(pdf, "application/pdf", "turnos.pdf");
+    }
+
+    [Authorize(Roles = $"{RolesConstants.Ingreso}")]
+    [HttpGet]
+    public async Task<IActionResult> Availability(Guid? medicId)
+    {
+        var medicsTask = GetCachedMedicsAsync();
+        var timesTask = GetCachedTimeTurnsAsync();
+        await Task.WhenAll(medicsTask, timesTask);
+
+        if (medicId.HasValue)
+        {
+            if (!getMedics.ExistMedic(medicId.Value))
+            {
+                return NotFound(new { error = "El médico seleccionado no existe." });
+            }
+
+            var today = DateOnly.FromDateTime(DateTime.Today);
+            var schedule = (await getMedics.GetAvailabilities(medicId.Value))
+                .Where(availability => availability.DateTo >= today)
+                .GroupBy(availability => new
+                {
+                    availability.DateFrom,
+                    availability.DateTo
+                })
+                .OrderByDescending(group => group.Key.DateTo)
+                .ThenByDescending(group => group.Key.DateFrom)
+                .FirstOrDefault();
+
+            if (schedule is null)
+            {
+                return Ok(new { hasData = false });
+            }
+
+            var days = new TurnAvailabilityViewModel().Days;
+            foreach (var day in days)
+            {
+                day.IsUnavailable = true;
+            }
+
+            foreach (var availability in schedule)
+            {
+                var day = days.First(item => item.Day == availability.Day);
+                day.AvailabilityId = availability.Id;
+                day.TimeFromId = availability.TimeFromId;
+                day.TimeToId = availability.TimeToId;
+                day.IsUnavailable = false;
+            }
+
+            return Ok(new
+            {
+                hasData = true,
+                dateFrom = schedule.Key.DateFrom.ToString("yyyy-MM-dd"),
+                dateTo = schedule.Key.DateTo.ToString("yyyy-MM-dd"),
+                days = days.Select(day => new
+                {
+                    day = (int)day.Day,
+                    availabilityId = day.AvailabilityId,
+                    timeFromId = day.TimeFromId,
+                    timeToId = day.TimeToId,
+                    isUnavailable = day.IsUnavailable
+                })
+            });
+        }
+
+        return PartialView("_Availability", new TurnAvailabilityViewModel
+        {
+            Medics = medicsTask.Result,
+            Times = timesTask.Result
+        });
+    }
+    [Authorize(Roles = $"{RolesConstants.Ingreso}")]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Availability(TurnAvailabilityViewModel model)
+    {
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        if (model.DateTo < today)
+        {
+            ModelState.AddModelError(nameof(model.DateTo), "La fecha final no puede ser anterior a hoy.");
+        }
+
+        if (model.DateFrom > model.DateTo)
+        {
+            ModelState.AddModelError(nameof(model.DateTo), "La fecha final debe ser igual o posterior a la inicial.");
+        }
+
+        if (model.Days.Count != 7
+            || model.Days.Select(day => day.Day).Distinct().Count() != 7)
+        {
+            ModelState.AddModelError(nameof(model.Days), "La disponibilidad semanal no es válida.");
+        }
+
+        var submittedIds = model.Days
+            .Where(day => day.AvailabilityId.HasValue && day.AvailabilityId != Guid.Empty)
+            .Select(day => day.AvailabilityId!.Value)
+            .ToList();
+        if (submittedIds.Count != submittedIds.Distinct().Count())
+        {
+            ModelState.AddModelError(nameof(model.Days), "La disponibilidad semanal contiene registros duplicados.");
+        }
+
+        var medicExists = model.MedicId is Guid medicId && getMedics.ExistMedic(medicId);
+        if (model.MedicId.HasValue && !medicExists)
+        {
+            ModelState.AddModelError(nameof(model.MedicId), "El médico seleccionado no existe.");
+        }
+
+        if (model.DateFrom < today)
+        {
+            var existing = medicExists
+                ? await getMedics.GetAvailabilities(model.MedicId!.Value)
+                : [];
+            var hasExistingStart = existing.Any(availability =>
+                availability.DateFrom == model.DateFrom
+                && availability.DateTo >= today
+                && model.Days.Any(day => day.AvailabilityId == availability.Id && day.Day == availability.Day));
+            if (!hasExistingStart)
+            {
+                ModelState.AddModelError(nameof(model.DateFrom), "La fecha inicial no puede ser anterior a hoy.");
+            }
+        }
+
+        var availableDays = model.Days.Where(day => !day.IsUnavailable).ToList();
+        if (availableDays.Count == 0)
+        {
+            ModelState.AddModelError(nameof(model.Days), "Seleccione horarios para al menos un día.");
+        }
+
+        var times = await GetCachedTimeTurnsAsync();
+        var timesById = times.ToDictionary(time => time.Id);
+        for (var i = 0; i < model.Days.Count; i++)
+        {
+            var day = model.Days[i];
+            if (day.IsUnavailable)
+            {
+                continue;
+            }
+
+            if (day.TimeFromId is null || day.TimeToId is null)
+            {
+                ModelState.AddModelError($"Days[{i}]", $"Complete los horarios de {day.Name}.");
+                continue;
+            }
+
+            if (!timesById.TryGetValue(day.TimeFromId.Value, out var timeFrom)
+                || !timesById.TryGetValue(day.TimeToId.Value, out var timeTo))
+            {
+                ModelState.AddModelError($"Days[{i}]", $"El horario de {day.Name} no existe.");
+                continue;
+            }
+
+            if (string.Compare(timeFrom.Time, timeTo.Time, StringComparison.Ordinal) >= 0)
+            {
+                ModelState.AddModelError($"Days[{i}]", $"El horario final de {day.Name} debe ser posterior al inicial.");
+            }
+        }
+
+        if (!ModelState.IsValid)
+        {
+            var medicsTask = GetCachedMedicsAsync();
+            await medicsTask;
+
+            model.Medics = medicsTask.Result;
+            model.Times = times;
+
+            return UnprocessableEntity(ModelState);
+        }
+
+        var availabilities = availableDays.Select(day => new MedicAvailability
+        {
+            MedicId = model.MedicId!.Value,
+            DateFrom = model.DateFrom!.Value,
+            DateTo = model.DateTo!.Value,
+            Day = day.Day,
+            Id = day.AvailabilityId ?? Guid.Empty,
+            TimeFromId = day.TimeFromId!.Value,
+            TimeToId = day.TimeToId!.Value
+        }).ToList();
+
+        var unavailableIds = model.Days
+            .Where(day => day.IsUnavailable && day.AvailabilityId.HasValue)
+            .Select(day => day.AvailabilityId!.Value)
+            .Where(id => id != Guid.Empty)
+            .ToList();
+
+        await getMedics.SaveAvailabilities(model.MedicId!.Value, availabilities, unavailableIds);
+
+        return Ok(new { message = "Disponibilidad guardada correctamente." });
     }
 }

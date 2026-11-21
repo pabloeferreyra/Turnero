@@ -12,6 +12,10 @@ public class InsertTurnsServices(LoggerService logger, ITurnRepository turnRepos
             await _turnRepository.CreateTurn(turn);
             return true;
         }
+        catch (TurnSlotConflictException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _logger.Log(ex.Message);
@@ -23,4 +27,9 @@ public class InsertTurnsServices(LoggerService logger, ITurnRepository turnRepos
 public interface IInsertTurnsServices
 {
     Task<bool> CreateTurnAsync(Turn turn);
+}
+
+public sealed class TurnSlotConflictException() : Exception("El horario ya fue reservado.")
+{
+    public const string ConstraintName = "IX_Turns_MedicId_DateTurn_TimeId";
 }

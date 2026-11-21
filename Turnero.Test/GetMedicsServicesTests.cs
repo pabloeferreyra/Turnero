@@ -111,4 +111,66 @@ public class GetMedicsServicesTests
         Assert.Single(result);
         Assert.Equal("Medic1", result[0].Name);
     }
+
+    [Fact]
+    public async Task GetAvailability_ReturnsMatchingResults()
+    {
+        var medicId = Guid.NewGuid();
+        var date = new DateOnly(2026, 11, 16);
+        var availability = new List<MedicAvailability>
+        {
+            new() { MedicId = medicId, DateFrom = date, DateTo = date, Day = date.DayOfWeek }
+        };
+        _medicRepositoryMock.Setup(repo => repo.GetAvailability(medicId, date))
+            .ReturnsAsync(availability);
+
+        var result = await _getMedicsServices.GetAvailability(medicId, date);
+
+        Assert.Same(availability, result);
+    }
+
+    [Fact]
+    public async Task GetAvailability_PropagatesRepositoryFailures()
+    {
+        var medicId = Guid.NewGuid();
+        var date = new DateOnly(2026, 11, 16);
+        _medicRepositoryMock.Setup(repo => repo.GetAvailability(medicId, date))
+            .ThrowsAsync(new InvalidOperationException("Database unavailable"));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _getMedicsServices.GetAvailability(medicId, date));
+        _loggerMock.Verify(logger => logger.Log("Database unavailable"), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetAvailabilities_ReturnsMedicSchedule()
+    {
+        var medicId = Guid.NewGuid();
+        var availability = new List<MedicAvailability>
+        {
+            new() { MedicId = medicId, Day = DayOfWeek.Monday }
+        };
+        _medicRepositoryMock.Setup(repo => repo.GetAvailabilities(medicId))
+            .ReturnsAsync(availability);
+
+        var result = await _getMedicsServices.GetAvailabilities(medicId);
+
+        Assert.Same(availability, result);
+    }
+
+    [Fact]
+    public async Task SaveAvailabilities_PersistsCreatedUpdatedAndUnavailableEntries()
+    {
+        var medicId = Guid.NewGuid();
+        var availabilities = new List<MedicAvailability>
+        {
+            new() { MedicId = medicId, Day = DayOfWeek.Monday }
+        };
+        var unavailableIds = new List<Guid> { Guid.NewGuid() };
+
+        await _getMedicsServices.SaveAvailabilities(medicId, availabilities, unavailableIds);
+
+        _medicRepositoryMock.Verify(repo =>
+            repo.SaveAvailabilities(medicId, availabilities, unavailableIds), Times.Once);
+    }
 }

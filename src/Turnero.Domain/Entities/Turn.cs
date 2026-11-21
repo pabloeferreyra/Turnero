@@ -32,6 +32,9 @@ public class Turn
 
     [Display(Name = "Ingresado")]
     public bool Accessed { get; set; }
+
+    [Display(Name = "Teléfono")]
+    public long? Phone { get; set; }
 }
 
 public class TurnDTO
@@ -55,4 +58,6 @@ public class TurnDTO
     [Display(Name = "Ingresado")]
     public bool Accessed { get; set; }
     public bool? IsMedic { get; set; }
+    [Display(Name = "Teléfono")]
+    public long? Phone { get; set; }
 }

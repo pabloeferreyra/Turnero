@@ -55,10 +55,38 @@
 
     // ─── Color palette (matching site.theme.css) ──────────────
     const CHART_COLORS = [
-        '#2c698d', '#bae8e8', '#272643', '#5a8fb0',
-        '#96d4d4', '#3a3960', '#4d4c7d', '#a9d1e1',
+        '#2c698d', '#bae8e8', '#7c83e7', '#5a8fb0',
+        '#96d4d4', '#6372a7', '#717eb0', '#a9d1e1',
         '#d4e8f0', '#e6f9f9', '#6b9fbf', '#7ab8c8',
     ];
+
+    function getThemeColor(property) {
+        return getComputedStyle(document.documentElement).getPropertyValue(property).trim();
+    }
+
+    function syncChartTheme() {
+        if (typeof Chart === 'undefined') return;
+
+        const textColor = getThemeColor('--turnero-text');
+        const borderColor = getThemeColor('--turnero-border');
+        Chart.defaults.color = textColor;
+        Chart.defaults.borderColor = borderColor;
+        Chart.defaults.plugins.legend.labels.color = textColor;
+        Chart.defaults.scale.grid.color = borderColor;
+
+        Object.values(Chart.instances).forEach(chart => {
+            chart.options.color = textColor;
+            Object.values(chart.options.scales ?? {}).forEach(scale => {
+                if (scale.ticks) scale.ticks.color = textColor;
+                if (scale.grid) scale.grid.color = borderColor;
+                if (scale.border) scale.border.color = borderColor;
+            });
+            chart.update('none');
+        });
+    }
+
+    document.addEventListener('turnero:themechange', syncChartTheme);
+    document.addEventListener('DOMContentLoaded', syncChartTheme);
 
     // ─── DOM ready ────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', () => {
@@ -287,7 +315,7 @@
                             stepSize: Math.max(1, Math.ceil(maxCount / 5)),
                             font: { size: 11 },
                         },
-                        grid: { color: 'rgba(0,0,0,0.06)' },
+                        grid: { color: getThemeColor('--turnero-border') },
                     },
                 },
                 animation: { duration: 600, easing: 'easeOutQuart' },
@@ -328,7 +356,7 @@
                     data: [accessed, pending],
                     backgroundColor: ['#28a745', '#ffc107'],
                     borderWidth: 3,
-                    borderColor: '#fff',
+                    borderColor: getThemeColor('--turnero-surface'),
                     hoverOffset: 8,
                 }]
             },
@@ -394,7 +422,7 @@
                             stepSize: Math.max(1, Math.ceil(maxCount / 5)),
                             font: { size: 11 },
                         },
-                        grid: { color: 'rgba(0,0,0,0.06)' },
+                        grid: { color: getThemeColor('--turnero-border') },
                     },
                     y: {
                         grid: { display: false },
@@ -455,7 +483,7 @@
                             stepSize: Math.max(1, Math.ceil(maxCount / 5)),
                             font: { size: 11 },
                         },
-                        grid: { color: 'rgba(0,0,0,0.06)' },
+                        grid: { color: getThemeColor('--turnero-border') },
                     },
                 },
                 animation: { duration: 600, easing: 'easeOutQuart' },
@@ -523,7 +551,7 @@
                         stacked: false,
                         beginAtZero: true,
                         ticks: { stepSize: 1, font: { size: 11 } },
-                        grid: { color: 'rgba(0,0,0,0.06)' },
+                        grid: { color: getThemeColor('--turnero-border') },
                     },
                 },
                 animation: { duration: 700, easing: 'easeOutQuart' },
@@ -652,7 +680,7 @@
                             stepSize: Math.max(1, Math.ceil(Math.max(...totals) / 6)),
                             font: { size: 11 },
                         },
-                        grid: { color: 'rgba(0,0,0,0.06)' },
+                        grid: { color: getThemeColor('--turnero-border') },
                     },
                 },
                 animation: { duration: 800, easing: 'easeOutQuart' },
@@ -711,7 +739,7 @@
                 <td>${maHtml}</td>
                 <td>${w.accessed > 0 ? `<span class="badge bg-success">${w.accessed}</span>` : '<span class="text-muted">0</span>'}</td>
                 <td>${w.pending > 0 ? `<span class="badge bg-warning text-dark">${w.pending}</span>` : '<span class="text-muted">0</span>'}</td>
-                <td class="fw-bold" style="color: #272643;">${w.avgPerDay}</td>
+                <td class="fw-bold" style="color: var(--turnero-text);">${w.avgPerDay}</td>
                 <td>${w.daysInRange}</td>
                 <td>${escapeHtml(w.busiestDay)} <span class="badge bg-info text-dark">${w.busiestDayCount}</span></td>
             </tr>`;
@@ -769,7 +797,7 @@
                 <td>${maHtml}</td>
                 <td>${m.accessed > 0 ? `<span class="badge bg-success">${m.accessed}</span>` : '<span class="text-muted">0</span>'}</td>
                 <td>${m.pending > 0 ? `<span class="badge bg-warning text-dark">${m.pending}</span>` : '<span class="text-muted">0</span>'}</td>
-                <td class="fw-bold" style="color: #272643;">${m.avgPerDay}</td>
+                <td class="fw-bold" style="color: var(--turnero-text);">${m.avgPerDay}</td>
                 <td>${m.daysInRange}</td>
                 <td>${escapeHtml(m.busiestDay)} <span class="badge bg-info text-dark">${m.busiestDayCount}</span></td>
             </tr>`;

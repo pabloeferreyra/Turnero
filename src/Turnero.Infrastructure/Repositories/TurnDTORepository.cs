@@ -140,7 +140,7 @@
                 dto.SocialWork = TryGetString("SocialWork");
                 dto.Reason = TryGetString("Reason");
                 dto.Accessed = TryGetBool("Accessed");
-
+                dto.Phone = TryGetLong("Phone");
                 results.Add(dto);
             }
 

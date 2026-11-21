@@ -1,0 +1,74 @@
+@model TurnAvailabilityViewModel
+
+<form id="AvailabilityForm" asp-controller="Turns" asp-action="Availability" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="modal-body row">
+        <div class="form-group col-md-12 col-sm-12">
+            <label asp-for="MedicId" class="control-label"></label>
+            <select asp-for="MedicId"
+                    id="availabilityMedicId"
+                    class="form-control"
+                    asp-items="Model.MedicSelectList">
+                <option value="" selected disabled>== Seleccione un profesional ==</option>
+            </select>
+            <span asp-validation-for="MedicId" class="text-danger"></span>
+        </div>
+
+        <div class="form-group col-md-6 col-sm-12">
+            <label asp-for="DateFrom" class="control-label"></label>
+            <input asp-for="DateFrom" id="availabilityDateFrom" type="text" class="form-control" autocomplete="off" />
+            <span asp-validation-for="DateFrom" class="text-danger"></span>
+        </div>
+
+        <div class="form-group col-md-6 col-sm-12">
+            <label asp-for="DateTo" class="control-label"></label>
+            <input asp-for="DateTo" id="availabilityDateTo" type="text" class="form-control" autocomplete="off" />
+            <span asp-validation-for="DateTo" class="text-danger"></span>
+        </div>
+
+        <div class="col-12">
+            <fieldset>
+                <legend>Horarios por día</legend>
+                @for (var i = 0; i < Model.Days.Count; i++)
+                {
+                    <div class="row align-items-end border-bottom py-2" data-availability-day="@((int)Model.Days[i].Day)">
+                        <input asp-for="Days[i].Day" type="hidden" />
+                        <input asp-for="Days[i].Name" type="hidden" />
+                        <input asp-for="Days[i].AvailabilityId" type="hidden" class="availability-id" />
+
+                        <div class="form-group col-md-2 col-sm-12">
+                            <strong>@Model.Days[i].Name</strong>
+                        </div>
+                        <div class="form-group col-md-4 col-sm-12">
+                            <label asp-for="Days[i].TimeFromId">Desde</label>
+                            <select asp-for="Days[i].TimeFromId"
+                                    class="form-control availability-time"
+                                    asp-items="Model.TimeSelectList">
+                                <option value="">Seleccione</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-4 col-sm-12">
+                            <label asp-for="Days[i].TimeToId">Hasta</label>
+                            <select asp-for="Days[i].TimeToId"
+                                    class="form-control availability-time"
+                                    asp-items="Model.TimeSelectList">
+                                <option value="">Seleccione</option>
+                            </select>
+                        </div>
+                        <div class="form-check col-md-2 col-sm-12 pb-2">
+                            <input asp-for="Days[i].IsUnavailable"
+                                   class="form-check-input availability-unavailable" />
+                            <label asp-for="Days[i].IsUnavailable" class="form-check-label">
+                                No disponible
+                            </label>
+                        </div>
+                    </div>
+                }
+            </fieldset>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        <button type="submit" id="btnAvailability" class="btn btn-primary">Guardar disponibilidad</button>
+    </div>
+</form>

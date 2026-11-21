@@ -12,6 +12,7 @@ global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.AspNetCore.Mvc.Authorization;
 global using Microsoft.AspNetCore.Mvc.RazorPages;
 global using Microsoft.AspNetCore.Mvc.Rendering;
+global using Microsoft.AspNetCore.RateLimiting;
 global using Microsoft.AspNetCore.ResponseCompression;
 global using Microsoft.AspNetCore.SignalR;
 global using Microsoft.EntityFrameworkCore;

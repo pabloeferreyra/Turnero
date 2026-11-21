@@ -33,6 +33,7 @@ public interface ITurnRepository
     Task<TurnDTO> GetDTOById(Guid id);
     bool TurnExists(Guid id);
     bool CheckTurn(Guid medicId, DateTime date, Guid timeTurn);
+    Task<List<Guid>> GetBookedTimeIds(Guid medicId, DateTime date);
     void Access(Turn turn);
     void DeleteTurn(Turn turn);
     void UpdateTurn(Turn turn);
@@ -75,6 +76,13 @@ public interface IMedicRepository
     Task UpdateMedic(Medic medic);
     Task<List<MedicDto>> GetCachedMedics();
     void InvalidateCachedMedics();
+    Task<List<MedicAvailability>> GetAvailability(Guid id, DateOnly date);
+    Task<List<MedicAvailability>> GetAvailabilities(Guid id);
+    Task CreateAvailability(MedicAvailability availability);
+    Task SaveAvailabilities(
+        Guid medicId,
+        IReadOnlyCollection<MedicAvailability> availabilities,
+        IReadOnlyCollection<Guid> unavailableIds);
 }
 
 public interface IPatientRepository

@@ -65,6 +65,61 @@ public class GetMedicsServices(LoggerService logger, IMedicRepository medicRepos
         }
     }
 
+    public async Task<List<MedicAvailability>> GetAvailability(Guid id, DateOnly date)
+    {
+        try
+        {
+            return await _medicRepository.GetAvailability(id, date);
+        }
+        catch (Exception ex)
+        {
+            _logger.Log(ex.Message);
+            throw;
+        }
+    }
+
+    public async Task<List<MedicAvailability>> GetAvailabilities(Guid id)
+    {
+        try
+        {
+            return await _medicRepository.GetAvailabilities(id);
+        }
+        catch (Exception ex)
+        {
+            _logger.Log(ex.Message);
+            throw;
+        }
+    }
+
+    public async Task CreateAvailability(MedicAvailability availability)
+    {
+        try
+        {
+            await _medicRepository.CreateAvailability(availability);
+        }
+        catch (Exception ex)
+        {
+            _logger.Log(ex.Message);
+            throw;
+        }
+    }
+
+    public async Task SaveAvailabilities(
+        Guid medicId,
+        IReadOnlyCollection<MedicAvailability> availabilities,
+        IReadOnlyCollection<Guid> unavailableIds)
+    {
+        try
+        {
+            await _medicRepository.SaveAvailabilities(medicId, availabilities, unavailableIds);
+        }
+        catch (Exception ex)
+        {
+            _logger.Log(ex.Message);
+            throw;
+        }
+    }
+
     public bool ExistMedic(Guid id)
     {
         try
@@ -101,4 +156,11 @@ public interface IGetMedicsServices
     Task<Medic?> GetMedicByUserId(string id);
     bool ExistMedic(Guid id);
     Task<List<MedicDto>> GetCachedMedics();
+    Task<List<MedicAvailability>> GetAvailability(Guid id, DateOnly date);
+    Task<List<MedicAvailability>> GetAvailabilities(Guid id);
+    Task CreateAvailability(MedicAvailability availability);
+    Task SaveAvailabilities(
+        Guid medicId,
+        IReadOnlyCollection<MedicAvailability> availabilities,
+        IReadOnlyCollection<Guid> unavailableIds);
 }
