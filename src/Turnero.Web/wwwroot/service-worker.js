@@ -74,6 +74,7 @@ self.addEventListener('fetch', function (event) {
   if (event.request.method !== 'GET') return;
 
   const url = new URL(event.request.url);
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
 
   // ── Estrategia Cache-First para activos estáticos ────────────────────────
   if (isStaticAsset(url)) {
