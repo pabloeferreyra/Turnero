@@ -42,7 +42,9 @@ public class PublicTurnBookingServiceTests
     [Theory]
     [InlineData("09:00", PublicTurnBookingResult.Created)]
     [InlineData("11:30", PublicTurnBookingResult.Created)]
+    [InlineData("11:59", PublicTurnBookingResult.Created)]
     [InlineData("12:00", PublicTurnBookingResult.Unavailable)]
+    [InlineData("12:01", PublicTurnBookingResult.Unavailable)]
     [InlineData("08:59", PublicTurnBookingResult.Unavailable)]
     public async Task RespectsAvailabilityBoundaries(string selected, PublicTurnBookingResult expected)
     {

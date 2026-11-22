@@ -34,7 +34,7 @@ public sealed class PublicTurnBookingService(
         return (await times.GetList())
             .Select(time => (Time: time, Value: ParseTime(time)))
             .Where(item => !booked.Contains(item.Time.Id)
-                && ranges.Any(range => item.Value >= range.Start && item.Value <= range.End))
+                && ranges.Any(range => item.Value >= range.Start && item.Value < range.End))
             .OrderBy(item => item.Value)
             .Select(item => item.Time)
             .ToList();
@@ -50,7 +50,7 @@ public sealed class PublicTurnBookingService(
 
         var selectedTime = ParseTime(time);
         var ranges = GetRanges(await medics.GetAvailability(turn.MedicId, date));
-        var withinAvailability = ranges.Any(range => selectedTime >= range.Start && selectedTime <= range.End);
+        var withinAvailability = ranges.Any(range => selectedTime >= range.Start && selectedTime < range.End);
 
         if (!withinAvailability || turns.CheckTurn(turn.MedicId, turn.DateTurn, turn.TimeId))
         {
