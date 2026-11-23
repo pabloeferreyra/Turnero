@@ -3,15 +3,23 @@
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
 
-<div class="d-flex align-items-center mb-2">
-    <div class="me-2">
+<div class="agenda-toolbar d-flex align-items-center mb-3">
+    <div>
         <button id="btnExportExcel" class="btn btn-outline-primary">Exportar Excel</button>
     </div>
-    <div class="me-2">
+    <div>
         <button id="btnExportPdf" class="btn btn-outline-primary">Exportar PDF</button>
     </div>
-    <div class="ms-auto d-flex align-items-center">
-        <label class="me-2 mb-0">Mostrar:</label>
+    <div class="btn-group" role="group" aria-label="Vista de turnos">
+        <button type="button" class="btn btn-outline-primary active" id="btnAgendaView" aria-pressed="true">
+            <i class="bi bi-calendar3 me-1" aria-hidden="true"></i>Agenda
+        </button>
+        <button type="button" class="btn btn-outline-primary" id="btnTableView" aria-pressed="false">
+            <i class="bi bi-table me-1" aria-hidden="true"></i>Tabla
+        </button>
+    </div>
+    <div class="agenda-page-size d-flex align-items-center">
+        <label class="mb-0">Mostrar:</label>
         <select id="pageSize" class="form-select form-select-sm" style="width: auto">
             <option value="25">25 filas</option>
             <option value="50">50 filas</option>
@@ -20,7 +28,15 @@
         </select>
     </div>
 </div>
-<div class="table-responsive">
+<div class="agenda-heading">
+    <div>
+        <span class="agenda-heading__eyebrow">Agenda del día</span>
+        <h2 id="agendaDateTitle">Turnos</h2>
+    </div>
+    <span id="agendaCount" class="agenda-count" aria-live="polite">0 turnos</span>
+</div>
+<div id="turns-agenda" class="turns-agenda" role="region" aria-labelledby="agendaDateTitle"></div>
+<div class="table-responsive" hidden>
     <table id="turns" class="table">
         <thead>
             <tr>

@@ -26,11 +26,10 @@
 </script>
 <input type="hidden" name="patientId" id="patientId" value="@Model.Patient.Id" />
 
-<div class="back container-fluid">
+<div class="back container-fluid patient-profile">
 
- 
-    <div class="row">
-        <div class="col-md-3 col-sm-12 btn-group" role="group">
+    <div class="patient-profile__toolbar">
+        <div class="patient-profile__actions" role="group" aria-label="Acciones del paciente">
             <a href="@Url.Action("Pdf", "Patients", new { id = p.Id })"
                target="_blank"
                class="btn btn-sm btn-secondary me-1">
@@ -45,7 +44,7 @@
             </button>
         </div>
 
-        <div class="col-md-6 col-sm-12 btn-group ms-auto" role="group" style="text-align:right">
+        <div class="patient-profile__tools" role="group" aria-label="Herramientas clínicas">
             <button type="button"
                     data-open-modal
                     data-modal-id="GlobalModal"
@@ -78,74 +77,69 @@
         </div>
     </div>
 
-    <hr />
-
-    <div class="row">
-        <div class="col-12 row">
+    <section class="patient-profile__summary" aria-label="Datos del paciente">
+        <div class="patient-profile__name">
             <h5 class="col-md-2 col-sm-12">Nombre</h5>
             <p class="col-md-10 col-sm-12">@Html.DisplayFor(model => model.Patient.Name)</p>
         </div>
-        <hr />
 
-        <div class="col-md-4 col-sm-12 row">
+        <div class="patient-profile__grid">
+        <div class="patient-profile__field">
             <h5 class="col-md-3 col-sm-12"><i class="fa-solid fa-id-card"></i> Dni</h5>
             <p class="col-md-9 col-sm-12">@Html.DisplayFor(model => model.Patient.Dni)</p>
         </div>
 
-        <div class="col-md-5 col-sm-12 row">
+        <div class="patient-profile__field">
             <h5 class="col-md-7 col-sm-12"><i class="fa-solid fa-calendar-day"></i> Fecha de Nacimiento</h5>
             <p class="col-md-5 col-sm-12">@Html.DisplayFor(model => model.Patient.BirthDate) - @Model.Age</p>
         </div>
 
-        <div class="col-md-3 col-sm-12 row">
+        <div class="patient-profile__field">
             <h5 class="col-md-10 cool-sm-12"><i class="fa-solid fa-droplet"></i> Grupo sanguineo</h5>
             <p class="col-md-2 col-sm-12">@Html.DisplayFor(model => model.Patient.BloodType)</p>
         </div>
 
-        <hr />
-
-        <div class="col-md-4 col-sm-12 row">
+        <div class="patient-profile__field">
             <h5 class="col-md-4 col-sm-12"><i class="fa-solid fa-phone"></i> Teléfono</h5>
             <p class="col-md-8 col-sm-12">@Html.DisplayFor(model => model.Patient.ContactInfo.Phone)</p>
         </div>
 
-        <div class="col-md-4 col-sm-12 row">
+        <div class="patient-profile__field">
             <h5 class="col-md-4 col-sm-12"><i class="fa-solid fa-envelope"></i> Email</h5>
             <p class="col-md-8 col-sm-12">@Html.DisplayTextFor(model => model.Patient.ContactInfo.Email)</p>
         </div>
 
-        <div class="col-md-4 col-sm-12 row">
+        <div class="patient-profile__field">
             <h5 class="col-md-5 col-sm-12"><i class="fa-solid fa-map-pin"></i> Dirección</h5>
             <p class="col-md-7 col-sm-12">@Html.DisplayFor(model => model.Patient.ContactInfo.Address)</p>
         </div>
 
-        <div class="col-md-4 col-sm-12 row">
+        <div class="patient-profile__field">
             <h5 class="col-md-4 col-sm-12"><i class="fa-solid fa-location-arrow"></i> Ciudad</h5>
             <p class="col-md-8 col-sm-12">@Html.DisplayFor(model => model.Patient.ContactInfo.City)</p>
         </div>
 
-        <div class="col-md-4 col-sm-12 row">
+        <div class="patient-profile__field">
             <h5 class="col-md-6 col-sm-12"><i class="fa-solid fa-envelope-open"></i> Código Postal</h5>
             <p class="col-md-6 col-sm-12">@Html.DisplayFor(model => model.Patient.ContactInfo.PostalCode)</p>
         </div>
 
-        <hr />
-
-        <div class="col-md-4 col-sm-12 row">
+        <div class="patient-profile__field">
             <h5 class="col-md-5 col-sm-12"><i class="fa-solid fa-hospital"></i> Obra Social</h5>
             <p class="col-md-7 col-sm-12">@Html.DisplayFor(model => model.Patient.SocialWork)</p>
         </div>
 
-        <div class="col-md-4 col-sm-12 row">
+        <div class="patient-profile__field">
             <h5 class="col-md-7 col-sm-12"><i class="fa-solid fa-hashtag"></i> Número de Afiliado</h5>
             <p class="col-md-5 col-sm-12">@Html.DisplayFor(model => model.Patient.AffiliateNumber)</p>
         </div>
-    </div>
+        </div>
+    </section>
     
-    <div class="row">
+    <div class="patient-profile__record">
         <ul class="nav nav-tabs" role="tablist" id="myTabs">
             <li class="nav-item">
-                <button type="button" class="nav-link" id="visitsTab"
+                <button type="button" class="nav-link" id="visitsTab" role="tab" aria-selected="false" aria-controls="tabContent"
                         data-url='@viUrl'>
                     <i class="fa-solid fa-calendar-day"></i>
                     Visitas
@@ -153,7 +147,7 @@
             </li>
 
             <li class="nav-item">
-                <button type="button" class="nav-link" id="allergiesTab"
+                <button type="button" class="nav-link" id="allergiesTab" role="tab" aria-selected="false" aria-controls="tabContent"
                         data-url='@alUrl'>
                     <i class="fa-solid fa-bacteria"></i>
                     Alergias
@@ -161,28 +155,28 @@
             </li>
 
             <li class="nav-item">
-                <button type="button" class="nav-link" id="parentsTab"
+                <button type="button" class="nav-link" id="parentsTab" role="tab" aria-selected="false" aria-controls="tabContent"
                         data-url='@pdUrl'>
                     <i class="fa-solid fa-people-group"></i>
                     Familia
                 </button>
             </li>
             <li class="nav-item">
-                <button type="button" class="nav-link" id="vaccinesTab"
+                <button type="button" class="nav-link" id="vaccinesTab" role="tab" aria-selected="false" aria-controls="tabContent"
 						data-url='@vaUrl'>
                     <i class="fa-solid fa-syringe"></i>
 					Vacunas
 				</button>
             </li>
             <li class="nav-item">
-                <button type="button" class="nav-link" id="permMedTab"
+                <button type="button" class="nav-link" id="permMedTab" role="tab" aria-selected="false" aria-controls="tabContent"
                         data-url='@pmUrl'>
                     <i class="fa-solid fa-capsules"></i>
 					Medicación Permanente
                 </button>
             </li>
             <li class="nav-item">
-				<button type="button" class="nav-link" id="growthChartsTab"
+				<button type="button" class="nav-link" id="growthChartsTab" role="tab" aria-selected="false" aria-controls="tabContent"
                     data-url='@gcUrl'>
                     <i class="fa-solid fa-chart-line"></i>
                     Tablas de crecimiento
@@ -254,7 +248,7 @@
         </div>
 
         <div class="tab-content" id="myTabContent">
-            <div id="tabContent"></div>
+            <div id="tabContent" role="tabpanel" aria-live="polite" tabindex="0"></div>
         </div>
     </div>
 </div>

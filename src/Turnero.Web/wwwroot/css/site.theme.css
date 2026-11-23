@@ -448,10 +448,31 @@
 .flatpickr-current-month .flatpickr-monthDropdown-months,
 .flatpickr-months .flatpickr-prev-month svg,
 .flatpickr-months .flatpickr-next-month svg,
-.flatpickr-weekday,
+.flatpickr-weekdays,
+span.flatpickr-weekday,
 .flatpickr-day {
     color: var(--turnero-text);
     fill: var(--turnero-text);
+}
+
+.flatpickr-months .flatpickr-month,
+.flatpickr-weekdays,
+span.flatpickr-weekday,
+.flatpickr-innerContainer,
+.flatpickr-days,
+.dayContainer {
+    background-color: var(--turnero-surface);
+}
+
+.flatpickr-current-month .flatpickr-monthDropdown-months {
+    background-color: var(--turnero-surface);
+    color: var(--turnero-text);
+    color-scheme: inherit;
+}
+
+.flatpickr-current-month .flatpickr-monthDropdown-months option {
+    background-color: var(--bs-white);
+    color: var(--bs-dark);
 }
 
 .swal2-popup {
@@ -487,4 +508,14 @@
     background: #2c698d;
     border-color: #2c698d;
     color: #fff;
+}
+
+.flatpickr-day.flatpickr-disabled,
+.flatpickr-day.flatpickr-disabled:hover,
+.flatpickr-day.prevMonthDay,
+.flatpickr-day.nextMonthDay,
+.flatpickr-day.notAllowed,
+.flatpickr-day.notAllowed.prevMonthDay,
+.flatpickr-day.notAllowed.nextMonthDay {
+    color: color-mix(in srgb, var(--turnero-text) 70%, var(--turnero-surface));
 }

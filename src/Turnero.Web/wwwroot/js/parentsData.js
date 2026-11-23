@@ -74,9 +74,16 @@
         if (!tab) return;
 
         document.querySelectorAll('#myTabs .nav-link')
-            .forEach(x => x.classList.remove('active'));
+            .forEach(x => {
+                x.classList.remove('active');
+                x.setAttribute('aria-selected', 'false');
+            });
 
         tab.classList.add("active");
+        tab.setAttribute('aria-selected', 'true');
+        tab.setAttribute('tabindex', '0');
+        document.querySelectorAll('#myTabs .nav-link[aria-selected="false"]')
+            .forEach(x => x.setAttribute('tabindex', '-1'));
 
         const url = tab.dataset.url;
         if (!url) return;

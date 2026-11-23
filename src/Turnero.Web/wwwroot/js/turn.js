@@ -21,6 +21,7 @@
 
         initSearchDatePicker();
 
+        initViewSwitcher();
         loadData();
         reloadTurns = loadData;
 
@@ -83,6 +84,7 @@
 
             AppUtils.Pagination.setRecordsTotal(key, total);
             renderTable(data);
+            renderAgenda(data);
             AppUtils.Pagination.renderWithState("#turns-pagination", key, loadData);
 
         } catch (err) {
@@ -92,7 +94,138 @@
                 tbody.innerHTML =
                     '<tr><td colspan="10" class="text-danger text-center">Error cargando turnos.</td></tr>';
             }
+            const agenda = document.querySelector("#turns-agenda");
+            if (agenda) {
+                agenda.innerHTML =
+                    '<div class="agenda-empty"><strong>No se pudo cargar la agenda</strong><span>Intentá nuevamente.</span></div>';
+            }
         }
+    }
+
+    // ======================================================
+    // AGENDA VIEW
+    // ======================================================
+    function initViewSwitcher() {
+        const agendaButton = document.querySelector("#btnAgendaView");
+        const tableButton = document.querySelector("#btnTableView");
+        const agenda = document.querySelector("#turns-agenda");
+        const table = document.querySelector(".table-responsive");
+        if (!agendaButton || !tableButton || !agenda || !table) return;
+
+        const setView = (view) => {
+            const isAgenda = view === "agenda";
+            agenda.hidden = !isAgenda;
+            table.hidden = isAgenda;
+            agendaButton.classList.toggle("active", isAgenda);
+            tableButton.classList.toggle("active", !isAgenda);
+            agendaButton.setAttribute("aria-pressed", String(isAgenda));
+            tableButton.setAttribute("aria-pressed", String(!isAgenda));
+        };
+
+        agendaButton.addEventListener("click", () => setView("agenda"));
+        tableButton.addEventListener("click", () => setView("table"));
+        setView("agenda");
+    }
+
+    function renderAgenda(rows) {
+        const agenda = document.querySelector("#turns-agenda");
+        if (!agenda) return;
+
+        const agendaDateTitle = document.querySelector("#agendaDateTitle");
+        const agendaCount = document.querySelector("#agendaCount");
+        const dateFilter = getCurrentTurnFilters()["Columns[6][search][value]"];
+
+        if (agendaDateTitle) {
+            agendaDateTitle.textContent = formatAgendaDate(dateFilter);
+        }
+        if (agendaCount) {
+            agendaCount.textContent = `${rows.length} ${rows.length === 1 ? "turno" : "turnos"}`;
+        }
+
+        if (!rows.length) {
+            agenda.innerHTML = `
+                <div class="agenda-empty">
+                    <i class="bi bi-calendar2-x" aria-hidden="true"></i>
+                    <strong>No hay turnos para esta búsqueda</strong>
+                    <span>Probá cambiar la fecha o el profesional.</span>
+                </div>
+            `;
+            return;
+        }
+
+        const groups = new Map();
+        rows.forEach(row => {
+            const time = String(row.time ?? "").trim() || "Sin horario";
+            if (!groups.has(time)) groups.set(time, []);
+            groups.get(time).push(row);
+        });
+
+        const times = [...groups.keys()].sort((a, b) => a.localeCompare(b));
+        agenda.innerHTML = times.map(time => {
+            const cards = groups.get(time).map(row => {
+                const status = row.accessed
+                    ? '<span class="agenda-status agenda-status--accessed"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>Ingresado</span>'
+                    : '<span class="agenda-status"><i class="bi bi-clock" aria-hidden="true"></i>Programado</span>';
+
+                let actions = "";
+                if (row.accessed) {
+                    actions = "";
+                } else if (!row.isMedic) {
+                    actions = `
+                        <button data-open-modal data-modal-id="GlobalModal" data-url="/Turns/Edit?id=${row.id}"
+                            data-title="Editar turno" class="btn btn-sm btn-primary">Editar</button>
+                        <button data-id="${row.id}" class="btn btn-danger btn-sm btn-delete">Eliminar</button>
+                    `;
+                } else {
+                    actions = `<button data-id="${row.id}" class="btn btn-primary btn-sm btn-access">Ingreso</button>`;
+                }
+
+                const phone = String(row.phone ?? "");
+                const validPhone = /^[1-9]\d{9}$/.test(phone);
+                let confirmation = `<button type="button" class="btn btn-outline-success btn-sm" disabled aria-label="WhatsApp no disponible"><i class="bi bi-whatsapp" aria-hidden="true"> No disponible</i></button>`;
+                if (validPhone && row.date && row.time) {
+                    const url = new URL(`https://wa.me/549${phone}`);
+                    url.searchParams.set("text", `Hola, ¿podés confirmar tu turno del ${row.date} a las ${row.time}? Gracias.`);
+                    confirmation = `<a href="${escapeHTML(url.href)}" target="_blank" rel="noopener noreferrer"
+                        class="btn btn-outline-success btn-sm" aria-label="Solicitar confirmación por WhatsApp"><i class="bi bi-whatsapp" aria-hidden="true"> Contactar?</i></a>`;
+                }
+
+                return `
+                    <article class="agenda-card${row.accessed ? " agenda-card--accessed" : ""}">
+                        <div class="agenda-card__identity">
+                            <div class="agenda-card__name">${escapeHTML(row.name)}</div>
+                            <div class="agenda-card__details">
+                                DNI ${escapeHTML(row.dni)} <span aria-hidden="true">·</span> ${escapeHTML(row.socialWork)}
+                            </div>
+                        </div>
+                        <div class="agenda-card__reason"><span class="agenda-card__label">Motivo</span>${escapeHTML(row.reason)}</div>
+                        <div class="agenda-card__medic"><span class="agenda-card__label">Profesional</span>${escapeHTML(row.medicName)}</div>
+                        <div class="agenda-card__status">${status}</div>
+                        <div class="agenda-card__actions turn-actions">${actions}${confirmation}</div>
+                    </article>
+                `;
+            }).join("");
+
+            return `
+                <section class="agenda-slot" aria-labelledby="agenda-time-${escapeHTML(time.replace(/[^0-9]/g, "") || "none")}">
+                    <time class="agenda-slot__time" id="agenda-time-${escapeHTML(time.replace(/[^0-9]/g, "") || "none")}">${escapeHTML(time)}</time>
+                    <div class="agenda-slot__cards">${cards}</div>
+                </section>
+            `;
+        }).join("");
+    }
+
+    function formatAgendaDate(dateValue) {
+        if (!dateValue) return "Turnos";
+
+        const [year, month, day] = dateValue.split("-").map(Number);
+        if (!year || !month || !day) return "Turnos";
+
+        return new Intl.DateTimeFormat("es-AR", {
+            weekday: "long",
+            day: "numeric",
+            month: "long"
+        }).format(new Date(year, month - 1, day));
     }
 
 
@@ -144,12 +277,12 @@
                 confirmation = `
                     <a href="${escapeHTML(url.href)}" target="_blank" rel="noopener noreferrer"
                        class="btn btn-outline-success btn-sm" aria-label="Solicitar confirmación por WhatsApp (abre una nueva pestaña)">
-                        <i class="bi bi-whatsapp" aria-hidden="true"></i> WhatsApp
+                        <i class="bi bi-whatsapp" aria-hidden="true"> Contactar?</i>
                     </a>
                 `;
             } else {
                 confirmation = `
-                    <button type="button" class="btn btn-outline-success btn-sm" disabled>WhatsApp</button>
+                    <button type="button" class="btn btn-outline-success btn-sm" disabled><i class="bi bi-whatsapp" aria-hidden="true"> No disponible</i></button>
                 `;
             }
 
@@ -322,7 +455,7 @@
     // ======================================================
     function showConfirmButtons(btn, type) {
         const id = btn.dataset.id;
-        const cell = btn.closest("td");
+        const cell = btn.closest(".turn-actions") || btn.closest("td");
 
         btn.classList.add("btn-fade-out");
 
@@ -342,29 +475,11 @@
     }
 
     function restoreAccess(btn) {
-        const id = btn.dataset.id;
-        const cell = btn.closest("td");
-
-        cell.innerHTML = `
-            <button data-id="${id}" class="btn btn-primary btn-sm me-1 btn-access">Ingreso</button>
-        `;
+        reloadTurns?.();
     }
 
     function restoreDelete(btn) {
-        const id = btn.dataset.id;
-        const cell = btn.closest("td");
-
-        cell.innerHTML = `
-            <button
-                data-open-modal
-                data-modal-id="GlobalModal"
-                data-url="/Turns/Edit?id="${id}"
-                data-title="Editar turno"
-                class="btn btn-sm btn-primary me-1">
-                Editar
-            </button>
-            <button data-id="${id}" class="btn btn-danger btn-sm me-1 btn-delete">Eliminar</button>
-        `;
+        reloadTurns?.();
     }
 
     function confirmAccess(btn) {

@@ -1,6 +1,6 @@
 // service-worker.js
 // Versión del caché — incrementar al cambiar los archivos cacheados
-const CACHE_NAME = 'turnero-static-v2';
+const CACHE_NAME = 'turnero-static-v5';
 
 // Rutas locales de activos estáticos que se precachearán durante la instalación
 const PRECACHE_PATHS = [
@@ -36,7 +36,7 @@ self.addEventListener('install', function (event) {
   console.log('Service Worker: Instalando y precachéando activos estáticos...');
   event.waitUntil(
     caches.open(CACHE_NAME).then(function (cache) {
-      return cache.addAll(PRECACHE_PATHS).catch(function (error) {
+      return cache.addAll(PRECACHE_PATHS.map(path => new Request(path, { cache: 'reload' }))).catch(function (error) {
         console.error('Service Worker: Error al precachear:', error);
         // No bloquear la instalación si algún recurso falla
       });

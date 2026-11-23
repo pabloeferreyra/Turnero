@@ -366,7 +366,7 @@ public class TurnsController(UserManager<IdentityUser> userManager,
             container.Page(page =>
             {
                 page.Margin(20);
-                page.Header().Text("Turnos del día").FontSize(20).Bold();
+                page.Header().Text($"Turnos del día {DateTime.Today:dd/MM/yyyy}").FontSize(20).Bold();
                 page.Content().Table(table =>
                 {
                     table.ColumnsDefinition(cols =>
