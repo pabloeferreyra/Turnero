@@ -47,9 +47,18 @@
 
         const st = AppUtils.Pagination.getState(key);
         const order = AppUtils.Pagination.getOrder(key);
+        const isAgendaView = document.querySelector("#turns-agenda")?.hidden !== true;
+        const isMedicView = document.querySelector("#Medics")?.disabled === true;
+        const loadAllAgendaTurns = isAgendaView && !isMedicView;
 
-        const start = (st.currentPage - 1) * st.pageSize;
-        const length = st.pageSize;
+        const start = loadAllAgendaTurns ? 0 : (st.currentPage - 1) * st.pageSize;
+        const length = loadAllAgendaTurns ? -1 : st.pageSize;
+
+        const pagination = document.querySelector("#turns-pagination")?.closest("nav");
+        if (pagination) pagination.hidden = loadAllAgendaTurns;
+
+        const pageSizeControl = document.querySelector(".agenda-page-size");
+        if (pageSizeControl) pageSizeControl.hidden = loadAllAgendaTurns;
 
         const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || "";
 
@@ -83,7 +92,7 @@
             const total = json?.recordsTotal || json?.recordsFiltered || data.length;
 
             AppUtils.Pagination.setRecordsTotal(key, total);
-            renderTable(data);
+            if (!loadAllAgendaTurns) renderTable(data);
             renderAgenda(data);
             AppUtils.Pagination.renderWithState("#turns-pagination", key, loadData);
 
@@ -107,19 +116,17 @@
     // ======================================================
     function initViewSwitcher() {
         const agendaButton = document.querySelector("#btnAgendaView");
-        const tableButton = document.querySelector("#btnTableView");
         const agenda = document.querySelector("#turns-agenda");
-        const table = document.querySelector(".table-responsive");
         if (!agendaButton || !tableButton || !agenda || !table) return;
 
         const setView = (view) => {
             const isAgenda = view === "agenda";
+            const wasAgenda = !agenda.hidden;
             agenda.hidden = !isAgenda;
             table.hidden = isAgenda;
             agendaButton.classList.toggle("active", isAgenda);
-            tableButton.classList.toggle("active", !isAgenda);
             agendaButton.setAttribute("aria-pressed", String(isAgenda));
-            tableButton.setAttribute("aria-pressed", String(!isAgenda));
+            if (wasAgenda !== isAgenda) loadData();
         };
 
         agendaButton.addEventListener("click", () => setView("agenda"));
@@ -142,12 +149,51 @@
             agendaCount.textContent = `${rows.length} ${rows.length === 1 ? "turno" : "turnos"}`;
         }
 
+        const isMedicView = document.querySelector("#Medics")?.disabled === true;
+        agenda.classList.toggle("turns-agenda--doctors", !isMedicView);
+
         if (!rows.length) {
             agenda.innerHTML = `
                 <div class="agenda-empty">
                     <i class="bi bi-calendar2-x" aria-hidden="true"></i>
                     <strong>No hay turnos para esta búsqueda</strong>
                     <span>Probá cambiar la fecha o el profesional.</span>
+                </div>
+            `;
+            return;
+        }
+
+        if (!isMedicView) {
+            const doctors = new Map();
+            rows.forEach(row => {
+                const key = String(row.medicId ?? row.medicName ?? "unknown");
+                if (!doctors.has(key)) {
+                    doctors.set(key, {
+                        name: String(row.medicName ?? "").trim() || "Sin profesional",
+                        rows: []
+                    });
+                }
+                doctors.get(key).rows.push(row);
+            });
+
+            agenda.innerHTML = `
+                <div class="agenda-doctor-grid">
+                    ${[...doctors.values()]
+                        .sort((a, b) => a.name.localeCompare(b.name, "es"))
+                        .map((doctor, index) => `
+                            <section class="agenda-doctor-column" aria-labelledby="agenda-doctor-${index}">
+                                <h3 class="agenda-doctor-column__heading" id="agenda-doctor-${index}">
+                                    <span>${escapeHTML(doctor.name)}</span>
+                                    <span class="agenda-doctor-column__count">${doctor.rows.length} ${doctor.rows.length === 1 ? "turno" : "turnos"}</span>
+                                </h3>
+                                <div class="agenda-doctor-column__cards">
+                                    ${doctor.rows
+                                        .sort((a, b) => String(a.time ?? "").localeCompare(String(b.time ?? "")))
+                                        .map(row => renderAgendaCard(row, false, true))
+                                        .join("")}
+                                </div>
+                            </section>
+                        `).join("")}
                 </div>
             `;
             return;
@@ -162,49 +208,7 @@
 
         const times = [...groups.keys()].sort((a, b) => a.localeCompare(b));
         agenda.innerHTML = times.map(time => {
-            const cards = groups.get(time).map(row => {
-                const status = row.accessed
-                    ? '<span class="agenda-status agenda-status--accessed"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>Ingresado</span>'
-                    : '<span class="agenda-status"><i class="bi bi-clock" aria-hidden="true"></i>Programado</span>';
-
-                let actions = "";
-                if (row.accessed) {
-                    actions = "";
-                } else if (!row.isMedic) {
-                    actions = `
-                        <button data-open-modal data-modal-id="GlobalModal" data-url="/Turns/Edit?id=${row.id}"
-                            data-title="Editar turno" class="btn btn-sm btn-primary">Editar</button>
-                        <button data-id="${row.id}" class="btn btn-danger btn-sm btn-delete">Eliminar</button>
-                    `;
-                } else {
-                    actions = `<button data-id="${row.id}" class="btn btn-primary btn-sm btn-access">Ingreso</button>`;
-                }
-
-                const phone = String(row.phone ?? "");
-                const validPhone = /^[1-9]\d{9}$/.test(phone);
-                let confirmation = `<button type="button" class="btn btn-outline-success btn-sm" disabled aria-label="WhatsApp no disponible"><i class="bi bi-whatsapp" aria-hidden="true"> No disponible</i></button>`;
-                if (validPhone && row.date && row.time) {
-                    const url = new URL(`https://wa.me/549${phone}`);
-                    url.searchParams.set("text", `Hola, ¿podés confirmar tu turno del ${row.date} a las ${row.time}? Gracias.`);
-                    confirmation = `<a href="${escapeHTML(url.href)}" target="_blank" rel="noopener noreferrer"
-                        class="btn btn-outline-success btn-sm" aria-label="Solicitar confirmación por WhatsApp"><i class="bi bi-whatsapp" aria-hidden="true"> Contactar?</i></a>`;
-                }
-
-                return `
-                    <article class="agenda-card${row.accessed ? " agenda-card--accessed" : ""}">
-                        <div class="agenda-card__identity">
-                            <div class="agenda-card__name">${escapeHTML(row.name)}</div>
-                            <div class="agenda-card__details">
-                                DNI ${escapeHTML(row.dni)} <span aria-hidden="true">·</span> ${escapeHTML(row.socialWork)}
-                            </div>
-                        </div>
-                        <div class="agenda-card__reason"><span class="agenda-card__label">Motivo</span>${escapeHTML(row.reason)}</div>
-                        <div class="agenda-card__medic"><span class="agenda-card__label">Profesional</span>${escapeHTML(row.medicName)}</div>
-                        <div class="agenda-card__status">${status}</div>
-                        <div class="agenda-card__actions turn-actions">${actions}${confirmation}</div>
-                    </article>
-                `;
-            }).join("");
+            const cards = groups.get(time).map(row => renderAgendaCard(row, true, false)).join("");
 
             return `
                 <section class="agenda-slot" aria-labelledby="agenda-time-${escapeHTML(time.replace(/[^0-9]/g, "") || "none")}">
@@ -213,6 +217,50 @@
                 </section>
             `;
         }).join("");
+    }
+
+    function renderAgendaCard(row, showMedic, showTime) {
+        const status = row.accessed
+            ? '<span class="agenda-status agenda-status--accessed"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>Ingresado</span>'
+            : '<span class="agenda-status"><i class="bi bi-clock" aria-hidden="true"></i>Programado</span>';
+
+        let actions = "";
+        if (!row.accessed && !row.isMedic) {
+            actions = `
+                <button data-open-modal data-modal-id="GlobalModal" data-url="/Turns/Edit?id=${row.id}"
+                    data-title="Editar turno" class="btn btn-sm btn-primary">Editar</button>
+                <button data-id="${row.id}" class="btn btn-danger btn-sm btn-delete">Eliminar</button>
+            `;
+        } else if (!row.accessed) {
+            actions = `<button data-id="${row.id}" class="btn btn-primary btn-sm btn-access">Ingreso</button>`;
+        }
+
+        const phone = String(row.phone ?? "");
+        const validPhone = /^[1-9]\d{9}$/.test(phone);
+        let confirmation = `<button type="button" class="btn btn-outline-success btn-sm" disabled aria-label="WhatsApp no disponible"><i class="bi bi-whatsapp" aria-hidden="true"> No disponible</i></button>`;
+        if (validPhone && row.date && row.time) {
+            const url = new URL(`https://wa.me/549${phone}`);
+            url.searchParams.set("text", `Hola, ¿podés confirmar tu turno del ${row.date} a las ${row.time}? Gracias.`);
+            confirmation = `<a href="${escapeHTML(url.href)}" target="_blank" rel="noopener noreferrer"
+                class="btn btn-outline-success btn-sm" aria-label="Solicitar confirmación por WhatsApp"><i class="bi bi-whatsapp" aria-hidden="true"> Contactar?</i></a>`;
+        }
+
+        const time = String(row.time ?? "").trim() || "Sin horario";
+        return `
+            <article class="agenda-card${row.accessed ? " agenda-card--accessed" : ""}${showTime ? " agenda-card--column" : ""}">
+                <div class="agenda-card__identity">
+                    <div class="agenda-card__name">${escapeHTML(row.name)}</div>
+                    <div class="agenda-card__details">
+                        DNI ${escapeHTML(row.dni)} <span aria-hidden="true">·</span> ${escapeHTML(row.socialWork)}
+                    </div>
+                </div>
+                ${showTime ? `<time class="agenda-card__time">${escapeHTML(time)}</time>` : ""}
+                <div class="agenda-card__reason"><span class="agenda-card__label">Motivo</span>${escapeHTML(row.reason)}</div>
+                ${showMedic ? `<div class="agenda-card__medic"><span class="agenda-card__label">Profesional</span>${escapeHTML(row.medicName)}</div>` : ""}
+                <div class="agenda-card__status">${status}</div>
+                <div class="agenda-card__actions turn-actions">${actions}${confirmation}</div>
+            </article>
+        `;
     }
 
     function formatAgendaDate(dateValue) {
@@ -246,7 +294,7 @@
         }
 
         rows.forEach(d => {
-            const colClass = d.accessed ? ' class="Red odd"' : '';
+            const colClass = d.accessed ? ' class="turn-cell--accessed odd"' : '';
 
             let actions = "";
 

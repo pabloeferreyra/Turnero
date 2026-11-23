@@ -1,6 +1,6 @@
 // service-worker.js
 // Versión del caché — incrementar al cambiar los archivos cacheados
-const CACHE_NAME = 'turnero-static-v5';
+const CACHE_NAME = 'turnero-static-v6';
 
 // Rutas locales de activos estáticos que se precachearán durante la instalación
 const PRECACHE_PATHS = [
