@@ -25,8 +25,26 @@ public class FirebaseAuthService(
     public async Task<RegistrationResultDto> RegisterUserAsync(UserFirebaseDTO usrDto)
     {
         var userArgs = new UserRecordArgs { DisplayName = usrDto.Name, Email = usrDto.Email, Password = usrDto.Password };
-        var firebaseUser = await FirebaseAuth.DefaultInstance.CreateUserAsync(userArgs);
-        await SetRoleAsync(firebaseUser.Uid, DefaultRole);
+        UserRecord firebaseUser;
+        try
+        {
+            firebaseUser = await FirebaseAuth.DefaultInstance.CreateUserAsync(userArgs);
+        }
+        catch (FirebaseAuthException ex)
+        {
+            return ToFirebaseResult(ex);
+        }
+
+        var role = string.IsNullOrWhiteSpace(usrDto.Role) ? DefaultRole : usrDto.Role;
+        try
+        {
+            await SetRoleAsync(firebaseUser.Uid, role);
+        }
+        catch (FirebaseAuthException ex)
+        {
+            await FirebaseAuth.DefaultInstance.DeleteUserAsync(firebaseUser.Uid);
+            return ToFirebaseResult(ex);
+        }
 
         var user = new IdentityUser
         {
@@ -42,12 +60,18 @@ public class FirebaseAuthService(
             return ToResultDto(createResult);
         }
 
-        if (!await roleManager.RoleExistsAsync(DefaultRole))
+        if (!await roleManager.RoleExistsAsync(role))
         {
-            await roleManager.CreateAsync(new IdentityRole(DefaultRole));
+            var roleCreation = await roleManager.CreateAsync(new IdentityRole(role));
+            if (!roleCreation.Succeeded && !await roleManager.RoleExistsAsync(role))
+            {
+                await userManager.DeleteAsync(user);
+                await FirebaseAuth.DefaultInstance.DeleteUserAsync(firebaseUser.Uid);
+                return ToResultDto(roleCreation);
+            }
         }
 
-        var roleResult = await userManager.AddToRoleAsync(user, DefaultRole);
+        var roleResult = await userManager.AddToRoleAsync(user, role);
         if (!roleResult.Succeeded)
         {
             await userManager.DeleteAsync(user);
@@ -55,8 +79,12 @@ public class FirebaseAuthService(
             return ToResultDto(roleResult);
         }
 
-        var tid = await LoginAsync(new UserLoginRequestDTO { Email = usrDto.Email, Password = usrDto.Password });
-        await SendEmailVerificationLinkAsync(tid.IdToken!);
+        if (usrDto.SendEmailVerification)
+        {
+            var tid = await LoginAsync(new UserLoginRequestDTO { Email = usrDto.Email, Password = usrDto.Password });
+            await SendEmailVerificationLinkAsync(tid.IdToken!);
+        }
+
         return RegistrationResultDto.Success();
     }
 
@@ -216,4 +244,11 @@ public class FirebaseAuthService(
                 Code = e.Code,
                 Description = e.Description
             })]);
+
+    private static RegistrationResultDto ToFirebaseResult(FirebaseAuthException exception) =>
+        RegistrationResultDto.Failed(new RegistrationErrorDto
+        {
+            Code = exception.AuthErrorCode.ToString(),
+            Description = exception.Message
+        });
 }

@@ -252,11 +252,18 @@ body {
     align-items: end;
     justify-content: space-between;
     gap: 1rem;
-    margin-block-end: .75rem;
+    margin-block-end: 1rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--turnero-border, #c8edec);
+    border-radius: .75rem;
+    background: var(--turnero-surface, #e3f6f5);
+    color: var(--turnero-text, #272643);
 }
 
-.agenda-heading h2 {
+.agenda-heading h2,
+.management-page .agenda-heading h1 {
     margin: 0;
+    color: var(--turnero-text, #272643);
     font-size: clamp(1.35rem, 2.2vw, 1.75rem);
     line-height: 1.15;
     text-transform: capitalize;
@@ -375,14 +382,40 @@ body {
     display: grid;
     justify-items: center;
     gap: .4rem;
-    padding: 3rem 1rem;
+    min-block-size: 15rem;
+    align-content: center;
+    margin-block: 1.25rem;
+    padding: 3rem 1.25rem;
+    border: 1px solid var(--turnero-border, #c8edec);
+    border-radius: .75rem;
+    background: var(--turnero-card-bg, #fff);
+    color: var(--turnero-text, #272643);
+    box-shadow: 0 .25rem .75rem rgb(44 105 141 / 8%);
+    text-align: center;
+}
+
+.agenda-empty strong {
+    color: var(--turnero-text, #272643);
+    font-size: 1.05rem;
+}
+
+.agenda-empty span {
     color: var(--turnero-muted, #6c757d);
-    border-block: 1px solid var(--turnero-border, #c8edec);
 }
 
 .agenda-empty i {
-    font-size: 2.25rem;
+    display: grid;
+    place-items: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    margin-block-end: .25rem;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--turnero-primary-text, #2c698d) 12%, transparent);
     color: var(--turnero-primary-text, #2c698d);
+}
+
+.agenda-empty i::before {
+    line-height: 1;
 }
 
 @container (width < 980px) {
@@ -553,6 +586,60 @@ body {
     color: var(--turnero-primary-text, #2c698d);
     background: color-mix(in srgb, var(--turnero-primary-text, #2c698d) 10%, transparent);
     font-weight: 700;
+}
+
+.management-page {
+    container-type: inline-size;
+}
+
+.management-page .agenda-toolbar .btn,
+.management-item__actions .btn {
+    min-block-size: 44px;
+}
+
+.management-list {
+    border-block-start: 1px solid var(--turnero-border, #c8edec);
+}
+
+.management-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-block-end: 1px solid var(--turnero-border, #c8edec);
+}
+
+.management-item__identity {
+    min-inline-size: 0;
+    overflow-wrap: anywhere;
+}
+
+.management-item__actions,
+.management-item__actions span[id^="confirmDeleteSpan_"] {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: .5rem;
+}
+
+.management-item__actions :is(button, a):focus-visible,
+.management-page .agenda-toolbar a:focus-visible {
+    outline: 3px solid var(--turnero-primary-text, #2c698d);
+    outline-offset: 3px;
+}
+
+@container (width < 620px) {
+    .management-item {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .management-item__actions,
+    .management-item__actions span[id^="confirmDeleteSpan_"] {
+        justify-content: flex-start;
+    }
 }
 
 .turns-agenda--doctors .agenda-card__actions {

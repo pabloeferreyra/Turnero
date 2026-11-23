@@ -1,0 +1,179 @@
+@using Turnero.Domain.Constants
+@model Turnero.Web.Models.InitialSetupViewModel
+@{
+    ViewData["Title"] = "Configuración inicial";
+}
+
+<div class="container py-4 py-lg-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-xl-9">
+            <header class="mb-4">
+                <h1 id="setup-title" class="h2">Prepare esta instancia</h1>
+                <p class="text-body-secondary mb-0">
+                    La base de datos ya está conectada. Cree las cuentas iniciales para empezar a usar Turnero.
+                </p>
+            </header>
+
+            @if (!string.IsNullOrWhiteSpace(Model.SetupError))
+            {
+                <div class="alert alert-danger" role="alert">@Model.SetupError</div>
+            }
+            else if (Model.SetupComplete)
+            {
+                <div class="alert alert-success" role="status">@Model.ResultMessage</div>
+                <section aria-labelledby="created-users-title" class="mb-4">
+                    <h2 id="created-users-title" class="h5">Cuentas creadas</h2>
+                    <ul>
+                        @foreach (var user in Model.CreatedUsers)
+                        {
+                            <li>@user.Name — @user.Email (@user.Role)</li>
+                        }
+                    </ul>
+                </section>
+                @if (Model.UserErrors.Count > 0)
+                {
+                    <div class="alert alert-warning" role="alert">
+                        <h2 class="h6">Cuentas pendientes</h2>
+                        <ul class="mb-0">
+                            @foreach (var error in Model.UserErrors)
+                            {
+                                <li>@error</li>
+                            }
+                        </ul>
+                    </div>
+                }
+                <a class="btn btn-primary" asp-area="Identity" asp-page="/Account/Login">Ir al inicio de sesión</a>
+            }
+            else
+            {
+                <form asp-controller="Setup" asp-action="Index" method="post" aria-labelledby="setup-title">
+                    <div asp-validation-summary="All" class="text-danger"></div>
+                    @if (!string.IsNullOrWhiteSpace(Model.ResultMessage))
+                    {
+                        <p class="alert alert-warning" role="status">@Model.ResultMessage</p>
+                    }
+
+                    <div class="mb-4">
+                        <label asp-for="SetupToken" class="form-label"></label>
+                        <input asp-for="SetupToken" class="form-control" autocomplete="off" required />
+                        <div class="form-text">Es el token de un solo uso definido como <code>InitialSetup__Token</code> en el entorno.</div>
+                        <span asp-validation-for="SetupToken" class="text-danger"></span>
+                    </div>
+
+                    <section aria-labelledby="users-title">
+                        <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+                            <div>
+                                <h2 id="users-title" class="h4 mb-1">Usuarios iniciales</h2>
+                                <p class="text-body-secondary mb-0">Incluya al menos una cuenta con el rol Admin.</p>
+                            </div>
+                            <button type="button" class="btn btn-outline-primary" id="add-user">
+                                Agregar usuario
+                            </button>
+                        </div>
+
+                        <div id="user-list">
+                            @for (var index = 0; index < Model.Users.Count; index++)
+                            {
+                                <fieldset class="border rounded p-3 mb-3" data-user-entry>
+                                    <legend class="float-none w-auto px-2 fs-6" data-user-heading>Usuario @(index + 1)</legend>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label asp-for="Users[index].Name" class="form-label"></label>
+                                            <input asp-for="Users[index].Name" class="form-control" autocomplete="name" required />
+                                            <span asp-validation-for="Users[index].Name" class="text-danger"></span>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label asp-for="Users[index].Email" class="form-label"></label>
+                                            <input asp-for="Users[index].Email" class="form-control" autocomplete="username" required />
+                                            <span asp-validation-for="Users[index].Email" class="text-danger"></span>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label asp-for="Users[index].Password" class="form-label"></label>
+                                            <input asp-for="Users[index].Password" class="form-control" autocomplete="new-password" required />
+                                            <span asp-validation-for="Users[index].Password" class="text-danger"></span>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label asp-for="Users[index].ConfirmPassword" class="form-label"></label>
+                                            <input asp-for="Users[index].ConfirmPassword" class="form-control" autocomplete="new-password" required />
+                                            <span asp-validation-for="Users[index].ConfirmPassword" class="text-danger"></span>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label asp-for="Users[index].Role" class="form-label"></label>
+                                            <select asp-for="Users[index].Role" asp-items="Model.RoleOptions" class="form-select" required></select>
+                                            <span asp-validation-for="Users[index].Role" class="text-danger"></span>
+                                        </div>
+                                        <div class="col-12">
+                                            <button type="button" class="btn btn-sm btn-outline-danger" data-remove-user>
+                                                Quitar usuario
+                                            </button>
+                                        </div>
+                                    </div>
+                                </fieldset>
+                            }
+                        </div>
+                        <p id="user-list-status" class="text-body-secondary" role="status" aria-live="polite"></p>
+                    </section>
+
+                    @if (Model.UserErrors.Count > 0)
+                    {
+                        <div class="alert alert-warning" role="alert">
+                            <h2 class="h6">Cuentas que no se pudieron crear</h2>
+                            <ul class="mb-0">
+                                @foreach (var error in Model.UserErrors)
+                                {
+                                    <li>@error</li>
+                                }
+                            </ul>
+                        </div>
+                    }
+
+                    <button type="submit" class="btn btn-primary">Crear instancia y usuarios</button>
+                </form>
+
+                <template id="user-entry-template">
+                    <fieldset class="border rounded p-3 mb-3" data-user-entry>
+                        <legend class="float-none w-auto px-2 fs-6" data-user-heading></legend>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="Users___index___Name" class="form-label">Nombre</label>
+                                <input id="Users___index___Name" name="Users[__index__].Name" type="text" class="form-control" autocomplete="name" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label for="Users___index___Email" class="form-label">Correo electrónico</label>
+                                <input id="Users___index___Email" name="Users[__index__].Email" type="email" class="form-control" autocomplete="username" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label for="Users___index___Password" class="form-label">Contraseña</label>
+                                <input id="Users___index___Password" name="Users[__index__].Password" type="password" class="form-control" autocomplete="new-password" minlength="6" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label for="Users___index___ConfirmPassword" class="form-label">Confirmar contraseña</label>
+                                <input id="Users___index___ConfirmPassword" name="Users[__index__].ConfirmPassword" type="password" class="form-control" autocomplete="new-password" minlength="6" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label for="Users___index___Role" class="form-label">Rol</label>
+                                <select id="Users___index___Role" name="Users[__index__].Role" class="form-select" required>
+                                    @foreach (var role in Model.RoleOptions)
+                                    {
+                                        <option value="@role.Value" selected="@(role.Value == RolesConstants.Medico ? "selected" : null)">@role.Text</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove-user>Quitar usuario</button>
+                            </div>
+                        </div>
+                    </fieldset>
+                </template>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @if (!Model.SetupComplete && string.IsNullOrWhiteSpace(Model.SetupError))
+    {
+        <script src="~/js/initial-setup.js" asp-append-version="true" defer></script>
+        <partial name="_ValidationScriptsPartial" />
+    }
+}

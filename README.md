@@ -86,7 +86,7 @@ chmod +x ./scripts/start-dev.sh
 
 Required:
 
-*   ConnectionStrings__LocalConnection
+*   ConnectionStrings__PostgresConnection
 
 Firebase credentials (path-only pattern):
 
@@ -100,6 +100,15 @@ Authentication variables used by the app:
 *   Authentication__TokenUri
 *   Authentication__TokenCode
 *   Authentication__TokenReset
+*   `InitialSetup__Token` (required only until the first Admin account is created; use a unique random token of at least 32 characters)
+
+On the first app start, EF Core applies pending migrations to the configured PostgreSQL database. The database itself must already exist. If no Admin user exists, the app opens a protected setup page where you can create users and assign the `Admin`, `Medico`, or `Ingreso` role. The setup page requires `InitialSetup__Token`; after an Admin is created, the setup closes automatically.
+
+Generate a setup token with PowerShell:
+
+```powershell
+[Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
+```
 
 Mercado Pago:
 
@@ -108,7 +117,7 @@ Mercado Pago:
 PowerShell (Windows):
 
 ```powershell
-$env:ConnectionStrings__LocalConnection = "Host=localhost;Port=5432;Database=turnero;Username=turnero;Password=turnero_pwd"
+$env:ConnectionStrings__PostgresConnection = "Host=localhost;Port=5432;Database=turnero;Username=turnero;Password=turnero_pwd"
 $env:Firebase__CredentialsPath = "C:\secrets\firebase.json"
 $env:Authentication__ValidIssuer = "https://securetoken.google.com/your-project"
 $env:Authentication__Audience = "your-project"
@@ -118,7 +127,7 @@ dotnet run --project src/Turnero.Web
 Bash (Linux/macOS):
 
 ```bash
-export ConnectionStrings__LocalConnection="Host=localhost;Port=5432;Database=turnero;Username=turnero;Password=turnero_pwd"
+export ConnectionStrings__PostgresConnection="Host=localhost;Port=5432;Database=turnero;Username=turnero;Password=turnero_pwd"
 export Firebase__CredentialsPath="/run/secrets/firebase.json"
 export Authentication__ValidIssuer="https://securetoken.google.com/your-project"
 export Authentication__Audience="your-project"

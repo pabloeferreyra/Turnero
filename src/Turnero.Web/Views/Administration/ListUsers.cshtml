@@ -1,64 +1,56 @@
-﻿@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Identity
 @model IEnumerable<IdentityUser>
 @{
-
-    ViewData["Title"] = "All Users";
+    ViewData["Title"] = "Usuarios";
+    var users = Model.ToList();
 }
 
-<h1>All Users</h1>
+<div class="container-fluid management-page">
+    <div class="agenda-toolbar mb-3">
+        <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary">Nuevo usuario</a>
+    </div>
+    <div class="agenda-heading">
+        <div>
+            <span class="agenda-heading__eyebrow">Administración</span>
+            <h1>Usuarios</h1>
+        </div>
+        <span class="agenda-count">@users.Count @(users.Count == 1 ? "usuario" : "usuarios")</span>
+    </div>
 
-@if (Model.Any())
-{
-    <a asp-area="Identity" asp-page="/Account/Register"
-       class="btn btn-primary mb-3" style="width:auto">
-        Add new User
-    </a>
-    foreach (var user in Model)
+    @if (users.Count > 0)
     {
-        <div class="card mb-3">
-            <div class="card-header">
-                User Id: @user.Id
-            </div>
-
-            <div class="card-body">
-                <h5 class="card-title">@user.UserName</h5>
-            </div>
-            <div class="card-footer">
-                <form asp-action="DeleteUser" asp-route-id="@user.Id" method="post">
-                    <a asp-action="EditUser" asp-controller="Administration" asp-route-id="@user.Id"
-                       class="btn btn-outline-primary">Edit</a>
-                    <span id="confirmDeleteSpan_@user.Id" style="display:none">
-                        <span>Are you sure you want to delete?</span>
-                        <button type="submit" class="btn btn-danger">Yes</button>
-                        <a href="#" class="btn btn-primary"
-                           onclick="confirmDelete('@user.Id', false)">No</a>
-                    </span>
-                    <span id="deleteSpan_@user.Id">
-                        <a href="#" class="btn btn-danger"
-                           onclick="confirmDelete('@user.Id', true)">Delete</a>
-                    </span>
-                </form>
-            </div>
+        <div class="management-list">
+            @foreach (var user in users)
+            {
+                <div class="management-item">
+                    <div class="management-item__identity">
+                        <div class="agenda-card__name">@user.UserName</div>
+                        <div class="agenda-card__details">ID: @user.Id</div>
+                    </div>
+                    <form asp-action="DeleteUser" asp-route-id="@user.Id" method="post" class="management-item__actions">
+                        <a asp-action="EditUser" asp-controller="Administration" asp-route-id="@user.Id" class="btn btn-outline-primary">Editar</a>
+                        <span id="deleteSpan_@user.Id">
+                            <button type="button" class="btn btn-danger" onclick="confirmDelete('@user.Id', true)">Eliminar</button>
+                        </span>
+                        <span id="confirmDeleteSpan_@user.Id" style="display:none">
+                            <span>¿Seguro que querés eliminar este usuario?</span>
+                            <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+                            <button type="button" class="btn btn-outline-primary" onclick="confirmDelete('@user.Id', false)">Cancelar</button>
+                        </span>
+                    </form>
+                </div>
+            }
         </div>
     }
-}
-else
-{
-    <div class="card">
-        <div class="card-header">
-            no users created yet
+    else
+    {
+        <div class="agenda-empty">
+            <i class="bi bi-people" aria-hidden="true"></i>
+            <strong>No hay usuarios registrados</strong>
+            <span>Agregá un usuario para comenzar.</span>
         </div>
-        <div class="card-body">
-            <h5 class="card-title">
-                Use the button below to create a user
-            </h5>
-            <a class="btn btn-primary" style="width: auto"
-               asp-area="Identity" asp-page="/Account/Register">
-                Add new user
-            </a>
-        </div>
-    </div>
-}
+    }
+</div>
 
 @section Scripts {
     <script src="~/js/Users.js"></script>

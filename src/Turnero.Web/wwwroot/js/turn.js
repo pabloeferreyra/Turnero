@@ -235,14 +235,17 @@
             actions = `<button data-id="${row.id}" class="btn btn-primary btn-sm btn-access">Ingreso</button>`;
         }
 
-        const phone = String(row.phone ?? "");
-        const validPhone = /^[1-9]\d{9}$/.test(phone);
-        let confirmation = `<button type="button" class="btn btn-outline-success btn-sm" disabled aria-label="WhatsApp no disponible"><i class="bi bi-whatsapp" aria-hidden="true"> No disponible</i></button>`;
-        if (validPhone && row.date && row.time) {
-            const url = new URL(`https://wa.me/549${phone}`);
-            url.searchParams.set("text", `Hola, ¿podés confirmar tu turno del ${row.date} a las ${row.time}? Gracias.`);
-            confirmation = `<a href="${escapeHTML(url.href)}" target="_blank" rel="noopener noreferrer"
-                class="btn btn-outline-success btn-sm" aria-label="Solicitar confirmación por WhatsApp"><i class="bi bi-whatsapp" aria-hidden="true"> Contactar?</i></a>`;
+        let confirmation = "";
+        if (!row.accessed) {
+            const phone = String(row.phone ?? "");
+            const validPhone = /^[1-9]\d{9}$/.test(phone);
+            confirmation = `<button type="button" class="btn btn-outline-success btn-sm" disabled aria-label="WhatsApp no disponible"><i class="bi bi-whatsapp" aria-hidden="true"> No disponible</i></button>`;
+            if (validPhone && row.date && row.time) {
+                const url = new URL(`https://wa.me/549${phone}`);
+                url.searchParams.set("text", `Hola, ¿podés confirmar tu turno del ${row.date} a las ${row.time}? Gracias.`);
+                confirmation = `<a href="${escapeHTML(url.href)}" target="_blank" rel="noopener noreferrer"
+                    class="btn btn-outline-success btn-sm" aria-label="Solicitar confirmación por WhatsApp"><i class="bi bi-whatsapp" aria-hidden="true"> Contactar?</i></a>`;
+            }
         }
 
         const time = String(row.time ?? "").trim() || "Sin horario";
@@ -274,81 +277,6 @@
             day: "numeric",
             month: "long"
         }).format(new Date(year, month - 1, day));
-    }
-
-
-
-    // ======================================================
-    // TABLE RENDER
-    // ======================================================
-    function renderTable(rows) {
-
-        const tbody = document.querySelector("#turns-body");
-        if (!tbody) return;
-
-        tbody.innerHTML = "";
-
-        if (!rows.length) {
-            tbody.innerHTML = '<tr><td colspan="10" class="text-center">No hay turnos</td></tr>';
-            return;
-        }
-
-        rows.forEach(d => {
-            const colClass = d.accessed ? ' class="turn-cell--accessed odd"' : '';
-
-            let actions = "";
-
-            if (d.accessed) {
-                actions = `<span class="text-success fw-bold">Ingresado</span>`;
-            } else if (!d.isMedic) {
-                actions = `
-                    <button
-                        data-open-modal
-                        data-modal-id="GlobalModal"
-                        data-url="/Turns/Edit?id=${d.id}"
-                        data-title="Editar turno"
-                        class="btn btn-sm btn-primary me-1">
-                        Editar
-                    </button>
-                    <button data-id="${d.id}" class="btn btn-danger btn-sm me-1 btn-delete">Eliminar</button>
-                `;
-            } else {
-                actions = `<button data-id="${d.id}" class="btn btn-primary btn-sm me-1 btn-access">Ingreso</button>`;
-            }
-
-            const phone = String(d.phone ?? "");
-            const validPhone = /^[1-9]\d{9}$/.test(phone);
-            let confirmation;
-            if (validPhone && d.date && d.time) {
-                const url = new URL(`https://wa.me/549${phone}`);
-                url.searchParams.set("text", `Hola, ¿podés confirmar tu turno del ${d.date} a las ${d.time}? Gracias.`);
-                confirmation = `
-                    <a href="${escapeHTML(url.href)}" target="_blank" rel="noopener noreferrer"
-                       class="btn btn-outline-success btn-sm" aria-label="Solicitar confirmación por WhatsApp (abre una nueva pestaña)">
-                        <i class="bi bi-whatsapp" aria-hidden="true"> Contactar?</i>
-                    </a>
-                `;
-            } else {
-                confirmation = `
-                    <button type="button" class="btn btn-outline-success btn-sm" disabled><i class="bi bi-whatsapp" aria-hidden="true"> No disponible</i></button>
-                `;
-            }
-
-            tbody.insertAdjacentHTML("beforeend", `
-                <tr>
-                    <td${colClass}>${escapeHTML(d.name)}</td>
-                    <td${colClass}>${escapeHTML(d.dni)}</td>
-                    <td${colClass}>${escapeHTML(d.socialWork)}</td>
-                    <td${colClass}>${escapeHTML(d.reason)}</td>
-                    <td${colClass}>${escapeHTML(d.medicName)}</td>
-                    <td${colClass} style="display:none">${d.medicId}</td>
-                    <td${colClass}>${escapeHTML(d.date)}</td>
-                    <td${colClass}>${escapeHTML(d.time)}</td>
-                    <td${colClass}>${actions}</td>
-                    <td${colClass}>${confirmation}</td>
-                </tr>
-            `);
-        });
     }
 
     function escapeHTML(t) {

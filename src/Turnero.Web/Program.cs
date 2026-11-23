@@ -1,5 +1,6 @@
 
 using System.Threading.RateLimiting;
+using Turnero.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -100,6 +101,7 @@ if (builder.Environment.IsDevelopment())
 
 #region Application & Infrastructure Services
 builder.Services.AddSingleton<LoggerService>();
+builder.Services.AddSingleton<InitialSetupState>();
 
 // Clean Architecture: registro de dependencias por capa.
 // AddInfrastructure registra DbContext, Identity (EF stores), repositorios y servicios de datos.
@@ -157,6 +159,16 @@ builder.Services.AddRateLimiter(options =>
                 PermitLimit = 5,
                 QueueLimit = 0,
                 Window = TimeSpan.FromMinutes(1)
+            }));
+    options.AddPolicy("InitialSetup", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                AutoReplenishment = true,
+                PermitLimit = 5,
+                QueueLimit = 0,
+                Window = TimeSpan.FromMinutes(15)
             }));
     options.OnRejected = (context, _) =>
     {
@@ -239,6 +251,21 @@ builder.Services.Configure<GzipCompressionProviderOptions>(options =>
 
 var app = builder.Build();
 
+var initialSetupState = app.Services.GetRequiredService<InitialSetupState>();
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await dbContext.Database.MigrateAsync();
+
+    var hasAdmin = await (
+        from userRole in dbContext.UserRoles
+        join role in dbContext.Roles on userRole.RoleId equals role.Id
+        where role.Name == RolesConstants.Admin
+        select userRole.UserId).AnyAsync();
+
+    initialSetupState.Initialize(!hasAdmin);
+}
+
 #region Cache Initialization
 using (var scope = app.Services.CreateScope())
 {
@@ -294,6 +321,20 @@ app.UseStaticFiles(new StaticFileOptions
 });
 
 app.UseStaticFiles(); // Default static files
+
+app.Use(async (context, next) =>
+{
+    var setupRoute = context.Request.Path.StartsWithSegments("/setup", StringComparison.OrdinalIgnoreCase);
+    var healthRoute = context.Request.Path.StartsWithSegments("/health", StringComparison.OrdinalIgnoreCase);
+
+    if (initialSetupState.IsRequired && !setupRoute && !healthRoute)
+    {
+        context.Response.Redirect("/setup");
+        return;
+    }
+
+    await next();
+});
 
 app.UseRouting();
 app.UseCors();

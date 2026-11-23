@@ -1,36 +1,42 @@
-﻿@using Turnero.Web.Models
 @model List<TimeTurn>
-
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Horarios";
 }
 
-<h1>Index</h1>
-<div class="back row">
-    <p>
-        <a asp-action="Create">Create New</a>
-    </p>
+<div class="container-fluid management-page">
+    <div class="agenda-toolbar mb-3">
+        <a asp-action="Create" class="btn btn-primary">Nuevo horario</a>
+    </div>
+    <div class="agenda-heading">
+        <div>
+            <span class="agenda-heading__eyebrow">Administración</span>
+            <h1>Horarios</h1>
+        </div>
+        <span class="agenda-count">@Model.Count @(Model.Count == 1 ? "horario" : "horarios")</span>
+    </div>
 
-    <table id="Turns" class="table">
-        <thead>
-            <tr>
-                <th>
-                    @Html.DisplayNameFor(model => model.FirstOrDefault().Time)
-                </th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model) {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Time)
-                </td>
-                <td>
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                </td>
-            </tr>
+    @if (Model.Count > 0)
+    {
+        <div class="management-list">
+            @foreach (var item in Model)
+            {
+                <div class="management-item">
+                    <div class="management-item__identity">
+                        <span class="agenda-card__time">@Html.DisplayFor(modelItem => item.Time)</span>
+                    </div>
+                    <div class="management-item__actions">
+                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger">Eliminar</a>
+                    </div>
+                </div>
             }
-        </tbody>
-    </table>
+        </div>
+    }
+    else
+    {
+        <div class="agenda-empty">
+            <i class="bi bi-clock" aria-hidden="true"></i>
+            <strong>No hay horarios registrados</strong>
+            <span>Agregá un horario para comenzar.</span>
+        </div>
+    }
 </div>

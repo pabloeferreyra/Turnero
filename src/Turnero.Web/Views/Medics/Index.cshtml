@@ -1,66 +1,56 @@
-﻿@model IEnumerable<Medic>
-
+@model IEnumerable<Medic>
 @{
-    ViewData["Title"] = "Inicio";
+    ViewData["Title"] = "Médicos";
+    var medics = Model.ToList();
 }
 
+<div class="container-fluid management-page">
+    <div class="agenda-toolbar mb-3">
+        <a asp-action="Create" class="btn btn-primary">Nuevo médico</a>
+    </div>
+    <div class="agenda-heading">
+        <div>
+            <span class="agenda-heading__eyebrow">Administración</span>
+            <h1>Médicos</h1>
+        </div>
+        <span class="agenda-count">@medics.Count @(medics.Count == 1 ? "médico" : "médicos")</span>
+    </div>
 
-<div class="wrapper">
-    <div class="back">
-    <h1>Medicos</h1>
-    <p>
-        <a asp-action="Create">Crear nuevo</a>
-    </p>
-    @if (Model.Any())
+    @if (medics.Count > 0)
     {
-        @foreach (var item in Model)
-        {
-            <div class="card mb-3">
-                <div class="card-header">
-                    Medic Id: @item.Id
-
-                </div>
-                <div class="card-body">
-                    <h5 class="card-title">@item.Name</h5>
-                </div>
-                <div class="card-footer">
-                    <form asp-action="Delete" asp-route-id="@item.Id" method="post">
-                        <a asp-action="Edit" asp-controller="Medics" asp-route-id="@item.Id"
-                            class="btn btn-outline-primary">Edit</a>
-                        <span id="confirmDeleteSpan_@item.Id" style="display:none">
-                            <span>Are you sure you want to delete?</span>
-                            <button type="submit" class="btn btn-danger">Yes</button>
-                            <a href="#" class="btn btn-primary"
-                                onclick="confirmDelete('@item.Id', false)">No</a>
+        <div class="management-list">
+            @foreach (var medic in medics)
+            {
+                <div class="management-item">
+                    <div class="management-item__identity">
+                        <div class="agenda-card__name">@medic.Name</div>
+                        <div class="agenda-card__details">ID: @medic.Id</div>
+                    </div>
+                    <form asp-action="Delete" asp-route-id="@medic.Id" method="post" class="management-item__actions">
+                        <a asp-action="Edit" asp-controller="Medics" asp-route-id="@medic.Id" class="btn btn-outline-primary">Editar</a>
+                        <span id="deleteSpan_@medic.Id">
+                            <button type="button" class="btn btn-danger" onclick="confirmDelete('@medic.Id', true)">Eliminar</button>
                         </span>
-                        <span id="deleteSpan_@item.Id">
-                            <a href="#" class="btn btn-danger"
-                                onclick="confirmDelete('@item.Id', true)">Delete</a>
+                        <span id="confirmDeleteSpan_@medic.Id" style="display:none">
+                            <span>¿Seguro que querés eliminar este médico?</span>
+                            <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+                            <button type="button" class="btn btn-outline-primary" onclick="confirmDelete('@medic.Id', false)">Cancelar</button>
                         </span>
                     </form>
                 </div>
-            </div>
-        }
+            }
+        </div>
     }
     else
     {
-        <div class="card">
-            <div class="card-header">
-                no users created yet
-            </div>
-            <div class="card-body">
-                <h5 class="card-title">
-                    Use the button below to create a user
-                </h5>
-                <a class="btn btn-primary" style="width: auto"
-                    asp-area="Identity" asp-page="/Account/Register">
-                    Add new user
-                </a>
-            </div>
+        <div class="agenda-empty">
+            <i class="bi bi-person-badge" aria-hidden="true"></i>
+            <strong>No hay médicos registrados</strong>
+            <span>Agregá un médico para comenzar.</span>
         </div>
     }
-    </div>
 </div>
+
 @section Scripts {
     <script src="~/js/Medics.js"></script>
 }
