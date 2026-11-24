@@ -92,7 +92,6 @@
             const total = json?.recordsTotal || json?.recordsFiltered || data.length;
 
             AppUtils.Pagination.setRecordsTotal(key, total);
-            if (!loadAllAgendaTurns) renderTable(data);
             renderAgenda(data);
             AppUtils.Pagination.renderWithState("#turns-pagination", key, loadData);
 
