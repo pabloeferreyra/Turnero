@@ -248,7 +248,7 @@ public class FirebaseAuthService(
     private static RegistrationResultDto ToFirebaseResult(FirebaseAuthException exception) =>
         RegistrationResultDto.Failed(new RegistrationErrorDto
         {
-            Code = exception.AuthErrorCode.ToString(),
+            Code = exception.AuthErrorCode.ToString() ?? string.Empty,
             Description = exception.Message
         });
 }

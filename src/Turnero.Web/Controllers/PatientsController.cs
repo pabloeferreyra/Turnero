@@ -3,7 +3,6 @@
 [Authorize(Roles = RolesConstants.Medico)]
 public class PatientsController(IInsertPatientService insertPatient,
     IGetPatientService getPatient,
-    IGetParentsDataService getParents,
     IUpdatePatientService updatePatient,
     IPatientClinicalHistoryService clinicalHistoryService,
     IGetMedicsServices getMedics,

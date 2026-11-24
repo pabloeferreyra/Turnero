@@ -11,9 +11,6 @@ public class TurnsController(UserManager<IdentityUser> userManager,
                        IHubContext<TurnsTableHub> hubContext,
                        ILogger<TurnsController> logger) : TurneroBaseController(getMedics, getTimeTurns, antiforgery)
 {
-    // Nota: getMedics se captura acá y en la base; la base lo expone como GetMedics.
-    private IGetMedicsServices MedicsServices { get; } = getMedics;
-
     [Authorize(Roles = $"{RolesConstants.Ingreso}, {RolesConstants.Medico}")]
     public async Task<IActionResult> Index()
     {
@@ -128,7 +125,7 @@ public class TurnsController(UserManager<IdentityUser> userManager,
                 return Conflict(new { error = "Debe seleccionar un horario." });
             }
 
-            var selectedMedic = await MedicsServices.GetMedicById(turn.MedicId);
+            var selectedMedic = await GetMedics.GetMedicById(turn.MedicId);
             if (selectedMedic.Id == Guid.Empty)
             {
                 logger.LogWarning("Intento de crear turno con médico inexistente: {MedicId}", turn.MedicId);
@@ -412,13 +409,13 @@ public class TurnsController(UserManager<IdentityUser> userManager,
 
         if (medicId.HasValue)
         {
-            if (!getMedics.ExistMedic(medicId.Value))
+            if (!GetMedics.ExistMedic(medicId.Value))
             {
                 return NotFound(new { error = "El médico seleccionado no existe." });
             }
 
             var today = DateOnly.FromDateTime(DateTime.Today);
-            var schedule = (await getMedics.GetAvailabilities(medicId.Value))
+            var schedule = (await GetMedics.GetAvailabilities(medicId.Value))
                 .Where(availability => availability.DateTo >= today)
                 .GroupBy(availability => new
                 {
@@ -502,7 +499,7 @@ public class TurnsController(UserManager<IdentityUser> userManager,
             ModelState.AddModelError(nameof(model.Days), "La disponibilidad semanal contiene registros duplicados.");
         }
 
-        var medicExists = model.MedicId is Guid medicId && getMedics.ExistMedic(medicId);
+        var medicExists = model.MedicId is Guid medicId && GetMedics.ExistMedic(medicId);
         if (model.MedicId.HasValue && !medicExists)
         {
             ModelState.AddModelError(nameof(model.MedicId), "El médico seleccionado no existe.");
@@ -511,7 +508,7 @@ public class TurnsController(UserManager<IdentityUser> userManager,
         if (model.DateFrom < today)
         {
             var existing = medicExists
-                ? await getMedics.GetAvailabilities(model.MedicId!.Value)
+                ? await GetMedics.GetAvailabilities(model.MedicId!.Value)
                 : [];
             var hasExistingStart = existing.Any(availability =>
                 availability.DateFrom == model.DateFrom
@@ -586,7 +583,7 @@ public class TurnsController(UserManager<IdentityUser> userManager,
             .Where(id => id != Guid.Empty)
             .ToList();
 
-        await getMedics.SaveAvailabilities(model.MedicId!.Value, availabilities, unavailableIds);
+        await GetMedics.SaveAvailabilities(model.MedicId!.Value, availabilities, unavailableIds);
 
         return Ok(new { message = "Disponibilidad guardada correctamente." });
     }
